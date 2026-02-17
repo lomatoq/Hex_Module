@@ -43,14 +43,14 @@ namespace HexWords.Gameplay
 
         private void CreateSegment(Vector2 from, Vector2 to)
         {
-            var segment = new GameObject("TrailSegment", typeof(RectTransform), typeof(Image));
+            var segment = new GameObject("TrailSegment", typeof(RectTransform), typeof(RawImage));
             segment.transform.SetParent(trailRoot, false);
             var rect = (RectTransform)segment.transform;
-            var image = segment.GetComponent<Image>();
+            var image = segment.GetComponent<RawImage>();
 
             image.color = lineColor;
             image.raycastTarget = false;
-            image.sprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/UISprite.psd");
+            image.texture = Texture2D.whiteTexture;
 
             var delta = to - from;
             var length = delta.magnitude;
