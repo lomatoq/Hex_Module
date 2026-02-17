@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,10 +12,17 @@ namespace HexWords.Gameplay
         [SerializeField] private Color lineColor = Color.black;
 
         private readonly List<GameObject> _segments = new List<GameObject>();
+        private Coroutine _fadeRoutine;
 
         public void DrawPath(IReadOnlyList<string> cellPath, IReadOnlyDictionary<string, HexCellView> cellViews)
         {
-            Clear();
+            if (_fadeRoutine != null)
+            {
+                StopCoroutine(_fadeRoutine);
+                _fadeRoutine = null;
+            }
+
+            ClearImmediate();
             if (trailRoot == null || cellPath == null || cellPath.Count < 2)
             {
                 return;
@@ -31,8 +39,29 @@ namespace HexWords.Gameplay
             }
         }
 
-        public void Clear()
+        public void FadeOutAndClear(float duration)
         {
+            if (_segments.Count == 0)
+            {
+                return;
+            }
+
+            if (_fadeRoutine != null)
+            {
+                StopCoroutine(_fadeRoutine);
+            }
+
+            _fadeRoutine = StartCoroutine(FadeAndClearRoutine(Mathf.Max(0.01f, duration)));
+        }
+
+        public void ClearImmediate()
+        {
+            if (_fadeRoutine != null)
+            {
+                StopCoroutine(_fadeRoutine);
+                _fadeRoutine = null;
+            }
+
             for (var i = 0; i < _segments.Count; i++)
             {
                 Destroy(_segments[i]);
@@ -61,6 +90,43 @@ namespace HexWords.Gameplay
             rect.localRotation = Quaternion.Euler(0f, 0f, angle);
 
             _segments.Add(segment);
+        }
+
+        private IEnumerator FadeAndClearRoutine(float duration)
+        {
+            var images = new List<RawImage>();
+            for (var i = 0; i < _segments.Count; i++)
+            {
+                if (_segments[i] != null)
+                {
+                    var image = _segments[i].GetComponent<RawImage>();
+                    if (image != null)
+                    {
+                        images.Add(image);
+                    }
+                }
+            }
+
+            var elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                var k = Mathf.Clamp01(1f - elapsed / duration);
+                for (var i = 0; i < images.Count; i++)
+                {
+                    if (images[i] != null)
+                    {
+                        var c = lineColor;
+                        c.a *= k;
+                        images[i].color = c;
+                    }
+                }
+
+                yield return null;
+            }
+
+            ClearImmediate();
+            _fadeRoutine = null;
         }
 
         private Vector2 GetLocalCenter(HexCellView view)

@@ -31,6 +31,19 @@ Implemented core mechanics for a hex-cell word game with:
    - `LevelHudView`
    - optional `levelCompletePanel`
 
+## Dictionary at scale
+- Use `Tools -> HexWords -> Dictionary Importer` to import a large `.txt` or `.csv` word list.
+- Supported input:
+  - plain text list (one word per line)
+  - csv with `word` column
+- The tool normalizes words, deduplicates, filters by language and length, and writes into your source CSV.
+
+## Avoiding repeated letters in cells
+- In `GenerationProfile`, enable `avoidDuplicateLetters` (enabled by default).
+- In `Tools -> HexWords -> Level Editor`, use:
+  - `Generate Draft Cells From Profile` for new unique-letter draft
+  - `Make Letters Unique` to fix duplicates in an existing level
+
 ## CSV formats
 ### dictionary_ru.csv / dictionary_en.csv
 Header:

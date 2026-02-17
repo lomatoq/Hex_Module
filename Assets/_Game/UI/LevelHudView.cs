@@ -42,5 +42,16 @@ namespace HexWords.UI
             lastWordText.text = text;
             lastWordText.color = accepted ? new Color(0.2f, 0.5f, 0.2f) : new Color(0.7f, 0.2f, 0.2f);
         }
+
+        public void SetCurrentWord(string text)
+        {
+            if (lastWordText == null)
+            {
+                return;
+            }
+
+            lastWordText.text = text;
+            lastWordText.color = new Color(0.2f, 0.2f, 0.2f);
+        }
     }
 }

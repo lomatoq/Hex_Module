@@ -136,6 +136,11 @@ namespace HexWords.EditorTools
                 GenerateDraft();
             }
 
+            if (GUILayout.Button("Make Letters Unique"))
+            {
+                MakeLettersUnique();
+            }
+
             if (GUILayout.Button("Preview Play"))
             {
                 PreviewPlayContext.SetLevel(_level);
@@ -188,7 +193,7 @@ namespace HexWords.EditorTools
             }
 
             var candidates = LevelGenerator.FilterWords(_dictionary, _generationProfile);
-            var cells = LevelGenerator.GenerateCells(_generationProfile.cellCount, candidates);
+            var cells = LevelGenerator.GenerateCells(_generationProfile, candidates);
             _level.shape.cells = cells;
 
             var words = new List<string>();
@@ -198,7 +203,20 @@ namespace HexWords.EditorTools
             }
 
             _level.targetWords = words.ToArray();
-            Debug.Log($"Generated draft with {cells.Count} cells and {words.Count} words.");
+            Debug.Log($"Generated draft with {cells.Count} cells and {words.Count} words. Avoid duplicates: {_generationProfile.avoidDuplicateLetters}");
+        }
+
+        private void MakeLettersUnique()
+        {
+            if (_level.shape.cells == null || _level.shape.cells.Count == 0)
+            {
+                Debug.LogWarning("No cells to update.");
+                return;
+            }
+
+            LevelGenerator.EnsureUniqueLetters(_level.shape.cells, _level.language);
+            EditorUtility.SetDirty(_level);
+            Debug.Log("Updated level letters to unique set where possible.");
         }
 
         private void CreateLevelAsset()

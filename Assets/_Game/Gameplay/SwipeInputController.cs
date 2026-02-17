@@ -1,4 +1,5 @@
 using HexWords.Core;
+using HexWords.UI;
 using UnityEngine;
 
 namespace HexWords.Gameplay
@@ -7,6 +8,7 @@ namespace HexWords.Gameplay
     {
         [SerializeField] private GridView gridView;
         [SerializeField] private SwipeTrailView trailView;
+        [SerializeField] private LevelHudView hudView;
 
         private SwipePathBuilder _pathBuilder;
         private LevelSessionController _session;
@@ -52,6 +54,7 @@ namespace HexWords.Gameplay
             {
                 cell.OnSelected();
                 trailView?.DrawPath(_pathBuilder.CellPath, gridView.CellViews);
+                hudView?.SetCurrentWord(_pathBuilder.BuildWord());
             }
         }
 
@@ -66,6 +69,7 @@ namespace HexWords.Gameplay
             {
                 cell.OnSelected();
                 trailView?.DrawPath(_pathBuilder.CellPath, gridView.CellViews);
+                hudView?.SetCurrentWord(_pathBuilder.BuildWord());
             }
         }
 
@@ -96,7 +100,7 @@ namespace HexWords.Gameplay
             }
 
             _pathBuilder.Reset();
-            trailView?.Clear();
+            trailView?.FadeOutAndClear(0.2f);
         }
     }
 }

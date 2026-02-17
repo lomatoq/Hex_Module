@@ -10,6 +10,7 @@ namespace HexWords.Core
         public int minLength = 3;
         public int maxLength = 8;
         public int cellCount = 12;
+        public bool avoidDuplicateLetters = true;
         public string includeLetters = string.Empty;
         public string excludeLetters = string.Empty;
         public int minDifficultyBand;

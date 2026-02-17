@@ -47,5 +47,5 @@ MonoBehaviour:
   targetWords:
   - CAT
   - RING
-  targetScore: 10
+  targetScore: 7
   language: 1
