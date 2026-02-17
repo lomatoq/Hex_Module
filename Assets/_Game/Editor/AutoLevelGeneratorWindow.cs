@@ -66,6 +66,7 @@ namespace HexWords.EditorTools
                 .Where(w => !string.IsNullOrWhiteSpace(w))
                 .Where(w => w.Length >= 2 && w.Length <= _profile.cellCount)
                 .Where(w => !_preferNaturalEnglishWords || _profile.language != Language.EN || LooksNaturalEnglishWord(w))
+                .Where(w => !_profile.avoidDuplicateLetters || !HasRepeatedLetters(w))
                 .Distinct()
                 .ToList();
 
@@ -259,19 +260,91 @@ namespace HexWords.EditorTools
                 combined.Add(next);
             }
 
-            // Layout in a straight axial line: every next cell is a hex neighbor by (dq=1, dr=0).
+            if (profile.avoidDuplicateLetters)
+            {
+                var dedup = new List<char>(profile.cellCount);
+                var seen = new HashSet<char>();
+                for (var i = 0; i < combined.Count && dedup.Count < profile.cellCount; i++)
+                {
+                    if (seen.Add(combined[i]))
+                    {
+                        dedup.Add(combined[i]);
+                    }
+                }
+
+                combined = dedup;
+                unique = new HashSet<char>(combined);
+                while (combined.Count < profile.cellCount)
+                {
+                    var next = alphabet.FirstOrDefault(c => !unique.Contains(c));
+                    if (next == default)
+                    {
+                        break;
+                    }
+
+                    combined.Add(next);
+                    unique.Add(next);
+                }
+            }
+
+            var coords = BuildCompactHexCoords(profile.cellCount);
             for (var i = 0; i < profile.cellCount; i++)
             {
                 cells.Add(new CellDefinition
                 {
                     cellId = $"c{i + 1}",
                     letter = combined[i].ToString(),
-                    q = i,
-                    r = 0
+                    q = coords[i].q,
+                    r = coords[i].r
                 });
             }
 
             return cells;
+        }
+
+        private static bool HasRepeatedLetters(string word)
+        {
+            var seen = new HashSet<char>();
+            for (var i = 0; i < word.Length; i++)
+            {
+                if (!seen.Add(word[i]))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static List<(int q, int r)> BuildCompactHexCoords(int count)
+        {
+            var result = new List<(int q, int r)>(count);
+            var visited = new HashSet<(int q, int r)>();
+            var queue = new Queue<(int q, int r)>();
+            var directions = new (int dq, int dr)[]
+            {
+                (1, 0), (1, -1), (0, -1), (-1, 0), (-1, 1), (0, 1)
+            };
+
+            queue.Enqueue((0, 0));
+            visited.Add((0, 0));
+
+            while (queue.Count > 0 && result.Count < count)
+            {
+                var current = queue.Dequeue();
+                result.Add(current);
+
+                for (var i = 0; i < directions.Length; i++)
+                {
+                    var next = (current.q + directions[i].dq, current.r + directions[i].dr);
+                    if (visited.Add(next))
+                    {
+                        queue.Enqueue(next);
+                    }
+                }
+            }
+
+            return result;
         }
 
         private static bool LooksNaturalEnglishWord(string word)

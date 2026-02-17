@@ -27,6 +27,7 @@ namespace HexWords.Gameplay
             CellId = cellDefinition.cellId;
             if (letterText != null)
             {
+                EnsureLetterCentered();
                 letterText.text = WordNormalizer.Normalize(cellDefinition.letter);
             }
 
@@ -34,6 +35,20 @@ namespace HexWords.Gameplay
             {
                 _baseColor = background.color;
             }
+        }
+
+        private void EnsureLetterCentered()
+        {
+            letterText.alignment = TextAnchor.MiddleCenter;
+
+            var textRect = letterText.rectTransform;
+            textRect.anchorMin = new Vector2(0.5f, 0.5f);
+            textRect.anchorMax = new Vector2(0.5f, 0.5f);
+            textRect.pivot = new Vector2(0.5f, 0.5f);
+            textRect.anchoredPosition = Vector2.zero;
+            textRect.sizeDelta = background != null
+                ? background.rectTransform.rect.size
+                : new Vector2(120f, 120f);
         }
 
         public void OnPointerDown(PointerEventData eventData)

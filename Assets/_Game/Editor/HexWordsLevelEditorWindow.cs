@@ -141,6 +141,11 @@ namespace HexWords.EditorTools
                 MakeLettersUnique();
             }
 
+            if (GUILayout.Button("Repack Cells (Compact)"))
+            {
+                RepackCellsCompact();
+            }
+
             if (GUILayout.Button("Preview Play"))
             {
                 PreviewPlayContext.SetLevel(_level);
@@ -217,6 +222,19 @@ namespace HexWords.EditorTools
             LevelGenerator.EnsureUniqueLetters(_level.shape.cells, _level.language);
             EditorUtility.SetDirty(_level);
             Debug.Log("Updated level letters to unique set where possible.");
+        }
+
+        private void RepackCellsCompact()
+        {
+            if (_level.shape.cells == null || _level.shape.cells.Count == 0)
+            {
+                Debug.LogWarning("No cells to repack.");
+                return;
+            }
+
+            LevelGenerator.RepackCellsCompact(_level.shape.cells);
+            EditorUtility.SetDirty(_level);
+            Debug.Log("Repacked cell coordinates to compact hex layout.");
         }
 
         private void CreateLevelAsset()

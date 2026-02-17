@@ -1,0 +1,73 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ccbc913918834c06b17a8fff374cffa, type: 3}
+  m_Name: 4
+  m_EditorClassIdentifier: Assembly-CSharp::HexWords.Core.LevelDefinition
+  levelId: 4
+  shape:
+    cells:
+    - cellId: c1
+      letter: A
+      q: 0
+      r: 0
+    - cellId: c2
+      letter: B
+      q: 1
+      r: 0
+    - cellId: c3
+      letter: B
+      q: 1
+      r: -1
+    - cellId: c4
+      letter: A
+      q: 0
+      r: -1
+    - cellId: c5
+      letter: B
+      q: -1
+      r: 0
+    - cellId: c6
+      letter: O
+      q: -1
+      r: 1
+    - cellId: c7
+      letter: A
+      q: 0
+      r: 1
+    - cellId: c8
+      letter: B
+      q: 2
+      r: 0
+    - cellId: c9
+      letter: S
+      q: 2
+      r: -1
+    - cellId: c10
+      letter: A
+      q: 1
+      r: 1
+    - cellId: c11
+      letter: B
+      q: 2
+      r: -2
+    - cellId: c12
+      letter: Y
+      q: 1
+      r: -2
+  validationMode: 0
+  targetWords:
+  - ABB
+  - ABO
+  - ABS
+  - ABY
+  targetScore: 12
+  language: 1

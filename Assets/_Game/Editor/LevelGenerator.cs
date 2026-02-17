@@ -181,5 +181,53 @@ namespace HexWords.EditorTools
                 cells[idx] = cell;
             }
         }
+
+        public static void RepackCellsCompact(List<CellDefinition> cells)
+        {
+            if (cells == null || cells.Count == 0)
+            {
+                return;
+            }
+
+            var coords = BuildCompactHexCoords(cells.Count);
+            for (var i = 0; i < cells.Count; i++)
+            {
+                var cell = cells[i];
+                cell.q = coords[i].q;
+                cell.r = coords[i].r;
+                cells[i] = cell;
+            }
+        }
+
+        private static List<(int q, int r)> BuildCompactHexCoords(int count)
+        {
+            var result = new List<(int q, int r)>(count);
+            var visited = new HashSet<(int q, int r)>();
+            var queue = new Queue<(int q, int r)>();
+            var directions = new (int dq, int dr)[]
+            {
+                (1, 0), (1, -1), (0, -1), (-1, 0), (-1, 1), (0, 1)
+            };
+
+            queue.Enqueue((0, 0));
+            visited.Add((0, 0));
+
+            while (queue.Count > 0 && result.Count < count)
+            {
+                var current = queue.Dequeue();
+                result.Add(current);
+
+                for (var i = 0; i < directions.Length; i++)
+                {
+                    var next = (current.q + directions[i].dq, current.r + directions[i].dr);
+                    if (visited.Add(next))
+                    {
+                        queue.Enqueue(next);
+                    }
+                }
+            }
+
+            return result;
+        }
     }
 }

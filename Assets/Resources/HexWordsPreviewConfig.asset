@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15cc21a53770640febf1ed64612c2280, type: 3}
   m_Name: HexWordsPreviewConfig
   m_EditorClassIdentifier: Assembly-CSharp::HexWords.Core.RuntimePreviewConfig
-  previewLevel: {fileID: 11400000, guid: e3eda90849f324e2ab4942d726500d4f, type: 2}
+  previewLevel: {fileID: 11400000, guid: 13cb9d164a4804eee9019c6fccbdd00a, type: 2}
