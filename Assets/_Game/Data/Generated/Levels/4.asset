@@ -16,58 +16,57 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: A
+      letter: F
       q: 0
       r: 0
     - cellId: c2
-      letter: B
-      q: 1
-      r: 0
+      letter: L
+      q: -1
+      r: 1
     - cellId: c3
-      letter: B
-      q: 1
-      r: -1
-    - cellId: c4
       letter: A
+      q: -1
+      r: 0
+    - cellId: c4
+      letter: G
       q: 0
       r: -1
     - cellId: c5
-      letter: B
-      q: -1
-      r: 0
+      letter: S
+      q: 1
+      r: -1
     - cellId: c6
-      letter: O
-      q: -1
-      r: 1
+      letter: Y
+      q: 1
+      r: 0
     - cellId: c7
-      letter: A
+      letter: K
       q: 0
       r: 1
     - cellId: c8
-      letter: B
-      q: 2
-      r: 0
-    - cellId: c9
-      letter: S
-      q: 2
-      r: -1
-    - cellId: c10
-      letter: A
+      letter: E
       q: 1
       r: 1
-    - cellId: c11
+    - cellId: c9
+      letter: R
+      q: 2
+      r: 0
+    - cellId: c10
       letter: B
+      q: 2
+      r: -1
+    - cellId: c11
+      letter: C
       q: 2
       r: -2
     - cellId: c12
-      letter: Y
+      letter: D
       q: 1
       r: -2
   validationMode: 0
   targetWords:
-  - ABB
-  - ABO
-  - ABS
-  - ABY
-  targetScore: 12
+  - FLAGS
+  - SYKER
+  - FLAG
+  targetScore: 14
   language: 1

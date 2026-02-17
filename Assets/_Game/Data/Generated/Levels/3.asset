@@ -16,59 +16,57 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: Y
+      letter: L
       q: 0
       r: 0
     - cellId: c2
-      letter: X
-      q: 1
-      r: 0
+      letter: A
+      q: 0
+      r: 1
     - cellId: c3
-      letter: P
+      letter: X
+      q: -1
+      r: 1
+    - cellId: c4
+      letter: I
+      q: -1
+      r: 0
+    - cellId: c5
+      letter: T
+      q: 0
+      r: -1
+    - cellId: c6
+      letter: Y
       q: 1
       r: -1
-    - cellId: c4
-      letter: Q
-      q: 0
-      r: -1
-    - cellId: c5
-      letter: U
-      q: -1
-      r: 0
-    - cellId: c6
-      letter: F
-      q: -1
-      r: 1
     - cellId: c7
-      letter: B
-      q: 0
-      r: 1
-    - cellId: c8
-      letter: Z
-      q: 2
+      letter: F
+      q: 1
       r: 0
-    - cellId: c9
-      letter: R
+    - cellId: c8
+      letter: E
       q: 2
       r: -1
+    - cellId: c9
+      letter: D
+      q: 2
+      r: 0
     - cellId: c10
-      letter: W
+      letter: S
       q: 1
       r: 1
     - cellId: c11
-      letter: N
-      q: 2
-      r: -2
+      letter: B
+      q: 0
+      r: 2
     - cellId: c12
-      letter: K
-      q: 1
-      r: -2
+      letter: C
+      q: -1
+      r: 2
   validationMode: 0
   targetWords:
-  - AAH
-  - AAHS
-  - AAL
-  - AALIIS
-  - AALS
-  targetScore: 12
+  - LAXITY
+  - DEFY
+  - FEDS
+  targetScore: 14
   language: 1

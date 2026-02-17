@@ -16,58 +16,57 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: A
+      letter: C
       q: 0
       r: 0
     - cellId: c2
-      letter: C
+      letter: H
+      q: 0
+      r: -1
+    - cellId: c3
+      letter: A
+      q: 1
+      r: -1
+    - cellId: c4
+      letter: N
       q: 1
       r: 0
-    - cellId: c3
-      letter: E
-      q: 2
-      r: 0
-    - cellId: c4
-      letter: A
-      q: 3
-      r: 0
     - cellId: c5
-      letter: C
-      q: 4
-      r: 0
+      letter: T
+      q: 0
+      r: 1
     - cellId: c6
-      letter: H
-      q: 5
-      r: 0
+      letter: I
+      q: -1
+      r: 1
     - cellId: c7
-      letter: A
-      q: 6
+      letter: E
+      q: -1
       r: 0
     - cellId: c8
-      letter: C
-      q: 7
-      r: 0
+      letter: S
+      q: -2
+      r: 1
     - cellId: c9
-      letter: T
-      q: 8
+      letter: U
+      q: -2
       r: 0
     - cellId: c10
-      letter: A
-      q: 9
-      r: 0
+      letter: P
+      q: -1
+      r: -1
     - cellId: c11
-      letter: D
-      q: 10
-      r: 0
+      letter: G
+      q: 0
+      r: -2
     - cellId: c12
-      letter: D
-      q: 11
-      r: 0
+      letter: O
+      q: 1
+      r: -2
   validationMode: 0
   targetWords:
-  - ACE
-  - ACH
-  - ACT
-  - ADD
-  targetScore: 12
+  - CHANTIES
+  - CHANT
+  - ANTI
+  targetScore: 17
   language: 1
