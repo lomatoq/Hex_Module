@@ -44,6 +44,10 @@ Implemented core mechanics for a hex-cell word game with:
   - `Generate Draft Cells From Profile` for new unique-letter draft
   - `Make Letters Unique` to fix duplicates in an existing level
 
+## Full auto level generation
+- Use `Tools -> HexWords -> Generate Levels (Auto)` to create many `LevelDefinition` assets in one click.
+- Select `Dictionary`, `Generation Profile`, start id and count, then run generation.
+
 ## CSV formats
 ### dictionary_ru.csv / dictionary_en.csv
 Header:
