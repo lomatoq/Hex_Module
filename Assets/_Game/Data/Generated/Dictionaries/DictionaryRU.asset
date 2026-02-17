@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ed8a1b5d42134a2eb75a2aa350071c8, type: 3}
+  m_Name: DictionaryRU
+  m_EditorClassIdentifier: Assembly-CSharp::HexWords.Core.DictionaryDatabase
+  entries:
+  - word: "\u041A\u041E\u0422"
+    language: 0
+    category: animals
+    minLevel: 1
+    maxLevel: 10
+    difficultyBand: 1
+  - word: "\u0422\u041E\u041A"
+    language: 0
+    category: general
+    minLevel: 1
+    maxLevel: 10
+    difficultyBand: 1
+  - word: "\u041D\u041E\u0422\u0410"
+    language: 0
+    category: music
+    minLevel: 1
+    maxLevel: 20
+    difficultyBand: 2
+  - word: "\u0422\u041E\u0420\u0422"
+    language: 0
+    category: food
+    minLevel: 1
+    maxLevel: 20
+    difficultyBand: 2
+  - word: "\u0401\u041B\u041A\u0410"
+    language: 0
+    category: nature
+    minLevel: 1
+    maxLevel: 20
+    difficultyBand: 3

@@ -1,0 +1,5 @@
+word,category,minLevel,maxLevel,difficultyBand
+CAT,animals,1,10,1
+TONE,music,1,20,2
+RING,general,1,20,2
+HEART,body,1,30,3

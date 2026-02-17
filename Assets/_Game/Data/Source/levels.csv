@@ -1,0 +1,3 @@
+levelId,language,validationMode,targetScore,targetWords
+1,EN,LevelOnly,10,CAT|RING
+2,RU,Dictionary,12,КОТ|ТОК

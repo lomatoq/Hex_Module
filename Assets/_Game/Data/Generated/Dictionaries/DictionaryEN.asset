@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ed8a1b5d42134a2eb75a2aa350071c8, type: 3}
+  m_Name: DictionaryEN
+  m_EditorClassIdentifier: Assembly-CSharp::HexWords.Core.DictionaryDatabase
+  entries:
+  - word: CAT
+    language: 1
+    category: animals
+    minLevel: 1
+    maxLevel: 10
+    difficultyBand: 1
+  - word: TONE
+    language: 1
+    category: music
+    minLevel: 1
+    maxLevel: 20
+    difficultyBand: 2
+  - word: RING
+    language: 1
+    category: general
+    minLevel: 1
+    maxLevel: 20
+    difficultyBand: 2
+  - word: HEART
+    language: 1
+    category: body
+    minLevel: 1
+    maxLevel: 30
+    difficultyBand: 3
