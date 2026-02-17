@@ -41,10 +41,7 @@ namespace HexWords.Gameplay
 
         public void OnPointerEnter(PointerEventData eventData)
         {
-            if (eventData.dragging)
-            {
-                PointerEnterOnCell?.Invoke(this);
-            }
+            PointerEnterOnCell?.Invoke(this);
         }
 
         public void OnPointerUp(PointerEventData eventData)

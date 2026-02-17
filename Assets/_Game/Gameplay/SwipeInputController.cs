@@ -10,6 +10,7 @@ namespace HexWords.Gameplay
         private SwipePathBuilder _pathBuilder;
         private LevelSessionController _session;
         private LevelDefinition _level;
+        private bool _isTrackingPath;
 
         public void Initialize(LevelDefinition level, LevelSessionController session, IAdjacencyService adjacencyService)
         {
@@ -45,6 +46,7 @@ namespace HexWords.Gameplay
         private void OnCellPointerDown(HexCellView cell)
         {
             gridView.ResetFx();
+            _isTrackingPath = true;
             if (_pathBuilder.TryStart(cell.CellId))
             {
                 cell.OnSelected();
@@ -53,6 +55,11 @@ namespace HexWords.Gameplay
 
         private void OnCellPointerEnter(HexCellView cell)
         {
+            if (!_isTrackingPath)
+            {
+                return;
+            }
+
             if (_pathBuilder.TryAppend(cell.CellId))
             {
                 cell.OnSelected();
@@ -61,6 +68,12 @@ namespace HexWords.Gameplay
 
         private void OnCellPointerUp(HexCellView cell)
         {
+            if (!_isTrackingPath)
+            {
+                return;
+            }
+
+            _isTrackingPath = false;
             var word = _pathBuilder.BuildWord();
             var accepted = _session.TrySubmitWord(word, _level);
 
