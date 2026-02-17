@@ -6,6 +6,7 @@ namespace HexWords.Gameplay
     public class SwipeInputController : MonoBehaviour
     {
         [SerializeField] private GridView gridView;
+        [SerializeField] private SwipeTrailView trailView;
 
         private SwipePathBuilder _pathBuilder;
         private LevelSessionController _session;
@@ -50,6 +51,7 @@ namespace HexWords.Gameplay
             if (_pathBuilder.TryStart(cell.CellId))
             {
                 cell.OnSelected();
+                trailView?.DrawPath(_pathBuilder.CellPath, gridView.CellViews);
             }
         }
 
@@ -63,6 +65,7 @@ namespace HexWords.Gameplay
             if (_pathBuilder.TryAppend(cell.CellId))
             {
                 cell.OnSelected();
+                trailView?.DrawPath(_pathBuilder.CellPath, gridView.CellViews);
             }
         }
 
@@ -93,6 +96,7 @@ namespace HexWords.Gameplay
             }
 
             _pathBuilder.Reset();
+            trailView?.Clear();
         }
     }
 }

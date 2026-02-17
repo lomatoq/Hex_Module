@@ -31,7 +31,7 @@ namespace HexWords.Gameplay
 
             _session.ScoreChanged += OnScoreChanged;
             _session.LevelCompleted += OnLevelCompleted;
-            _session.WordRejected += OnWordRejected;
+            _session.WordSubmitted += OnWordSubmitted;
 
             gridView.Build(resolvedLevel);
             inputController.Initialize(resolvedLevel, _session, adjacency);
@@ -67,18 +67,17 @@ namespace HexWords.Gameplay
 
             _session.ScoreChanged -= OnScoreChanged;
             _session.LevelCompleted -= OnLevelCompleted;
-            _session.WordRejected -= OnWordRejected;
+            _session.WordSubmitted -= OnWordSubmitted;
         }
 
         private void OnScoreChanged(int current, int target)
         {
             hudView.SetScore(current, target);
-            hudView.SetLastWord("OK", true);
         }
 
-        private void OnWordRejected(ValidationReason reason)
+        private void OnWordSubmitted(string word, bool accepted)
         {
-            hudView.SetLastWord(reason.ToString(), false);
+            hudView.SetLastWord(word, accepted);
         }
 
         private void OnLevelCompleted()

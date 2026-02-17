@@ -398,6 +398,7 @@
 "Assets/_Game/Gameplay/ScoreService.cs"
 "Assets/_Game/Gameplay/SwipeInputController.cs"
 "Assets/_Game/Gameplay/SwipePathBuilder.cs"
+"Assets/_Game/Gameplay/SwipeTrailView.cs"
 "Assets/_Game/Gameplay/WordValidator.cs"
 "Assets/_Game/UI/LevelCompleteView.cs"
 "Assets/_Game/UI/LevelHudView.cs"
