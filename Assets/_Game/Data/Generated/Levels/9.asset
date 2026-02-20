@@ -16,11 +16,11 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: H
+      letter: T
       q: 0
       r: 0
     - cellId: c2
-      letter: Y
+      letter: I
       q: 0
       r: -1
     - cellId: c3
@@ -28,45 +28,37 @@ MonoBehaviour:
       q: -1
       r: 0
     - cellId: c4
-      letter: N
+      letter: E
       q: -1
       r: 1
     - cellId: c5
-      letter: A
+      letter: K
       q: 0
       r: 1
     - cellId: c6
-      letter: L
+      letter: N
       q: 1
       r: 0
     - cellId: c7
-      letter: T
+      letter: O
       q: 1
       r: -1
     - cellId: c8
-      letter: R
+      letter: W
       q: 2
       r: -2
     - cellId: c9
-      letter: I
+      letter: A
       q: 1
       r: -2
     - cellId: c10
-      letter: U
+      letter: L
       q: 0
       r: -2
-    - cellId: c11
-      letter: D
-      q: -1
-      r: -1
-    - cellId: c12
-      letter: P
-      q: -2
-      r: 0
   validationMode: 0
   targetWords:
-  - HYMNAL
-  - HYMN
-  - ALT
-  targetScore: 13
+  - TIME
+  - KNOW
+  - NOW
+  targetScore: 11
   language: 1

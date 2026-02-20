@@ -20,53 +20,35 @@ MonoBehaviour:
       q: 0
       r: 0
     - cellId: c2
-      letter: O
+      letter: A
       q: -1
       r: 0
     - cellId: c3
-      letter: U
+      letter: K
       q: 0
       r: -1
     - cellId: c4
-      letter: R
+      letter: E
       q: 1
       r: -1
     - cellId: c5
-      letter: N
+      letter: L
       q: 1
       r: 0
     - cellId: c6
-      letter: S
+      letter: I
       q: 0
       r: 1
     - cellId: c7
-      letter: B
+      letter: T
       q: -1
       r: 1
     - cellId: c8
-      letter: I
+      letter: J
       q: -2
-      r: 1
-    - cellId: c9
-      letter: P
-      q: -2
-      r: 2
-    - cellId: c10
-      letter: A
-      q: -1
-      r: 2
-    - cellId: c11
-      letter: T
-      q: 0
-      r: 2
-    - cellId: c12
-      letter: Y
-      q: 1
       r: 1
   validationMode: 0
   targetWords:
-  - MOURNS
-  - PAT
-  - OURN
-  targetScore: 13
+  - MAKE
+  targetScore: 4
   language: 1

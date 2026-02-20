@@ -16,49 +16,44 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: K
+      letter: T
       q: 0
       r: 0
     - cellId: c2
-      letter: A
+      letter: H
       q: 0
       r: 1
     - cellId: c3
-      letter: W
+      letter: E
       q: -1
       r: 1
     - cellId: c4
-      letter: S
+      letter: Y
       q: -1
       r: 0
     - cellId: c5
-      letter: T
+      letter: I
       q: 0
       r: -1
     - cellId: c6
-      letter: N
+      letter: R
       q: 1
       r: -1
     - cellId: c7
-      letter: B
+      letter: W
       q: 1
       r: 0
     - cellId: c8
-      letter: U
+      letter: A
       q: 2
       r: -1
     - cellId: c9
-      letter: R
+      letter: S
       q: 2
       r: 0
-    - cellId: c10
-      letter: H
-      q: 1
-      r: 1
   validationMode: 0
   targetWords:
-  - KAW
-  - KAWS
-  - BUR
-  targetScore: 10
+  - THEY
+  - THE
+  targetScore: 7
   language: 1

@@ -16,27 +16,27 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: H
+      letter: T
       q: 0
       r: 0
     - cellId: c2
-      letter: A
+      letter: H
       q: -1
       r: 1
     - cellId: c3
-      letter: E
+      letter: I
       q: -1
       r: 0
     - cellId: c4
-      letter: T
+      letter: S
       q: 0
       r: -1
     - cellId: c5
-      letter: S
+      letter: E
       q: 1
       r: -1
     - cellId: c6
-      letter: K
+      letter: Y
       q: 1
       r: 0
     - cellId: c7
@@ -44,25 +44,29 @@ MonoBehaviour:
       q: 0
       r: 1
     - cellId: c8
-      letter: D
+      letter: O
       q: -1
       r: 2
     - cellId: c9
-      letter: O
+      letter: U
       q: 0
       r: 2
     - cellId: c10
-      letter: P
+      letter: L
       q: 1
       r: 1
     - cellId: c11
-      letter: U
+      letter: D
       q: 2
       r: 0
+    - cellId: c12
+      letter: K
+      q: 2
+      r: -1
   validationMode: 0
   targetWords:
-  - HAETS
-  - DOP
-  - HAET
+  - THIS
+  - WOULD
+  - HIS
   targetScore: 12
   language: 1

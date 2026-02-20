@@ -16,49 +16,52 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: S
+      letter: T
       q: 0
       r: 0
     - cellId: c2
-      letter: W
+      letter: H
       q: -1
       r: 1
     - cellId: c3
-      letter: A
+      letter: E
       q: -1
       r: 0
     - cellId: c4
-      letter: T
+      letter: I
       q: 0
       r: -1
     - cellId: c5
-      letter: N
+      letter: R
       q: 1
       r: -1
     - cellId: c6
-      letter: B
+      letter: W
       q: 1
       r: 0
     - cellId: c7
-      letter: U
+      letter: A
       q: 0
       r: 1
     - cellId: c8
-      letter: R
+      letter: B
       q: 1
       r: 1
     - cellId: c9
-      letter: E
+      letter: O
       q: 2
       r: 0
     - cellId: c10
-      letter: V
+      letter: U
       q: 2
       r: -1
+    - cellId: c11
+      letter: V
+      q: 2
+      r: -2
   validationMode: 0
   targetWords:
-  - SWAT
-  - URE
-  - WAT
-  targetScore: 10
+  - THEIR
+  - THE
+  targetScore: 8
   language: 1

@@ -16,7 +16,7 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: N
+      letter: T
       q: 0
       r: 0
     - cellId: c2
@@ -24,11 +24,11 @@ MonoBehaviour:
       q: 0
       r: 1
     - cellId: c3
-      letter: T
+      letter: K
       q: -1
       r: 1
     - cellId: c4
-      letter: R
+      letter: E
       q: -1
       r: 0
     - cellId: c5
@@ -36,37 +36,31 @@ MonoBehaviour:
       q: 0
       r: -1
     - cellId: c6
-      letter: U
+      letter: N
       q: 1
       r: -1
     - cellId: c7
-      letter: M
+      letter: O
       q: 1
       r: 0
     - cellId: c8
-      letter: D
+      letter: Y
       q: 1
       r: 1
     - cellId: c9
-      letter: P
+      letter: U
       q: 2
       r: 0
     - cellId: c10
-      letter: S
+      letter: R
       q: 2
       r: -1
     - cellId: c11
-      letter: E
+      letter: S
       q: 2
-      r: -2
-    - cellId: c12
-      letter: F
-      q: 1
       r: -2
   validationMode: 0
   targetWords:
-  - NATRIUM
-  - TAN
-  - MUIR
-  targetScore: 14
+  - TAKE
+  targetScore: 4
   language: 1

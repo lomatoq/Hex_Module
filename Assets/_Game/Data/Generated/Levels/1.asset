@@ -16,19 +16,19 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: A
+      letter: W
       q: 0
       r: 0
     - cellId: c2
-      letter: G
+      letter: I
       q: 1
       r: -1
     - cellId: c3
-      letter: R
+      letter: T
       q: 1
       r: 0
     - cellId: c4
-      letter: I
+      letter: H
       q: 0
       r: 1
     - cellId: c5
@@ -36,33 +36,28 @@ MonoBehaviour:
       q: -1
       r: 1
     - cellId: c6
-      letter: E
+      letter: F
       q: -1
       r: 0
     - cellId: c7
-      letter: H
+      letter: R
       q: 0
       r: -1
     - cellId: c8
-      letter: T
+      letter: O
       q: 1
       r: -2
     - cellId: c9
-      letter: K
+      letter: M
       q: 0
       r: -2
     - cellId: c10
-      letter: W
+      letter: G
       q: -1
       r: -1
-    - cellId: c11
-      letter: C
-      q: -2
-      r: 0
   validationMode: 0
   targetWords:
-  - AGRISE
-  - HES
-  - GRIS
-  targetScore: 13
+  - WITH
+  - FROM
+  targetScore: 8
   language: 1

@@ -31,8 +31,9 @@ namespace HexWords.EditorTools
         private bool _strictPopularOnly = true;
         private int _popularPoolLimit = 500;
         private bool _useMinimalHexes = true;
-        private int _minCells = 8;
-        private int _extraBufferCells = 1;
+        private int _minCells = 5;
+        private int _extraBufferCells;
+        private bool _strictTargetWordCount = true;
 
         [MenuItem("Tools/HexWords/Generate Levels (Auto)")]
         public static void Open()
@@ -61,6 +62,7 @@ namespace HexWords.EditorTools
             _preferPopularWords = EditorGUILayout.Toggle("Prefer Popular Words", _preferPopularWords);
             _strictPopularOnly = EditorGUILayout.Toggle("Strict Popular Only", _strictPopularOnly);
             _popularPoolLimit = Mathf.Clamp(EditorGUILayout.IntField("Popular Pool Limit", _popularPoolLimit), 50, 5000);
+            _strictTargetWordCount = EditorGUILayout.Toggle("Strict Target Word Count", _strictTargetWordCount);
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Board Size", EditorStyles.boldLabel);
@@ -178,6 +180,11 @@ namespace HexWords.EditorTools
                 var boardText = new string(boardLetters.ToArray());
                 var validTargetWords = EnsureBuildableWords(targetWords, candidates, boardText, _targetWordsPerLevel);
                 if (validTargetWords.Count == 0)
+                {
+                    continue;
+                }
+
+                if (_strictTargetWordCount && validTargetWords.Count < _targetWordsPerLevel)
                 {
                     continue;
                 }
@@ -338,15 +345,35 @@ namespace HexWords.EditorTools
             var alphabet = language == Language.RU
                 ? "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ"
                 : "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            var common = language == Language.RU
+                ? "ОЕАИНТСРВЛКМДПУЯЫЬГЗБЧЙХЖШЮЦЩЭФЪЁ"
+                : "ETAOINSHRDLCUMWFGYPBVKJXQZ";
 
             var rng = new System.Random(seed);
             while (letters.Count < cellCount)
             {
-                var next = alphabet[rng.Next(alphabet.Length)];
-                if (!uniqueOnly || used.Add(next))
+                char next;
+                if (uniqueOnly)
                 {
-                    letters.Add(next);
+                    next = common.FirstOrDefault(ch => !used.Contains(ch));
+                    if (next == default)
+                    {
+                        next = alphabet.FirstOrDefault(ch => !used.Contains(ch));
+                    }
+                    if (next == default)
+                    {
+                        break;
+                    }
+                    used.Add(next);
                 }
+                else
+                {
+                    // Non-unique mode still prefers frequent letters over random noise.
+                    var source = rng.NextDouble() < 0.85 ? common : alphabet;
+                    next = source[rng.Next(source.Length)];
+                }
+
+                letters.Add(next);
             }
 
             return letters;

@@ -16,31 +16,31 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: T
+      letter: W
       q: 0
       r: 0
     - cellId: c2
-      letter: A
+      letter: H
       q: 0
       r: -1
     - cellId: c3
-      letter: N
+      letter: A
       q: 1
       r: -1
     - cellId: c4
-      letter: B
+      letter: T
       q: 1
       r: 0
     - cellId: c5
-      letter: U
+      letter: B
       q: 0
       r: 1
     - cellId: c6
-      letter: R
+      letter: O
       q: -1
       r: 1
     - cellId: c7
-      letter: S
+      letter: U
       q: -1
       r: 0
     - cellId: c8
@@ -48,21 +48,16 @@ MonoBehaviour:
       q: -2
       r: 1
     - cellId: c9
-      letter: M
+      letter: N
       q: -2
       r: 0
     - cellId: c10
-      letter: O
+      letter: I
       q: -1
       r: -1
-    - cellId: c11
-      letter: I
-      q: 0
-      r: -2
   validationMode: 0
   targetWords:
-  - TANBUR
-  - BURSE
-  - MOI
-  targetScore: 14
+  - WHAT
+  - HAT
+  targetScore: 7
   language: 1

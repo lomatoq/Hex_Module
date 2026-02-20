@@ -16,7 +16,7 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: B
+      letter: L
       q: 0
       r: 0
     - cellId: c2
@@ -24,49 +24,40 @@ MonoBehaviour:
       q: 1
       r: -1
     - cellId: c3
-      letter: P
+      letter: K
       q: 1
       r: 0
     - cellId: c4
-      letter: A
+      letter: E
       q: 0
       r: 1
     - cellId: c5
-      letter: R
+      letter: T
       q: -1
       r: 1
     - cellId: c6
-      letter: T
+      letter: M
       q: -1
       r: 0
     - cellId: c7
-      letter: Y
+      letter: N
       q: 0
       r: -1
     - cellId: c8
-      letter: L
+      letter: O
       q: -1
       r: -1
     - cellId: c9
-      letter: U
+      letter: W
       q: 0
       r: -2
     - cellId: c10
-      letter: C
+      letter: X
       q: 1
       r: -2
-    - cellId: c11
-      letter: E
-      q: 2
-      r: -2
-    - cellId: c12
-      letter: S
-      q: 2
-      r: -1
   validationMode: 0
   targetWords:
-  - BIPARTY
-  - LUCES
-  - SEC
-  targetScore: 15
+  - LIKE
+  - NOW
+  targetScore: 7
   language: 1
