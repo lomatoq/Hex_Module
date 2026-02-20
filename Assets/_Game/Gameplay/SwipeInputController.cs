@@ -14,9 +14,11 @@ namespace HexWords.Gameplay
         private LevelSessionController _session;
         private LevelDefinition _level;
         private bool _isTrackingPath;
+        private bool _subscribed;
 
         public void Initialize(LevelDefinition level, LevelSessionController session, IAdjacencyService adjacencyService)
         {
+            Unsubscribe();
             _level = level;
             _session = session;
             _pathBuilder = new SwipePathBuilder(adjacencyService, level.shape);
@@ -28,11 +30,18 @@ namespace HexWords.Gameplay
                 cell.PointerEnterOnCell += OnCellPointerEnter;
                 cell.PointerUpOnCell += OnCellPointerUp;
             }
+
+            _subscribed = true;
         }
 
         private void OnDestroy()
         {
-            if (gridView == null)
+            Unsubscribe();
+        }
+
+        public void Unsubscribe()
+        {
+            if (!_subscribed || gridView == null)
             {
                 return;
             }
@@ -44,6 +53,10 @@ namespace HexWords.Gameplay
                 cell.PointerEnterOnCell -= OnCellPointerEnter;
                 cell.PointerUpOnCell -= OnCellPointerUp;
             }
+
+            _subscribed = false;
+            _isTrackingPath = false;
+            trailView?.ClearImmediate();
         }
 
         private void OnCellPointerDown(HexCellView cell)

@@ -10,59 +10,63 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9ccbc913918834c06b17a8fff374cffa, type: 3}
-  m_Name: 1
+  m_Name: 10
   m_EditorClassIdentifier: Assembly-CSharp::HexWords.Core.LevelDefinition
-  levelId: 1
+  levelId: 10
   shape:
     cells:
     - cellId: c1
-      letter: A
+      letter: N
       q: 0
       r: 0
     - cellId: c2
-      letter: G
-      q: 1
-      r: -1
+      letter: A
+      q: 0
+      r: 1
     - cellId: c3
-      letter: R
-      q: 1
-      r: 0
+      letter: T
+      q: -1
+      r: 1
     - cellId: c4
+      letter: R
+      q: -1
+      r: 0
+    - cellId: c5
       letter: I
       q: 0
-      r: 1
-    - cellId: c5
-      letter: S
-      q: -1
-      r: 1
-    - cellId: c6
-      letter: E
-      q: -1
-      r: 0
-    - cellId: c7
-      letter: H
-      q: 0
       r: -1
-    - cellId: c8
-      letter: T
+    - cellId: c6
+      letter: U
       q: 1
-      r: -2
+      r: -1
+    - cellId: c7
+      letter: M
+      q: 1
+      r: 0
+    - cellId: c8
+      letter: D
+      q: 1
+      r: 1
     - cellId: c9
-      letter: K
-      q: 0
-      r: -2
+      letter: P
+      q: 2
+      r: 0
     - cellId: c10
-      letter: W
-      q: -1
+      letter: S
+      q: 2
       r: -1
     - cellId: c11
-      letter: C
-      q: -2
-      r: 0
+      letter: E
+      q: 2
+      r: -2
+    - cellId: c12
+      letter: F
+      q: 1
+      r: -2
   validationMode: 0
   targetWords:
-  - AGRISE
-  - HES
-  - GRIS
-  targetScore: 13
+  - NATRIUM
+  - TAN
+  - MUIR
+  targetScore: 14
   language: 1

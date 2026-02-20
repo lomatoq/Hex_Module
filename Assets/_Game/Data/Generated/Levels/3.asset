@@ -16,7 +16,7 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: L
+      letter: K
       q: 0
       r: 0
     - cellId: c2
@@ -24,11 +24,11 @@ MonoBehaviour:
       q: 0
       r: 1
     - cellId: c3
-      letter: X
+      letter: W
       q: -1
       r: 1
     - cellId: c4
-      letter: I
+      letter: S
       q: -1
       r: 0
     - cellId: c5
@@ -36,37 +36,29 @@ MonoBehaviour:
       q: 0
       r: -1
     - cellId: c6
-      letter: Y
+      letter: N
       q: 1
       r: -1
     - cellId: c7
-      letter: F
+      letter: B
       q: 1
       r: 0
     - cellId: c8
-      letter: E
+      letter: U
       q: 2
       r: -1
     - cellId: c9
-      letter: D
+      letter: R
       q: 2
       r: 0
     - cellId: c10
-      letter: S
+      letter: H
       q: 1
       r: 1
-    - cellId: c11
-      letter: B
-      q: 0
-      r: 2
-    - cellId: c12
-      letter: C
-      q: -1
-      r: 2
   validationMode: 0
   targetWords:
-  - LAXITY
-  - DEFY
-  - FEDS
-  targetScore: 14
+  - KAW
+  - KAWS
+  - BUR
+  targetScore: 10
   language: 1

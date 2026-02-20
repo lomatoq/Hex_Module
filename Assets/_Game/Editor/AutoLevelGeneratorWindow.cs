@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using HexWords.Core;
 using UnityEditor;
@@ -17,14 +18,21 @@ namespace HexWords.EditorTools
         private DictionaryDatabase _dictionary;
         private GenerationProfile _profile;
         private string _outputFolder = "Assets/_Game/Data/Generated/Levels";
+        private string _catalogPath = "Assets/Resources/LevelCatalog.asset";
         private int _startLevelId = 1001;
         private int _levelsCount = 20;
         private ValidationMode _validationMode = ValidationMode.LevelOnly;
         private int _targetWordsPerLevel = 3;
         private int _maxWordReuseAcrossLevels = 1;
         private bool _overwriteExisting;
-        private bool _shuffleCandidates = true;
+        private bool _shuffleCandidates;
         private bool _preferNaturalEnglishWords = true;
+        private bool _preferPopularWords = true;
+        private bool _strictPopularOnly = true;
+        private int _popularPoolLimit = 500;
+        private bool _useMinimalHexes = true;
+        private int _minCells = 8;
+        private int _extraBufferCells = 1;
 
         [MenuItem("Tools/HexWords/Generate Levels (Auto)")]
         public static void Open()
@@ -38,17 +46,27 @@ namespace HexWords.EditorTools
             _dictionary = (DictionaryDatabase)EditorGUILayout.ObjectField("Dictionary", _dictionary, typeof(DictionaryDatabase), false);
             _profile = (GenerationProfile)EditorGUILayout.ObjectField("Generation Profile", _profile, typeof(GenerationProfile), false);
             _outputFolder = EditorGUILayout.TextField("Output Folder", _outputFolder);
+            _catalogPath = EditorGUILayout.TextField("Catalog Asset Path", _catalogPath);
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Generation", EditorStyles.boldLabel);
             _startLevelId = EditorGUILayout.IntField("Start Level ID", _startLevelId);
             _levelsCount = Mathf.Clamp(EditorGUILayout.IntField("Levels Count", _levelsCount), 1, 500);
             _validationMode = (ValidationMode)EditorGUILayout.EnumPopup("Validation Mode", _validationMode);
-            _targetWordsPerLevel = Mathf.Clamp(EditorGUILayout.IntField("Target Words Per Level", _targetWordsPerLevel), 1, 6);
-            _maxWordReuseAcrossLevels = Mathf.Clamp(EditorGUILayout.IntField("Max Word Reuse (global)", _maxWordReuseAcrossLevels), 1, 50);
+            _targetWordsPerLevel = Mathf.Clamp(EditorGUILayout.IntField("Target Words Per Level", _targetWordsPerLevel), 1, 8);
+            _maxWordReuseAcrossLevels = Mathf.Clamp(EditorGUILayout.IntField("Max Word Reuse (global)", _maxWordReuseAcrossLevels), 1, 100);
             _overwriteExisting = EditorGUILayout.Toggle("Overwrite Existing Assets", _overwriteExisting);
             _shuffleCandidates = EditorGUILayout.Toggle("Shuffle Candidates", _shuffleCandidates);
             _preferNaturalEnglishWords = EditorGUILayout.Toggle("Prefer Natural EN Words", _preferNaturalEnglishWords);
+            _preferPopularWords = EditorGUILayout.Toggle("Prefer Popular Words", _preferPopularWords);
+            _strictPopularOnly = EditorGUILayout.Toggle("Strict Popular Only", _strictPopularOnly);
+            _popularPoolLimit = Mathf.Clamp(EditorGUILayout.IntField("Popular Pool Limit", _popularPoolLimit), 50, 5000);
+
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Board Size", EditorStyles.boldLabel);
+            _useMinimalHexes = EditorGUILayout.Toggle("Use Minimal Hexes", _useMinimalHexes);
+            _minCells = Mathf.Clamp(EditorGUILayout.IntField("Min Cells", _minCells), 3, _profile != null ? _profile.cellCount : 64);
+            _extraBufferCells = Mathf.Clamp(EditorGUILayout.IntField("Extra Buffer Cells", _extraBufferCells), 0, 10);
 
             EditorGUILayout.Space();
             if (GUILayout.Button("Generate Levels"))
@@ -66,11 +84,16 @@ namespace HexWords.EditorTools
             }
 
             EnsureFolder(_outputFolder);
+            EnsureFolder(Path.GetDirectoryName(_catalogPath)?.Replace('\\', '/') ?? "Assets/_Game/Data/Generated");
+
+            var popularityMap = _preferPopularWords && _profile.language == Language.EN
+                ? LoadPopularityMap("Assets/_Game/Data/Source/frequency_en.txt")
+                : new Dictionary<string, int>(StringComparer.Ordinal);
 
             var candidates = LevelGenerator.FilterWords(_dictionary, _profile)
                 .Select(e => WordNormalizer.Normalize(e.word))
                 .Where(w => !string.IsNullOrWhiteSpace(w))
-                .Where(w => w.Length >= 2 && w.Length <= _profile.cellCount)
+                .Where(w => w.Length >= _profile.minLength && w.Length <= _profile.maxLength)
                 .Where(w => !_preferNaturalEnglishWords || _profile.language != Language.EN || LooksNaturalEnglishWord(w))
                 .Where(w => !_profile.avoidDuplicateLetters || IsUniqueLetters(w))
                 .Distinct()
@@ -80,6 +103,31 @@ namespace HexWords.EditorTools
             {
                 Debug.LogWarning("No candidate words matched profile. Levels were not generated.");
                 return;
+            }
+
+            if (_preferPopularWords && _profile.language == Language.EN && _strictPopularOnly && popularityMap.Count > 0)
+            {
+                var strict = candidates.Where(w => popularityMap.ContainsKey(w)).ToList();
+                if (strict.Count >= 20)
+                {
+                    candidates = strict;
+                }
+                else
+                {
+                    Debug.LogWarning("Strict popular filter found too few words; fallback to weighted popular ranking.");
+                }
+            }
+
+            candidates = candidates
+                .OrderByDescending(w => ScoreWord(w, _profile.language, popularityMap, _preferPopularWords))
+                .ThenByDescending(w => w.Length)
+                .ThenBy(w => w, StringComparer.Ordinal)
+                .ToList();
+
+            if (_preferPopularWords && _profile.language == Language.EN)
+            {
+                var cap = Mathf.Min(_popularPoolLimit, candidates.Count);
+                candidates = candidates.Take(cap).ToList();
             }
 
             if (_shuffleCandidates)
@@ -108,22 +156,35 @@ namespace HexWords.EditorTools
                 }
 
                 var startIndex = levelIdNumber % candidates.Count;
-                var boardLetters = BuildBoardLetters(candidates, startIndex, _profile.cellCount, _profile.language, _profile.avoidDuplicateLetters);
-                if (boardLetters.Count == 0)
-                {
-                    continue;
-                }
-
-                var boardText = new string(boardLetters.ToArray());
-                var targetWords = PickBuildableTargetWords(candidates, boardText, _targetWordsPerLevel, globalWordUse, _maxWordReuseAcrossLevels);
+                var targetWords = PickTargetWords(candidates, startIndex, _targetWordsPerLevel, globalWordUse, _maxWordReuseAcrossLevels);
                 if (targetWords.Count == 0)
                 {
                     continue;
                 }
 
-                var coords = BuildCompactPathCoords(_profile.cellCount, seed: levelIdNumber);
-                var cells = new List<CellDefinition>(_profile.cellCount);
-                for (var i = 0; i < _profile.cellCount; i++)
+                var boardSequence = BuildBoardSequence(targetWords, _profile.avoidDuplicateLetters);
+                if (string.IsNullOrWhiteSpace(boardSequence))
+                {
+                    continue;
+                }
+
+                var effectiveCellCount = ResolveCellCount(boardSequence, _profile.cellCount);
+                var boardLetters = BuildBoardLetters(boardSequence, effectiveCellCount, _profile.language, _profile.avoidDuplicateLetters, levelIdNumber);
+                if (boardLetters.Count < effectiveCellCount)
+                {
+                    continue;
+                }
+
+                var boardText = new string(boardLetters.ToArray());
+                var validTargetWords = EnsureBuildableWords(targetWords, candidates, boardText, _targetWordsPerLevel);
+                if (validTargetWords.Count == 0)
+                {
+                    continue;
+                }
+
+                var coords = BuildCompactPathCoords(effectiveCellCount, levelIdNumber);
+                var cells = new List<CellDefinition>(effectiveCellCount);
+                for (var i = 0; i < effectiveCellCount; i++)
                 {
                     cells.Add(new CellDefinition
                     {
@@ -134,18 +195,18 @@ namespace HexWords.EditorTools
                     });
                 }
 
-                for (var i = 0; i < targetWords.Count; i++)
+                for (var i = 0; i < validTargetWords.Count; i++)
                 {
-                    globalWordUse.TryGetValue(targetWords[i], out var current);
-                    globalWordUse[targetWords[i]] = current + 1;
+                    globalWordUse.TryGetValue(validTargetWords[i], out var current);
+                    globalWordUse[validTargetWords[i]] = current + 1;
                 }
 
                 var level = existing ?? ScriptableObject.CreateInstance<LevelDefinition>();
                 level.levelId = levelId;
                 level.language = _profile.language;
                 level.validationMode = _validationMode;
-                level.targetWords = targetWords.ToArray();
-                level.targetScore = targetWords.Sum(w => w.Length);
+                level.targetWords = validTargetWords.ToArray();
+                level.targetScore = validTargetWords.Sum(w => w.Length);
                 level.shape = new GridShape { cells = cells };
 
                 if (existing == null)
@@ -157,64 +218,120 @@ namespace HexWords.EditorTools
                 generated++;
             }
 
+            BuildOrUpdateCatalog();
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log($"Auto generation complete. Generated levels: {generated}. Candidates pool: {candidates.Count}");
         }
 
-        private static List<char> BuildBoardLetters(List<string> candidates, int startIndex, int cellCount, Language language, bool uniqueOnly)
+        private int ResolveCellCount(string boardSequence, int maxCells)
         {
-            var letters = new List<char>(cellCount);
-            var used = new HashSet<char>();
-
-            // Seed board with up to two words to increase chance of multiple target words.
-            var seedsPlaced = 0;
-            for (var i = 0; i < candidates.Count && seedsPlaced < 2; i++)
+            if (!_useMinimalHexes)
             {
-                var word = candidates[(startIndex + i) % candidates.Count];
-                if (word.Length > cellCount - letters.Count)
+                return maxCells;
+            }
+
+            var required = boardSequence.Length + _extraBufferCells;
+            return Mathf.Clamp(required, _minCells, maxCells);
+        }
+
+        private static List<string> PickTargetWords(
+            List<string> candidates,
+            int startIndex,
+            int targetCount,
+            Dictionary<string, int> globalWordUse,
+            int maxReuse)
+        {
+            var ordered = new List<string>(candidates.Count);
+            for (var i = 0; i < candidates.Count; i++)
+            {
+                ordered.Add(candidates[(startIndex + i) % candidates.Count]);
+            }
+
+            var picked = new List<string>();
+            for (var i = 0; i < ordered.Count && picked.Count < targetCount; i++)
+            {
+                var word = ordered[i];
+                globalWordUse.TryGetValue(word, out var used);
+                if (used >= maxReuse)
                 {
                     continue;
                 }
 
-                if (uniqueOnly)
+                if (picked.Contains(word))
                 {
-                    var fits = true;
-                    for (var c = 0; c < word.Length; c++)
-                    {
-                        if (used.Contains(word[c]))
-                        {
-                            fits = false;
-                            break;
-                        }
-                    }
-
-                    if (!fits)
-                    {
-                        continue;
-                    }
+                    continue;
                 }
 
-                for (var c = 0; c < word.Length; c++)
-                {
-                    var ch = word[c];
-                    letters.Add(ch);
-                    used.Add(ch);
-                }
-
-                seedsPlaced++;
+                picked.Add(word);
             }
 
-            if (letters.Count == 0)
+            if (picked.Count == 0)
             {
-                var fallback = candidates[startIndex % candidates.Count];
-                for (var c = 0; c < fallback.Length && letters.Count < cellCount; c++)
+                picked.Add(ordered[0]);
+            }
+
+            return picked;
+        }
+
+        private static string BuildBoardSequence(List<string> targetWords, bool uniqueOnly)
+        {
+            if (targetWords == null || targetWords.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            var sequence = targetWords[0];
+            for (var i = 1; i < targetWords.Count; i++)
+            {
+                sequence = MergeByOverlap(sequence, targetWords[i]);
+            }
+
+            if (!uniqueOnly)
+            {
+                return sequence;
+            }
+
+            var seen = new HashSet<char>();
+            var chars = new List<char>(sequence.Length);
+            for (var i = 0; i < sequence.Length; i++)
+            {
+                if (seen.Add(sequence[i]))
                 {
-                    var ch = fallback[c];
-                    if (!uniqueOnly || used.Add(ch))
-                    {
-                        letters.Add(ch);
-                    }
+                    chars.Add(sequence[i]);
+                }
+            }
+
+            return new string(chars.ToArray());
+        }
+
+        private static string MergeByOverlap(string a, string b)
+        {
+            var maxOverlap = Math.Min(a.Length, b.Length);
+            for (var overlap = maxOverlap; overlap > 0; overlap--)
+            {
+                var suffix = a.Substring(a.Length - overlap, overlap);
+                var prefix = b.Substring(0, overlap);
+                if (string.Equals(suffix, prefix, StringComparison.Ordinal))
+                {
+                    return a + b.Substring(overlap);
+                }
+            }
+
+            return a + b;
+        }
+
+        private static List<char> BuildBoardLetters(string boardSequence, int cellCount, Language language, bool uniqueOnly, int seed)
+        {
+            var letters = new List<char>(cellCount);
+            var used = new HashSet<char>();
+
+            for (var i = 0; i < boardSequence.Length && letters.Count < cellCount; i++)
+            {
+                var ch = boardSequence[i];
+                if (!uniqueOnly || used.Add(ch))
+                {
+                    letters.Add(ch);
                 }
             }
 
@@ -222,65 +339,66 @@ namespace HexWords.EditorTools
                 ? "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ"
                 : "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-            var rng = new System.Random(startIndex + cellCount);
+            var rng = new System.Random(seed);
             while (letters.Count < cellCount)
             {
-                char next;
-                if (uniqueOnly)
+                var next = alphabet[rng.Next(alphabet.Length)];
+                if (!uniqueOnly || used.Add(next))
                 {
-                    next = alphabet.FirstOrDefault(ch => !used.Contains(ch));
-                    if (next == default)
-                    {
-                        break;
-                    }
-                    used.Add(next);
+                    letters.Add(next);
                 }
-                else
-                {
-                    next = alphabet[rng.Next(alphabet.Length)];
-                }
-
-                letters.Add(next);
             }
 
             return letters;
         }
 
-        private static List<string> PickBuildableTargetWords(
-            List<string> candidates,
-            string board,
-            int targetCount,
-            Dictionary<string, int> globalWordUse,
-            int maxReuse)
+        private static List<string> EnsureBuildableWords(List<string> selected, List<string> candidates, string boardText, int targetCount)
         {
-            var reverseBoard = new string(board.Reverse().ToArray());
-            var buildable = candidates
-                .Where(w => board.Contains(w, StringComparison.Ordinal) || reverseBoard.Contains(w, StringComparison.Ordinal))
-                .Distinct()
-                .OrderBy(w => globalWordUse.TryGetValue(w, out var used) ? used : 0)
-                .ThenByDescending(w => w.Length)
-                .ThenBy(w => w, StringComparer.Ordinal)
-                .ToList();
-
-            var selected = new List<string>();
-            for (var i = 0; i < buildable.Count && selected.Count < targetCount; i++)
+            var result = new List<string>();
+            for (var i = 0; i < selected.Count && result.Count < targetCount; i++)
             {
-                var word = buildable[i];
-                globalWordUse.TryGetValue(word, out var used);
-                if (used >= maxReuse)
+                if (IsBuildableOnPath(boardText, selected[i]))
+                {
+                    result.Add(selected[i]);
+                }
+            }
+
+            if (result.Count >= targetCount)
+            {
+                return result;
+            }
+
+            for (var i = 0; i < candidates.Count && result.Count < targetCount; i++)
+            {
+                var word = candidates[i];
+                if (result.Contains(word))
                 {
                     continue;
                 }
 
-                selected.Add(word);
+                if (IsBuildableOnPath(boardText, word))
+                {
+                    result.Add(word);
+                }
             }
 
-            if (selected.Count == 0 && buildable.Count > 0)
+            return result;
+        }
+
+        private static bool IsBuildableOnPath(string boardText, string word)
+        {
+            if (string.IsNullOrWhiteSpace(word) || string.IsNullOrWhiteSpace(boardText))
             {
-                selected.Add(buildable[0]);
+                return false;
             }
 
-            return selected;
+            if (boardText.IndexOf(word, StringComparison.Ordinal) >= 0)
+            {
+                return true;
+            }
+
+            var reverse = new string(boardText.Reverse().ToArray());
+            return reverse.IndexOf(word, StringComparison.Ordinal) >= 0;
         }
 
         private static List<(int q, int r)> BuildCompactPathCoords(int count, int seed)
@@ -293,7 +411,6 @@ namespace HexWords.EditorTools
 
             var visited = new HashSet<(int q, int r)> { (0, 0) };
             var rng = new System.Random(seed);
-
             TryExtendPath(path, visited, count, rng);
             return path;
         }
@@ -316,7 +433,6 @@ namespace HexWords.EditorTools
                 }
             }
 
-            // Keep path compact by preferring coordinates near center.
             candidates = candidates
                 .OrderBy(c => HexDistance(c.q, c.r, 0, 0))
                 .ThenBy(_ => rng.Next())
@@ -371,7 +487,6 @@ namespace HexWords.EditorTools
             var vowels = 0;
             var maxConsonantRun = 0;
             var currentConsonantRun = 0;
-            var repeatedRun = 1;
 
             for (var i = 0; i < word.Length; i++)
             {
@@ -390,43 +505,119 @@ namespace HexWords.EditorTools
                         maxConsonantRun = currentConsonantRun;
                     }
                 }
-
-                if (i > 0 && word[i - 1] == c)
-                {
-                    repeatedRun++;
-                    if (repeatedRun >= 3)
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    repeatedRun = 1;
-                }
             }
 
             var vowelRatio = (float)vowels / word.Length;
-            if (vowelRatio < 0.18f || vowelRatio > 0.75f)
+            return vowelRatio is >= 0.18f and <= 0.75f && maxConsonantRun < 4;
+        }
+
+        private static double ScoreWord(string word, Language language, Dictionary<string, int> popularityMap, bool preferPopular)
+        {
+            var score = 0.0;
+
+            if (preferPopular && popularityMap.TryGetValue(word, out var rank))
             {
-                return false;
+                score += Math.Max(0, 200000 - rank);
             }
 
-            if (maxConsonantRun >= 4)
+            if (language == Language.EN)
             {
-                return false;
+                if (word.Length is >= 4 and <= 7)
+                {
+                    score += 120;
+                }
+                else if (word.Length == 3 || word.Length == 8)
+                {
+                    score += 50;
+                }
+
+                var rareLetters = 0;
+                for (var i = 0; i < word.Length; i++)
+                {
+                    if (word[i] is 'J' or 'Q' or 'X' or 'Z')
+                    {
+                        rareLetters++;
+                    }
+                }
+
+                score -= rareLetters * 20;
             }
 
-            return true;
+            return score;
+        }
+
+        private static Dictionary<string, int> LoadPopularityMap(string projectPath)
+        {
+            var map = new Dictionary<string, int>(StringComparer.Ordinal);
+            var absPath = Path.Combine(Directory.GetCurrentDirectory(), projectPath);
+            if (!File.Exists(absPath))
+            {
+                return map;
+            }
+
+            var lines = File.ReadAllLines(absPath);
+            var rank = 1;
+            for (var i = 0; i < lines.Length; i++)
+            {
+                var word = lines[i].Trim().ToUpperInvariant();
+                if (string.IsNullOrWhiteSpace(word))
+                {
+                    continue;
+                }
+
+                if (!map.ContainsKey(word))
+                {
+                    map[word] = rank++;
+                }
+            }
+
+            return map;
+        }
+
+        private void BuildOrUpdateCatalog()
+        {
+            var guids = AssetDatabase.FindAssets("t:LevelDefinition", new[] { _outputFolder });
+            var levels = new List<LevelDefinition>();
+            for (var i = 0; i < guids.Length; i++)
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guids[i]);
+                var level = AssetDatabase.LoadAssetAtPath<LevelDefinition>(path);
+                if (level != null)
+                {
+                    levels.Add(level);
+                }
+            }
+
+            levels = levels
+                .OrderBy(l => int.TryParse(l.levelId, out var id) ? id : int.MaxValue)
+                .ThenBy(l => l.levelId)
+                .ToList();
+
+            var catalog = AssetDatabase.LoadAssetAtPath<LevelCatalog>(_catalogPath);
+            if (catalog == null)
+            {
+                catalog = ScriptableObject.CreateInstance<LevelCatalog>();
+                AssetDatabase.CreateAsset(catalog, _catalogPath);
+            }
+
+            catalog.levels = levels;
+            EditorUtility.SetDirty(catalog);
         }
 
         private static void EnsureFolder(string path)
         {
-            if (AssetDatabase.IsValidFolder(path))
+            if (string.IsNullOrWhiteSpace(path))
             {
                 return;
             }
 
-            var parts = path.Split('/');
+            var normalized = path.Replace('\\', '/');
+            if (AssetDatabase.IsValidFolder(normalized))
+            {
+                return;
+            }
+
+            var parts = normalized.Split('/');
             var current = parts[0];
             for (var i = 1; i < parts.Length; i++)
             {

@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7e6f301aa3914d0a9fc1e8ce21e457b, type: 3}
+  m_Name: LevelCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::HexWords.Core.LevelCatalog
+  levels:
+  - {fileID: 11400000, guid: e3eda90849f324e2ab4942d726500d4f, type: 2}
+  - {fileID: 11400000, guid: 4fb092f46e5ba43fbbd3bcf00a6a7a23, type: 2}
+  - {fileID: 11400000, guid: 13cb9d164a4804eee9019c6fccbdd00a, type: 2}
+  - {fileID: 11400000, guid: 0aa76552ab714471682ebdcb02129190, type: 2}
+  - {fileID: 11400000, guid: c5aacd8d557b849328645f504ea59eff, type: 2}
+  - {fileID: 11400000, guid: bb69959809d814b7caf22002937153e1, type: 2}
+  - {fileID: 11400000, guid: 29b37be7667ac4dedb0dddabb66ef1ef, type: 2}
+  - {fileID: 11400000, guid: b4bdbcb5f99be400da71af0bbb2360b6, type: 2}
+  - {fileID: 11400000, guid: 0b6ef44a4fd784b49a22dd372db37396, type: 2}
+  - {fileID: 11400000, guid: 668ff359236ca4e578fb3ad26bc5ea4d, type: 2}

@@ -16,32 +16,53 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: "\u041A"
+      letter: H
       q: 0
       r: 0
     - cellId: c2
-      letter: "\u041E"
-      q: 1
-      r: 0
+      letter: A
+      q: -1
+      r: 1
     - cellId: c3
-      letter: "\u0422"
-      q: 1
-      r: -1
+      letter: E
+      q: -1
+      r: 0
     - cellId: c4
-      letter: "\u0422"
+      letter: T
       q: 0
       r: -1
     - cellId: c5
-      letter: "\u041E"
-      q: -1
-      r: 0
+      letter: S
+      q: 1
+      r: -1
     - cellId: c6
-      letter: "\u041A"
-      q: -1
+      letter: K
+      q: 1
+      r: 0
+    - cellId: c7
+      letter: W
+      q: 0
       r: 1
-  validationMode: 1
+    - cellId: c8
+      letter: D
+      q: -1
+      r: 2
+    - cellId: c9
+      letter: O
+      q: 0
+      r: 2
+    - cellId: c10
+      letter: P
+      q: 1
+      r: 1
+    - cellId: c11
+      letter: U
+      q: 2
+      r: 0
+  validationMode: 0
   targetWords:
-  - "\u041A\u041E\u0422"
-  - "\u0422\u041E\u041A"
+  - HAETS
+  - DOP
+  - HAET
   targetScore: 12
-  language: 0
+  language: 1

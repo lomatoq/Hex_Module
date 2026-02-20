@@ -16,11 +16,11 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: F
+      letter: S
       q: 0
       r: 0
     - cellId: c2
-      letter: L
+      letter: W
       q: -1
       r: 1
     - cellId: c3
@@ -28,45 +28,37 @@ MonoBehaviour:
       q: -1
       r: 0
     - cellId: c4
-      letter: G
+      letter: T
       q: 0
       r: -1
     - cellId: c5
-      letter: S
+      letter: N
       q: 1
       r: -1
     - cellId: c6
-      letter: Y
+      letter: B
       q: 1
       r: 0
     - cellId: c7
-      letter: K
+      letter: U
       q: 0
       r: 1
     - cellId: c8
-      letter: E
+      letter: R
       q: 1
       r: 1
     - cellId: c9
-      letter: R
+      letter: E
       q: 2
       r: 0
     - cellId: c10
-      letter: B
+      letter: V
       q: 2
       r: -1
-    - cellId: c11
-      letter: C
-      q: 2
-      r: -2
-    - cellId: c12
-      letter: D
-      q: 1
-      r: -2
   validationMode: 0
   targetWords:
-  - FLAGS
-  - SYKER
-  - FLAG
-  targetScore: 14
+  - SWAT
+  - URE
+  - WAT
+  targetScore: 10
   language: 1

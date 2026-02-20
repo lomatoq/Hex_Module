@@ -10,59 +10,63 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9ccbc913918834c06b17a8fff374cffa, type: 3}
-  m_Name: 1
+  m_Name: 9
   m_EditorClassIdentifier: Assembly-CSharp::HexWords.Core.LevelDefinition
-  levelId: 1
+  levelId: 9
   shape:
     cells:
     - cellId: c1
-      letter: A
+      letter: H
       q: 0
       r: 0
     - cellId: c2
-      letter: G
-      q: 1
+      letter: Y
+      q: 0
       r: -1
     - cellId: c3
-      letter: R
-      q: 1
+      letter: M
+      q: -1
       r: 0
     - cellId: c4
-      letter: I
-      q: 0
+      letter: N
+      q: -1
       r: 1
     - cellId: c5
-      letter: S
-      q: -1
+      letter: A
+      q: 0
       r: 1
     - cellId: c6
-      letter: E
-      q: -1
+      letter: L
+      q: 1
       r: 0
     - cellId: c7
-      letter: H
-      q: 0
-      r: -1
-    - cellId: c8
       letter: T
       q: 1
+      r: -1
+    - cellId: c8
+      letter: R
+      q: 2
       r: -2
     - cellId: c9
-      letter: K
-      q: 0
+      letter: I
+      q: 1
       r: -2
     - cellId: c10
-      letter: W
+      letter: U
+      q: 0
+      r: -2
+    - cellId: c11
+      letter: D
       q: -1
       r: -1
-    - cellId: c11
-      letter: C
+    - cellId: c12
+      letter: P
       q: -2
       r: 0
   validationMode: 0
   targetWords:
-  - AGRISE
-  - HES
-  - GRIS
+  - HYMNAL
+  - HYMN
+  - ALT
   targetScore: 13
   language: 1

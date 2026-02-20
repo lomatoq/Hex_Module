@@ -10,59 +10,63 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9ccbc913918834c06b17a8fff374cffa, type: 3}
-  m_Name: 1
+  m_Name: 6
   m_EditorClassIdentifier: Assembly-CSharp::HexWords.Core.LevelDefinition
-  levelId: 1
+  levelId: 6
   shape:
     cells:
     - cellId: c1
-      letter: A
+      letter: S
       q: 0
       r: 0
     - cellId: c2
-      letter: G
+      letter: E
       q: 1
       r: -1
     - cellId: c3
       letter: R
-      q: 1
-      r: 0
-    - cellId: c4
-      letter: I
       q: 0
-      r: 1
+      r: -1
+    - cellId: c4
+      letter: M
+      q: -1
+      r: 0
     - cellId: c5
-      letter: S
+      letter: O
       q: -1
       r: 1
     - cellId: c6
-      letter: E
-      q: -1
-      r: 0
+      letter: U
+      q: 0
+      r: 1
     - cellId: c7
-      letter: H
-      q: 0
-      r: -1
-    - cellId: c8
-      letter: T
+      letter: N
       q: 1
-      r: -2
-    - cellId: c9
-      letter: K
-      q: 0
-      r: -2
-    - cellId: c10
-      letter: W
-      q: -1
-      r: -1
-    - cellId: c11
-      letter: C
-      q: -2
       r: 0
+    - cellId: c8
+      letter: B
+      q: 2
+      r: -1
+    - cellId: c9
+      letter: I
+      q: 2
+      r: 0
+    - cellId: c10
+      letter: P
+      q: 1
+      r: 1
+    - cellId: c11
+      letter: A
+      q: 0
+      r: 2
+    - cellId: c12
+      letter: T
+      q: -1
+      r: 2
   validationMode: 0
   targetWords:
-  - AGRISE
-  - HES
-  - GRIS
-  targetScore: 13
+  - SER
+  - PAT
+  - TAP
+  targetScore: 9
   language: 1

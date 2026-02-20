@@ -16,57 +16,53 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: C
+      letter: T
       q: 0
       r: 0
     - cellId: c2
-      letter: H
+      letter: A
       q: 0
       r: -1
     - cellId: c3
-      letter: A
+      letter: N
       q: 1
       r: -1
     - cellId: c4
-      letter: N
+      letter: B
       q: 1
       r: 0
     - cellId: c5
-      letter: T
+      letter: U
       q: 0
       r: 1
     - cellId: c6
-      letter: I
+      letter: R
       q: -1
       r: 1
     - cellId: c7
-      letter: E
+      letter: S
       q: -1
       r: 0
     - cellId: c8
-      letter: S
+      letter: E
       q: -2
       r: 1
     - cellId: c9
-      letter: U
+      letter: M
       q: -2
       r: 0
     - cellId: c10
-      letter: P
+      letter: O
       q: -1
       r: -1
     - cellId: c11
-      letter: G
+      letter: I
       q: 0
-      r: -2
-    - cellId: c12
-      letter: O
-      q: 1
       r: -2
   validationMode: 0
   targetWords:
-  - CHANTIES
-  - CHANT
-  - ANTI
-  targetScore: 17
+  - TANBUR
+  - BURSE
+  - MOI
+  targetScore: 14
   language: 1
