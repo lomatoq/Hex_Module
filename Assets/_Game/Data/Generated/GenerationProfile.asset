@@ -15,8 +15,13 @@ MonoBehaviour:
   language: 1
   category: general
   minLength: 3
-  maxLength: 8
-  cellCount: 12
+  maxLength: 6
+  cellCount: 8
+  targetWordsMin: 4
+  targetWordsMax: 7
+  maxLetterRepeats: 0
+  allowSingleRepeatFallback: 1
+  fillerLettersMax: 0
   avoidDuplicateLetters: 1
   includeLetters: 
   excludeLetters: 

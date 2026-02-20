@@ -16,52 +16,42 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: T
+      letter: N
       q: 0
       r: 0
     - cellId: c2
-      letter: H
+      letter: E
       q: -1
       r: 1
     - cellId: c3
-      letter: E
+      letter: W
       q: -1
       r: 0
     - cellId: c4
-      letter: I
+      letter: A
       q: 0
       r: -1
     - cellId: c5
-      letter: R
+      letter: Y
       q: 1
       r: -1
     - cellId: c6
-      letter: W
+      letter: O
       q: 1
       r: 0
     - cellId: c7
-      letter: A
+      letter: U
       q: 0
       r: 1
     - cellId: c8
-      letter: B
+      letter: R
       q: 1
       r: 1
-    - cellId: c9
-      letter: O
-      q: 2
-      r: 0
-    - cellId: c10
-      letter: U
-      q: 2
-      r: -1
-    - cellId: c11
-      letter: V
-      q: 2
-      r: -2
   validationMode: 0
   targetWords:
-  - THEIR
-  - THE
-  targetScore: 8
+  - OUR
+  - YOUR
+  - WAY
+  - NEW
+  targetScore: 13
   language: 1
