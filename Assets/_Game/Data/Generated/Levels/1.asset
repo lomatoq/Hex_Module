@@ -16,7 +16,7 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: N
+      letter: H
       q: 0
       r: 0
     - cellId: c2
@@ -24,23 +24,23 @@ MonoBehaviour:
       q: 1
       r: -1
     - cellId: c3
-      letter: W
+      letter: U
       q: 1
       r: 0
     - cellId: c4
-      letter: I
+      letter: S
       q: 0
       r: 1
     - cellId: c5
-      letter: T
+      letter: E
       q: -1
       r: 1
     - cellId: c6
-      letter: H
+      letter: D
       q: -1
       r: 0
     - cellId: c7
-      letter: E
+      letter: A
       q: 0
       r: -1
     - cellId: c8
@@ -49,9 +49,9 @@ MonoBehaviour:
       r: -2
   validationMode: 0
   targetWords:
-  - WITH
-  - THE
-  - THEY
-  - NOW
-  targetScore: 14
+  - USE
+  - USED
+  - DAY
+  - HOUSE
+  targetScore: 15
   language: 1

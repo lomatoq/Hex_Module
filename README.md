@@ -47,6 +47,15 @@ Implemented core mechanics for a hex-cell word game with:
 ## Full auto level generation
 - Use `Tools -> HexWords -> Generate Levels (Auto)` to create many `LevelDefinition` assets in one click.
 - Select `Dictionary`, `Generation Profile`, start id and count, then run generation.
+- Generation v2 (`GreedyBeamV2`) adds a two-stage pipeline:
+  - `Word-set optimization` (`Greedy + Beam`) using `GenerationObjective`
+  - `Board placement` with strict DFS solvability validation
+- V2 now retries target-word counts from `targetWordsMax` down to `targetWordsMin` when strict mode is enabled.
+- Auto-generator logs failure reasons (`selectionFails`, `placementFails`, `solvabilityFails`) to help tuning.
+- V2 has anti-freeze guards for large dictionaries: capped candidate pool, solver time budget, beam expansion cap, and cancelable progress bar during generation.
+- For EN, auto generation now uses only words present in `frequency_en.txt` (common-word gate), which suppresses rare dictionary entries.
+- Legacy generator remains available via profile (`generationAlgorithm=Legacy`) or window override.
+- If v2 cannot find a valid level, optional fallback to legacy is controlled by `useLegacyFallback`.
 
 ## CSV formats
 ### dictionary_ru.csv / dictionary_en.csv
@@ -67,3 +76,4 @@ Header:
 - Runtime reads ScriptableObjects only.
 - `Е` and `Ё` are treated as different letters.
 - Preview-level selection stores selected asset in `RuntimePreviewConfig` under `Resources`.
+- `GenerationProfile` now includes v2 controls: objective, hex budgets, beam/restarth counts, overlap/diversity weights, and strict solvability toggle.

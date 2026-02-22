@@ -16,42 +16,42 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: N
+      letter: C
       q: 0
       r: 0
     - cellId: c2
-      letter: E
+      letter: A
       q: -1
       r: 1
     - cellId: c3
-      letter: W
+      letter: R
       q: -1
       r: 0
     - cellId: c4
-      letter: A
+      letter: E
       q: 0
       r: -1
     - cellId: c5
-      letter: Y
+      letter: N
       q: 1
       r: -1
     - cellId: c6
-      letter: O
+      letter: D
       q: 1
       r: 0
     - cellId: c7
-      letter: U
+      letter: O
       q: 0
       r: 1
     - cellId: c8
-      letter: R
+      letter: G
       q: 1
       r: 1
   validationMode: 0
   targetWords:
-  - OUR
-  - YOUR
-  - WAY
-  - NEW
+  - CAR
+  - CARE
+  - END
+  - DOG
   targetScore: 13
   language: 1

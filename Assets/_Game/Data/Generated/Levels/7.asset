@@ -10,48 +10,48 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9ccbc913918834c06b17a8fff374cffa, type: 3}
-  m_Name: 3
+  m_Name: 7
   m_EditorClassIdentifier: Assembly-CSharp::HexWords.Core.LevelDefinition
-  levelId: 3
+  levelId: 7
   shape:
     cells:
     - cellId: c1
-      letter: C
+      letter: G
       q: 0
       r: 0
     - cellId: c2
       letter: O
-      q: 0
-      r: 1
-    - cellId: c3
-      letter: M
-      q: -1
-      r: 1
-    - cellId: c4
-      letter: E
       q: -1
       r: 0
-    - cellId: c5
-      letter: N
+    - cellId: c3
+      letter: L
       q: 0
       r: -1
-    - cellId: c6
-      letter: G
+    - cellId: c4
+      letter: F
       q: 1
       r: -1
-    - cellId: c7
+    - cellId: c5
       letter: A
       q: 1
       r: 0
+    - cellId: c6
+      letter: R
+      q: 0
+      r: 1
+    - cellId: c7
+      letter: M
+      q: -1
+      r: 1
     - cellId: c8
       letter: Y
-      q: 2
-      r: -1
+      q: -2
+      r: 1
   validationMode: 0
   targetWords:
-  - MEN
-  - COME
-  - GAY
-  - COM
-  targetScore: 13
+  - FAR
+  - GOLF
+  - FARM
+  - ARMY
+  targetScore: 15
   language: 1

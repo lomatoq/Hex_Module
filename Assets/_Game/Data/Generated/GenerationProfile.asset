@@ -27,3 +27,14 @@ MonoBehaviour:
   excludeLetters: 
   minDifficultyBand: 0
   maxDifficultyBand: 10
+  generationAlgorithm: 1
+  objective: 1
+  hexBudgetMin: 6
+  hexBudgetMax: 11
+  beamWidth: 24
+  greedyRestarts: 12
+  maxResampleAttempts: 40
+  overlapWeight: 90
+  diversityWeight: 22
+  requireAllTargetsSolvable: 1
+  useLegacyFallback: 1

@@ -16,31 +16,31 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: G
+      letter: S
       q: 0
       r: 0
     - cellId: c2
-      letter: E
+      letter: H
       q: -1
       r: 1
     - cellId: c3
-      letter: T
+      letter: O
       q: -1
       r: 0
     - cellId: c4
-      letter: H
+      letter: P
       q: 0
       r: -1
     - cellId: c5
-      letter: I
+      letter: A
       q: 1
       r: -1
     - cellId: c6
-      letter: S
+      letter: R
       q: 1
       r: 0
     - cellId: c7
-      letter: A
+      letter: T
       q: 0
       r: 1
     - cellId: c8
@@ -49,9 +49,9 @@ MonoBehaviour:
       r: 2
   validationMode: 0
   targetWords:
-  - GET
-  - THIS
-  - HIS
-  - SAY
-  targetScore: 13
+  - PART
+  - ART
+  - PARTY
+  - SHOP
+  targetScore: 16
   language: 1

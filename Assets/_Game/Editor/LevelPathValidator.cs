@@ -8,6 +8,21 @@ namespace HexWords.EditorTools
     {
         public static bool CanBuildWord(LevelDefinition level, string rawWord)
         {
+            if (level == null)
+            {
+                return false;
+            }
+
+            return CanBuildWord(level.shape, rawWord);
+        }
+
+        public static bool CanBuildWord(GridShape shape, string rawWord)
+        {
+            if (shape == null || shape.cells == null || shape.cells.Count == 0)
+            {
+                return false;
+            }
+
             var word = WordNormalizer.Normalize(rawWord);
             if (string.IsNullOrEmpty(word))
             {
@@ -20,9 +35,9 @@ namespace HexWords.EditorTools
             {
                 map[i] = new List<CellDefinition>();
                 var letter = word[i].ToString();
-                for (var c = 0; c < level.shape.cells.Count; c++)
+                for (var c = 0; c < shape.cells.Count; c++)
                 {
-                    var cell = level.shape.cells[c];
+                    var cell = shape.cells[c];
                     if (WordNormalizer.Normalize(cell.letter) == letter)
                     {
                         map[i].Add(cell);
@@ -40,7 +55,7 @@ namespace HexWords.EditorTools
             for (var i = 0; i < firstList.Count; i++)
             {
                 visited.Clear();
-                if (Dfs(firstList[i], 0, word, map, level.shape, adjacency, visited))
+                if (Dfs(firstList[i], 0, word, map, shape, adjacency, visited))
                 {
                     return true;
                 }

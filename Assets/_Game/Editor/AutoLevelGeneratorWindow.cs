@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using HexWords.Core;
+using HexWords.EditorTools.GenerationV2;
 using UnityEditor;
 using UnityEngine;
+using Stopwatch = System.Diagnostics.Stopwatch;
 
 namespace HexWords.EditorTools
 {
@@ -28,17 +30,19 @@ namespace HexWords.EditorTools
         private int _startLevelId = 1001;
         private int _levelsCount = 20;
         private ValidationMode _validationMode = ValidationMode.LevelOnly;
-        private int _maxWordReuseAcrossLevels = 1;
+        private int _maxWordReuseAcrossLevels = 3;
         private bool _overwriteExisting;
 
-        private bool _preferNaturalEnglishWords = true;
+        private bool _preferNaturalEnglishWords = false;
         private bool _preferPopularWords = true;
-        private bool _strictPopularOnly = true;
+        private bool _strictPopularOnly;
         private int _popularPoolLimit = 800;
 
-        private bool _strictTargetWordCount = true;
+        private bool _strictTargetWordCount;
         private int _attemptsPerLevel = 180;
         private int _candidateWindow = 600;
+        private bool _useLegacyGenerator;
+        private bool _showAdvanced;
 
         private bool _useMinimalHexes = true;
         private int _minCells = 6;
@@ -66,17 +70,24 @@ namespace HexWords.EditorTools
             _strictTargetWordCount = EditorGUILayout.Toggle("Strict Target Word Count", _strictTargetWordCount);
             _overwriteExisting = EditorGUILayout.Toggle("Overwrite Existing Assets", _overwriteExisting);
 
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Candidate Quality", EditorStyles.boldLabel);
-            _preferNaturalEnglishWords = EditorGUILayout.Toggle("Prefer Natural EN Words", _preferNaturalEnglishWords);
-            _preferPopularWords = EditorGUILayout.Toggle("Prefer Popular Words", _preferPopularWords);
-            _strictPopularOnly = EditorGUILayout.Toggle("Strict Popular Only", _strictPopularOnly);
-            _popularPoolLimit = Mathf.Clamp(EditorGUILayout.IntField("Popular Pool Limit", _popularPoolLimit), 50, 5000);
+            _showAdvanced = EditorGUILayout.Toggle("Show Advanced Settings", _showAdvanced);
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Solver", EditorStyles.boldLabel);
-            _attemptsPerLevel = Mathf.Clamp(EditorGUILayout.IntField("Attempts Per Level", _attemptsPerLevel), 10, 2000);
-            _candidateWindow = Mathf.Clamp(EditorGUILayout.IntField("Candidate Window", _candidateWindow), 50, 5000);
+            _useLegacyGenerator = EditorGUILayout.Toggle("Use Legacy Generator (override)", _useLegacyGenerator);
+            _attemptsPerLevel = Mathf.Clamp(EditorGUILayout.IntField("Attempts Per Level", _attemptsPerLevel), 20, 3000);
+
+            var useLegacyForUi = _useLegacyGenerator || (_profile != null && _profile.generationAlgorithm == GenerationAlgorithm.Legacy);
+            if (_showAdvanced && useLegacyForUi)
+            {
+                EditorGUILayout.Space();
+                EditorGUILayout.LabelField("Legacy Candidate Quality", EditorStyles.boldLabel);
+                _preferNaturalEnglishWords = EditorGUILayout.Toggle("Prefer Natural EN Words", _preferNaturalEnglishWords);
+                _preferPopularWords = EditorGUILayout.Toggle("Prefer Popular Words", _preferPopularWords);
+                _strictPopularOnly = EditorGUILayout.Toggle("Strict Popular Only", _strictPopularOnly);
+                _popularPoolLimit = Mathf.Clamp(EditorGUILayout.IntField("Popular Pool Limit", _popularPoolLimit), 50, 5000);
+                _candidateWindow = Mathf.Clamp(EditorGUILayout.IntField("Candidate Window", _candidateWindow), 50, 5000);
+            }
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Board", EditorStyles.boldLabel);
@@ -94,6 +105,25 @@ namespace HexWords.EditorTools
                 _profile.maxLetterRepeats = Mathf.Clamp(EditorGUILayout.IntField("Max Letter Repeats", _profile.maxLetterRepeats), 0, 8);
                 _profile.allowSingleRepeatFallback = EditorGUILayout.Toggle("Allow +1 Repeat Fallback", _profile.allowSingleRepeatFallback);
                 _profile.fillerLettersMax = Mathf.Clamp(EditorGUILayout.IntField("Filler Letters Max", _profile.fillerLettersMax), 0, 16);
+
+                EditorGUILayout.Space();
+                EditorGUILayout.LabelField("Generation V2", EditorStyles.boldLabel);
+                _profile.generationAlgorithm = (GenerationAlgorithm)EditorGUILayout.EnumPopup("Algorithm", _profile.generationAlgorithm);
+                _profile.objective = (GenerationObjective)EditorGUILayout.EnumPopup("Objective", _profile.objective);
+                _profile.hexBudgetMin = Mathf.Clamp(EditorGUILayout.IntField("Hex Budget Min", _profile.hexBudgetMin), 0, 128);
+                _profile.hexBudgetMax = Mathf.Clamp(EditorGUILayout.IntField("Hex Budget Max", _profile.hexBudgetMax), 0, 128);
+                _profile.maxResampleAttempts = Mathf.Clamp(EditorGUILayout.IntField("Max Resample Attempts", _profile.maxResampleAttempts), 1, 500);
+                _profile.requireAllTargetsSolvable = EditorGUILayout.Toggle("Require All Targets Solvable", _profile.requireAllTargetsSolvable);
+                _profile.useLegacyFallback = EditorGUILayout.Toggle("Use Legacy Fallback", _profile.useLegacyFallback);
+
+                if (_showAdvanced)
+                {
+                    _profile.greedyRestarts = Mathf.Clamp(EditorGUILayout.IntField("Greedy Restarts", _profile.greedyRestarts), 1, 200);
+                    _profile.beamWidth = Mathf.Clamp(EditorGUILayout.IntField("Beam Width", _profile.beamWidth), 2, 200);
+                    _profile.overlapWeight = EditorGUILayout.Slider("Overlap Weight", _profile.overlapWeight, 0f, 250f);
+                    _profile.diversityWeight = EditorGUILayout.Slider("Diversity Weight", _profile.diversityWeight, 0f, 250f);
+                    _candidateWindow = Mathf.Clamp(EditorGUILayout.IntField("V2 Candidate Pool", _candidateWindow), 200, 4000);
+                }
             }
 
             if (GUI.changed && _profile != null)
@@ -119,108 +149,165 @@ namespace HexWords.EditorTools
             EnsureFolder(_outputFolder);
             EnsureFolder(Path.GetDirectoryName(_catalogPath)?.Replace('\\', '/') ?? "Assets/Resources");
 
-            var popularityMap = _preferPopularWords && _profile.language == Language.EN
+            var useLegacy = _useLegacyGenerator || _profile.generationAlgorithm == GenerationAlgorithm.Legacy;
+            var popularityMap = _profile.language == Language.EN
                 ? LoadPopularityMap("Assets/_Game/Data/Source/frequency_en.txt")
                 : new Dictionary<string, int>(StringComparer.Ordinal);
 
             var candidates = BuildCandidates(popularityMap);
             if (candidates.Count == 0)
             {
-                Debug.LogWarning("No candidates after filtering. Check profile/popularity settings.");
+                Debug.LogWarning(
+                    $"No candidates after filtering. mode={(useLegacy ? "Legacy" : "V2")}, " +
+                    $"language={_profile.language}, category='{_profile.category}', " +
+                    $"length={_profile.minLength}-{_profile.maxLength}, difficulty={_profile.minDifficultyBand}-{_profile.maxDifficultyBand}.");
                 return;
             }
 
             var globalWordUse = new Dictionary<string, int>(StringComparer.Ordinal);
             var generated = 0;
+            var canceled = false;
 
-            for (var levelOffset = 0; levelOffset < _levelsCount; levelOffset++)
+            try
             {
-                var levelIdNumber = _startLevelId + levelOffset;
-                var levelId = levelIdNumber.ToString();
-                var assetPath = $"{_outputFolder}/{levelId}.asset";
-
-                var existing = AssetDatabase.LoadAssetAtPath<LevelDefinition>(assetPath);
-                if (existing != null && !_overwriteExisting)
+                for (var levelOffset = 0; levelOffset < _levelsCount; levelOffset++)
                 {
-                    continue;
-                }
-
-                if (!TryBuildLevel(levelIdNumber, candidates, popularityMap, globalWordUse, out var targetWords, out var boardLetters))
-                {
-                    Debug.LogWarning($"Skipped level {levelId}: cannot satisfy constraints.");
-                    continue;
-                }
-
-                var coords = BuildCompactPathCoords(boardLetters.Count, levelIdNumber);
-                var cells = new List<CellDefinition>(boardLetters.Count);
-                for (var i = 0; i < boardLetters.Count; i++)
-                {
-                    cells.Add(new CellDefinition
+                    var levelIdNumber = _startLevelId + levelOffset;
+                    var levelId = levelIdNumber.ToString();
+                    var progress = (float)levelOffset / Math.Max(1, _levelsCount);
+                    if (EditorUtility.DisplayCancelableProgressBar("HexWords Auto Generation", $"Building level {levelId} ({levelOffset + 1}/{_levelsCount})", progress))
                     {
-                        cellId = $"c{i + 1}",
-                        letter = boardLetters[i].ToString(),
-                        q = coords[i].q,
-                        r = coords[i].r
-                    });
+                        canceled = true;
+                        break;
+                    }
+                    var assetPath = $"{_outputFolder}/{levelId}.asset";
+
+                    var existing = AssetDatabase.LoadAssetAtPath<LevelDefinition>(assetPath);
+                    if (existing != null && !_overwriteExisting)
+                    {
+                        continue;
+                    }
+
+                    List<string> targetWords;
+                    List<CellDefinition> cells = null;
+                    List<char> boardLetters = null;
+                    string v2FailureReason = null;
+
+                    var built = useLegacy
+                        ? TryBuildLevel(levelIdNumber, candidates, popularityMap, globalWordUse, out targetWords, out boardLetters)
+                        : TryBuildLevelV2(levelIdNumber, candidates, globalWordUse, out targetWords, out cells, out v2FailureReason);
+
+                    if (!built && !useLegacy && _profile.useLegacyFallback)
+                    {
+                        built = TryBuildLevel(levelIdNumber, candidates, popularityMap, globalWordUse, out targetWords, out boardLetters);
+                        if (built)
+                        {
+                            Debug.Log($"Level {levelId}: V2 failed ({v2FailureReason}), fallback to legacy succeeded.");
+                        }
+                    }
+
+                    if (!built)
+                    {
+                        if (!useLegacy && !string.IsNullOrWhiteSpace(v2FailureReason))
+                        {
+                            Debug.LogWarning($"Skipped level {levelId}: cannot satisfy constraints. {v2FailureReason}");
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"Skipped level {levelId}: cannot satisfy constraints.");
+                        }
+
+                        continue;
+                    }
+
+                    if (cells == null)
+                    {
+                        var coords = BuildCompactPathCoords(boardLetters.Count, levelIdNumber);
+                        cells = new List<CellDefinition>(boardLetters.Count);
+                        for (var i = 0; i < boardLetters.Count; i++)
+                        {
+                            cells.Add(new CellDefinition
+                            {
+                                cellId = $"c{i + 1}",
+                                letter = boardLetters[i].ToString(),
+                                q = coords[i].q,
+                                r = coords[i].r
+                            });
+                        }
+                    }
+
+                    for (var i = 0; i < targetWords.Count; i++)
+                    {
+                        globalWordUse.TryGetValue(targetWords[i], out var used);
+                        globalWordUse[targetWords[i]] = used + 1;
+                    }
+
+                    var level = existing ?? ScriptableObject.CreateInstance<LevelDefinition>();
+                    level.levelId = levelId;
+                    level.language = _profile.language;
+                    level.validationMode = _validationMode;
+                    level.targetWords = targetWords.ToArray();
+                    level.targetScore = targetWords.Sum(w => w.Length);
+                    level.shape = new GridShape { cells = cells };
+
+                    if (existing == null)
+                    {
+                        AssetDatabase.CreateAsset(level, assetPath);
+                    }
+
+                    EditorUtility.SetDirty(level);
+                    Debug.Log($"Generated level {levelId}. Words={targetWords.Count}, Cells={cells.Count}, Mode={(useLegacy ? "Legacy" : "V2")}");
+                    generated++;
                 }
-
-                for (var i = 0; i < targetWords.Count; i++)
-                {
-                    globalWordUse.TryGetValue(targetWords[i], out var used);
-                    globalWordUse[targetWords[i]] = used + 1;
-                }
-
-                var level = existing ?? ScriptableObject.CreateInstance<LevelDefinition>();
-                level.levelId = levelId;
-                level.language = _profile.language;
-                level.validationMode = _validationMode;
-                level.targetWords = targetWords.ToArray();
-                level.targetScore = targetWords.Sum(w => w.Length);
-                level.shape = new GridShape { cells = cells };
-
-                if (existing == null)
-                {
-                    AssetDatabase.CreateAsset(level, assetPath);
-                }
-
-                EditorUtility.SetDirty(level);
-                generated++;
+            }
+            finally
+            {
+                EditorUtility.ClearProgressBar();
             }
 
             BuildOrUpdateCatalog();
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
-            Debug.Log($"Generation complete. Generated={generated}, Candidates={candidates.Count}, WordsRange={_profile.targetWordsMin}-{_profile.targetWordsMax}");
+            Debug.Log($"Generation complete. Generated={generated}, Candidates={candidates.Count}, WordsRange={_profile.targetWordsMin}-{_profile.targetWordsMax}, Canceled={canceled}");
         }
 
         private List<string> BuildCandidates(Dictionary<string, int> popularityMap)
         {
+            var useLegacy = _useLegacyGenerator || _profile.generationAlgorithm == GenerationAlgorithm.Legacy;
+            var enforceCommonEnOnly = _profile.language == Language.EN && popularityMap.Count > 0;
             var repeatCap = _profile.allowSingleRepeatFallback
                 ? Mathf.Max(_profile.maxLetterRepeats, 1)
                 : _profile.maxLetterRepeats;
 
-            var all = LevelGenerator.FilterWords(_dictionary, _profile)
+            var filteredEntries = LevelGenerator.FilterWords(_dictionary, _profile);
+            var appliedCategoryFallback = false;
+            if (!useLegacy && filteredEntries.Count < Mathf.Max(30, _profile.targetWordsMin * 12) && !string.IsNullOrWhiteSpace(_profile.category))
+            {
+                var tempProfile = ScriptableObject.CreateInstance<GenerationProfile>();
+                CopyProfile(_profile, tempProfile);
+                tempProfile.category = string.Empty;
+                filteredEntries = LevelGenerator.FilterWords(_dictionary, tempProfile);
+                UnityEngine.Object.DestroyImmediate(tempProfile);
+                appliedCategoryFallback = true;
+            }
+
+            var all = filteredEntries
                 .Select(e => WordNormalizer.Normalize(e.word))
                 .Where(w => !string.IsNullOrWhiteSpace(w))
                 .Where(w => w.Length >= _profile.minLength && w.Length <= _profile.maxLength)
-                .Where(w => !_preferNaturalEnglishWords || _profile.language != Language.EN || LooksNaturalEnglishWord(w))
-                .Where(w => CountRepeats(w) <= repeatCap)
+                .Where(w => useLegacy == false || !_preferNaturalEnglishWords || _profile.language != Language.EN || LooksNaturalEnglishWord(w))
+                .Where(w => !useLegacy || CountRepeats(w) <= repeatCap)
                 .Distinct()
                 .ToList();
 
-            if (_preferPopularWords && _profile.language == Language.EN && popularityMap.Count > 0)
+            if (enforceCommonEnOnly)
             {
-                if (_strictPopularOnly)
-                {
-                    all = all.Where(popularityMap.ContainsKey).ToList();
-                }
-
                 all = all
-                    .OrderByDescending(w => ScoreWord(w, _profile.language, popularityMap, true))
-                    .ThenBy(w => popularityMap.TryGetValue(w, out var r) ? r : int.MaxValue)
+                    .Where(popularityMap.ContainsKey)
+                    .OrderBy(w => popularityMap.TryGetValue(w, out var rank) ? rank : int.MaxValue)
+                    .ThenBy(w => w.Length)
                     .ThenBy(w => w, StringComparer.Ordinal)
-                    .Take(Mathf.Min(_popularPoolLimit, all.Count))
                     .ToList();
             }
             else
@@ -229,6 +316,15 @@ namespace HexWords.EditorTools
                     .OrderByDescending(w => ScoreWord(w, _profile.language, popularityMap, false))
                     .ThenBy(w => w, StringComparer.Ordinal)
                     .ToList();
+            }
+
+            if (appliedCategoryFallback)
+            {
+                Debug.Log($"Candidates: category fallback enabled for V2 (category='{_profile.category}') -> {all.Count} words. CommonENOnly={enforceCommonEnOnly}.");
+            }
+            else
+            {
+                Debug.Log($"Candidates: {all.Count} words (language={_profile.language}, category='{_profile.category}', mode={(useLegacy ? "Legacy" : "V2")}, CommonENOnly={enforceCommonEnOnly}).");
             }
 
             return all;
@@ -261,6 +357,133 @@ namespace HexWords.EditorTools
                 }
             }
 
+            return false;
+        }
+
+        private bool TryBuildLevelV2(
+            int seed,
+            List<string> candidates,
+            Dictionary<string, int> globalWordUse,
+            out List<string> targetWords,
+            out List<CellDefinition> cells,
+            out string failureReason)
+        {
+            targetWords = null;
+            cells = null;
+            failureReason = string.Empty;
+
+            var available = candidates
+                .Where(c => CanUseWord(c, globalWordUse))
+                .Distinct(StringComparer.Ordinal)
+                .ToList();
+
+            var minTargets = Mathf.Clamp(_profile.targetWordsMin, 1, 40);
+            var maxTargets = Mathf.Clamp(_profile.targetWordsMax, minTargets, 40);
+            if (available.Count < minTargets)
+            {
+                failureReason = $"V2 failed for level {seed}. Available={available.Count}, requiredMin={minTargets}.";
+                return false;
+            }
+
+            var targetScoreGoal = Mathf.Max(minTargets * _profile.minLength, minTargets * 3);
+            var resampleAttempts = Mathf.Max(1, _profile.maxResampleAttempts);
+            var placementAttempts = Mathf.Clamp(_attemptsPerLevel / resampleAttempts, 1, 300);
+            var minCells = _useMinimalHexes ? _minCells : _profile.cellCount;
+            var selectionFails = 0;
+            var placementFails = 0;
+            var solvabilityFails = 0;
+            var desiredCounts = GenerationPlanUtility.BuildDesiredWordCounts(minTargets, maxTargets, _strictTargetWordCount);
+            var levelSolveTimer = Stopwatch.StartNew();
+            const int levelSolveBudgetMs = 2500;
+
+            for (var d = 0; d < desiredCounts.Count; d++)
+            {
+                if (levelSolveTimer.ElapsedMilliseconds >= levelSolveBudgetMs)
+                {
+                    break;
+                }
+
+                var desiredCount = desiredCounts[d];
+                for (var attempt = 0; attempt < resampleAttempts; attempt++)
+                {
+                    if (levelSolveTimer.ElapsedMilliseconds >= levelSolveBudgetMs)
+                    {
+                        break;
+                    }
+
+                    var selectionOptions = new WordSetSelectionOptions
+                    {
+                        language = _profile.language,
+                        objective = _profile.objective,
+                        avoidDuplicateLetters = _profile.avoidDuplicateLetters,
+                        minWords = _strictTargetWordCount ? desiredCount : minTargets,
+                        maxWords = _strictTargetWordCount ? desiredCount : maxTargets,
+                        hexBudgetMin = _profile.hexBudgetMin,
+                        hexBudgetMax = _profile.hexBudgetMax > 0 ? _profile.hexBudgetMax : _profile.cellCount,
+                        targetScore = targetScoreGoal,
+                        greedyRestarts = Mathf.Max(1, _profile.greedyRestarts),
+                        beamWidth = Mathf.Max(2, _profile.beamWidth),
+                        overlapWeight = _profile.overlapWeight,
+                        diversityWeight = _profile.diversityWeight,
+                        seed = seed + attempt * 97 + desiredCount * 17,
+                        candidatePoolLimit = Mathf.Clamp(_candidateWindow, 200, 4000),
+                        maxSolverMilliseconds = 220,
+                        beamInputLimit = 700,
+                        beamExpansionLimit = 120000
+                    };
+
+                    if (!WordSetSelector.TrySelect(available, selectionOptions, out var selection))
+                    {
+                        selectionFails++;
+                        continue;
+                    }
+
+                    if (_strictTargetWordCount && selection.words.Count != desiredCount)
+                    {
+                        selectionFails++;
+                        continue;
+                    }
+
+                    var placementOptions = new BoardPlacementOptions
+                    {
+                        language = _profile.language,
+                        minCells = minCells,
+                        maxCells = _profile.cellCount,
+                        fillerLettersMax = Mathf.Max(_profile.fillerLettersMax, Mathf.Max(0, minCells - selection.hexCount)),
+                        avoidDuplicateLetters = _profile.avoidDuplicateLetters,
+                        maxLetterRepeats = Mathf.Max(0, _profile.maxLetterRepeats),
+                        hexBudgetMin = _profile.hexBudgetMin,
+                        hexBudgetMax = _profile.hexBudgetMax,
+                        attempts = placementAttempts,
+                        seed = seed + attempt * 193 + desiredCount * 31,
+                        requireAllTargetsSolvable = _profile.requireAllTargetsSolvable
+                    };
+
+                    if (!BoardPlacer.TryPlace(selection.words, placementOptions, out var placement))
+                    {
+                        placementFails++;
+                        continue;
+                    }
+
+                    if (_profile.requireAllTargetsSolvable &&
+                        !SolvabilityValidator.ValidateAll(placement.cells, selection.words, out var failed))
+                    {
+                        solvabilityFails++;
+                        Debug.Log($"Level {seed}: resample due to unsolved targets [{string.Join(", ", failed)}]");
+                        continue;
+                    }
+
+                    targetWords = selection.words.ToList();
+                    cells = placement.cells;
+                    return true;
+                }
+            }
+
+            failureReason =
+                $"V2 failed for level {seed}. Available={available.Count}, " +
+                $"WordsRange={minTargets}-{maxTargets}, ReuseLimit={_maxWordReuseAcrossLevels}, " +
+                $"selectionFails={selectionFails}, placementFails={placementFails}, solvabilityFails={solvabilityFails}, " +
+                $"Category='{_profile.category}', CellCount={_profile.cellCount}, ElapsedMs={levelSolveTimer.ElapsedMilliseconds}.";
             return false;
         }
 
@@ -765,6 +988,37 @@ namespace HexWords.EditorTools
             }
 
             return result;
+        }
+
+        private static void CopyProfile(GenerationProfile from, GenerationProfile to)
+        {
+            to.language = from.language;
+            to.category = from.category;
+            to.minLength = from.minLength;
+            to.maxLength = from.maxLength;
+            to.cellCount = from.cellCount;
+            to.targetWordsMin = from.targetWordsMin;
+            to.targetWordsMax = from.targetWordsMax;
+            to.maxLetterRepeats = from.maxLetterRepeats;
+            to.allowSingleRepeatFallback = from.allowSingleRepeatFallback;
+            to.fillerLettersMax = from.fillerLettersMax;
+            to.avoidDuplicateLetters = from.avoidDuplicateLetters;
+            to.includeLetters = from.includeLetters;
+            to.excludeLetters = from.excludeLetters;
+            to.minDifficultyBand = from.minDifficultyBand;
+            to.maxDifficultyBand = from.maxDifficultyBand;
+
+            to.generationAlgorithm = from.generationAlgorithm;
+            to.objective = from.objective;
+            to.hexBudgetMin = from.hexBudgetMin;
+            to.hexBudgetMax = from.hexBudgetMax;
+            to.beamWidth = from.beamWidth;
+            to.greedyRestarts = from.greedyRestarts;
+            to.maxResampleAttempts = from.maxResampleAttempts;
+            to.overlapWeight = from.overlapWeight;
+            to.diversityWeight = from.diversityWeight;
+            to.requireAllTargetsSolvable = from.requireAllTargetsSolvable;
+            to.useLegacyFallback = from.useLegacyFallback;
         }
 
         private void BuildOrUpdateCatalog()
