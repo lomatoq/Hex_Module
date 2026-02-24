@@ -10,13 +10,17 @@ namespace HexWords.EditorTools.GenerationV2
             var min = Math.Max(1, minTargets);
             var max = Math.Max(min, maxTargets);
 
-            if (!strictTargetWordCount)
+            var desired = new List<int>(max - min + 1);
+            if (strictTargetWordCount)
             {
-                return new List<int> { min };
+                for (var value = max; value >= min; value--)
+                {
+                    desired.Add(value);
+                }
+                return desired;
             }
 
-            var desired = new List<int>(max - min + 1);
-            for (var value = max; value >= min; value--)
+            for (var value = min; value <= max; value++)
             {
                 desired.Add(value);
             }

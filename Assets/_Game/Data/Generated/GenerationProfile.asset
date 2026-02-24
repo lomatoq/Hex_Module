@@ -16,9 +16,9 @@ MonoBehaviour:
   category: general
   minLength: 3
   maxLength: 6
-  cellCount: 8
+  cellCount: 16
   targetWordsMin: 4
-  targetWordsMax: 7
+  targetWordsMax: 6
   maxLetterRepeats: 0
   allowSingleRepeatFallback: 1
   fillerLettersMax: 0
@@ -30,11 +30,11 @@ MonoBehaviour:
   generationAlgorithm: 1
   objective: 1
   hexBudgetMin: 6
-  hexBudgetMax: 11
+  hexBudgetMax: 14
   beamWidth: 24
   greedyRestarts: 12
-  maxResampleAttempts: 40
-  overlapWeight: 90
-  diversityWeight: 22
+  maxResampleAttempts: 80
+  overlapWeight: 55
+  diversityWeight: 48
   requireAllTargetsSolvable: 1
-  useLegacyFallback: 1
+  useLegacyFallback: 0

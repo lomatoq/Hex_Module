@@ -1,0 +1,45 @@
+# Additional EN target-word blacklist for auto level generation.
+# One token per line. Tokens are normalized to UPPERCASE.
+# Purpose: block abbreviations/acronyms and time/calendar tokens from target words.
+
+GMT
+UTC
+EST
+CST
+MST
+PST
+JAN
+FEB
+MAR
+APR
+MAY
+JUN
+JUL
+AUG
+SEP
+OCT
+NOV
+DEC
+MON
+TUE
+WED
+THU
+FRI
+SAT
+SUN
+HTML
+XML
+RSS
+PDF
+DVD
+CD
+TV
+PC
+MD
+MR
+MRS
+MS
+DR
+LTD
+INC
+CO

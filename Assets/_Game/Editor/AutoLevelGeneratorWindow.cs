@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Globalization;
 using HexWords.Core;
 using HexWords.EditorTools.GenerationV2;
 using UnityEditor;
@@ -21,6 +22,8 @@ namespace HexWords.EditorTools
         private const string RuAlphabet = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ";
         private const string EnCommon = "ETAOINSHRDLCUMWFGYPBVKJXQZ";
         private const string RuCommon = "ОЕАИНТСРВЛКМДПУЯЫЬГЗБЧЙХЖШЮЦЩЭФЪЁ";
+        private const string EnGeneratorBlacklistPath = "Assets/_Game/Data/Source/generator_blacklist_en.txt";
+        private const int DefaultAutoBoardCells = 16;
 
         private DictionaryDatabase _dictionary;
         private GenerationProfile _profile;
@@ -33,10 +36,7 @@ namespace HexWords.EditorTools
         private int _maxWordReuseAcrossLevels = 3;
         private bool _overwriteExisting;
 
-        private bool _preferNaturalEnglishWords = false;
         private bool _preferPopularWords = true;
-        private bool _strictPopularOnly;
-        private int _popularPoolLimit = 800;
 
         private bool _strictTargetWordCount;
         private int _attemptsPerLevel = 180;
@@ -46,6 +46,8 @@ namespace HexWords.EditorTools
 
         private bool _useMinimalHexes = true;
         private int _minCells = 6;
+        private static HashSet<string> _enGeneratorBlacklistCache;
+        private static HashSet<string> _enCalendarTokensCache;
 
         [MenuItem("Tools/HexWords/Generate Levels (Auto)")]
         public static void Open()
@@ -75,17 +77,18 @@ namespace HexWords.EditorTools
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Solver", EditorStyles.boldLabel);
             _useLegacyGenerator = EditorGUILayout.Toggle("Use Legacy Generator (override)", _useLegacyGenerator);
-            _attemptsPerLevel = Mathf.Clamp(EditorGUILayout.IntField("Attempts Per Level", _attemptsPerLevel), 20, 3000);
 
             var useLegacyForUi = _useLegacyGenerator || (_profile != null && _profile.generationAlgorithm == GenerationAlgorithm.Legacy);
+            if (_showAdvanced || useLegacyForUi)
+            {
+                _attemptsPerLevel = Mathf.Clamp(EditorGUILayout.IntField("Attempts Per Level", _attemptsPerLevel), 20, 3000);
+            }
+
             if (_showAdvanced && useLegacyForUi)
             {
                 EditorGUILayout.Space();
                 EditorGUILayout.LabelField("Legacy Candidate Quality", EditorStyles.boldLabel);
-                _preferNaturalEnglishWords = EditorGUILayout.Toggle("Prefer Natural EN Words", _preferNaturalEnglishWords);
                 _preferPopularWords = EditorGUILayout.Toggle("Prefer Popular Words", _preferPopularWords);
-                _strictPopularOnly = EditorGUILayout.Toggle("Strict Popular Only", _strictPopularOnly);
-                _popularPoolLimit = Mathf.Clamp(EditorGUILayout.IntField("Popular Pool Limit", _popularPoolLimit), 50, 5000);
                 _candidateWindow = Mathf.Clamp(EditorGUILayout.IntField("Candidate Window", _candidateWindow), 50, 5000);
             }
 
@@ -93,18 +96,31 @@ namespace HexWords.EditorTools
             EditorGUILayout.LabelField("Board", EditorStyles.boldLabel);
             _useMinimalHexes = EditorGUILayout.Toggle("Use Minimal Hexes", _useMinimalHexes);
             _minCells = Mathf.Clamp(EditorGUILayout.IntField("Min Cells", _minCells), 3, _profile != null ? _profile.cellCount : 64);
+            if (_profile != null)
+            {
+                _profile.cellCount = Mathf.Clamp(EditorGUILayout.IntField("Max Cells", _profile.cellCount), _minCells, 64);
+            }
 
             if (_profile != null)
             {
+                if (_profile.language == Language.EN)
+                {
+                    EditorGUILayout.HelpBox("EN auto-generation uses an internal common-word frequency source and automatic noise filtering.", MessageType.Info);
+                }
+
                 EditorGUILayout.Space();
                 EditorGUILayout.LabelField("Profile Constraints", EditorStyles.boldLabel);
                 _profile.targetWordsMin = Mathf.Clamp(EditorGUILayout.IntField("Target Words Min", _profile.targetWordsMin), 1, 20);
                 _profile.targetWordsMax = Mathf.Clamp(EditorGUILayout.IntField("Target Words Max", _profile.targetWordsMax), _profile.targetWordsMin, 40);
                 _profile.minLength = Mathf.Clamp(EditorGUILayout.IntField("Word Length Min", _profile.minLength), 2, _profile.maxLength);
                 _profile.maxLength = Mathf.Clamp(EditorGUILayout.IntField("Word Length Max", _profile.maxLength), _profile.minLength, 32);
-                _profile.maxLetterRepeats = Mathf.Clamp(EditorGUILayout.IntField("Max Letter Repeats", _profile.maxLetterRepeats), 0, 8);
-                _profile.allowSingleRepeatFallback = EditorGUILayout.Toggle("Allow +1 Repeat Fallback", _profile.allowSingleRepeatFallback);
-                _profile.fillerLettersMax = Mathf.Clamp(EditorGUILayout.IntField("Filler Letters Max", _profile.fillerLettersMax), 0, 16);
+
+                if (_showAdvanced)
+                {
+                    _profile.maxLetterRepeats = Mathf.Clamp(EditorGUILayout.IntField("Max Letter Repeats", _profile.maxLetterRepeats), 0, 8);
+                    _profile.allowSingleRepeatFallback = EditorGUILayout.Toggle("Allow +1 Repeat Fallback", _profile.allowSingleRepeatFallback);
+                    _profile.fillerLettersMax = Mathf.Clamp(EditorGUILayout.IntField("Filler Letters Max", _profile.fillerLettersMax), 0, 16);
+                }
 
                 EditorGUILayout.Space();
                 EditorGUILayout.LabelField("Generation V2", EditorStyles.boldLabel);
@@ -114,7 +130,10 @@ namespace HexWords.EditorTools
                 _profile.hexBudgetMax = Mathf.Clamp(EditorGUILayout.IntField("Hex Budget Max", _profile.hexBudgetMax), 0, 128);
                 _profile.maxResampleAttempts = Mathf.Clamp(EditorGUILayout.IntField("Max Resample Attempts", _profile.maxResampleAttempts), 1, 500);
                 _profile.requireAllTargetsSolvable = EditorGUILayout.Toggle("Require All Targets Solvable", _profile.requireAllTargetsSolvable);
-                _profile.useLegacyFallback = EditorGUILayout.Toggle("Use Legacy Fallback", _profile.useLegacyFallback);
+                if (_showAdvanced)
+                {
+                    _profile.useLegacyFallback = EditorGUILayout.Toggle("Use Legacy Fallback", _profile.useLegacyFallback);
+                }
 
                 if (_showAdvanced)
                 {
@@ -140,9 +159,17 @@ namespace HexWords.EditorTools
 
         private void Generate()
         {
-            if (_dictionary == null || _profile == null)
+            if (_profile == null)
             {
-                Debug.LogWarning("Set Dictionary and Generation Profile.");
+                Debug.LogWarning("Set Generation Profile.");
+                EditorUtility.DisplayDialog("HexWords Auto Generation", "Generation Profile is not set.", "OK");
+                return;
+            }
+
+            if (_profile.language != Language.EN && _dictionary == null)
+            {
+                Debug.LogWarning("Set Dictionary for non-EN generation.");
+                EditorUtility.DisplayDialog("HexWords Auto Generation", "Dictionary is required for non-EN generation.", "OK");
                 return;
             }
 
@@ -161,12 +188,21 @@ namespace HexWords.EditorTools
                     $"No candidates after filtering. mode={(useLegacy ? "Legacy" : "V2")}, " +
                     $"language={_profile.language}, category='{_profile.category}', " +
                     $"length={_profile.minLength}-{_profile.maxLength}, difficulty={_profile.minDifficultyBand}-{_profile.maxDifficultyBand}.");
+                EditorUtility.DisplayDialog(
+                    "HexWords Auto Generation",
+                    $"No candidates after filtering.\nmode={(useLegacy ? "Legacy" : "V2")}\nlanguage={_profile.language}\nlength={_profile.minLength}-{_profile.maxLength}",
+                    "OK");
                 return;
             }
 
             var globalWordUse = new Dictionary<string, int>(StringComparer.Ordinal);
             var generated = 0;
             var canceled = false;
+            var skippedExisting = 0;
+            var skippedConstraints = 0;
+            var skippedUnsolved = 0;
+            var skippedQuality = 0;
+            string firstConstraintReason = null;
 
             try
             {
@@ -185,6 +221,7 @@ namespace HexWords.EditorTools
                     var existing = AssetDatabase.LoadAssetAtPath<LevelDefinition>(assetPath);
                     if (existing != null && !_overwriteExisting)
                     {
+                        skippedExisting++;
                         continue;
                     }
 
@@ -208,6 +245,11 @@ namespace HexWords.EditorTools
 
                     if (!built)
                     {
+                        skippedConstraints++;
+                        if (string.IsNullOrWhiteSpace(firstConstraintReason))
+                        {
+                            firstConstraintReason = v2FailureReason;
+                        }
                         if (!useLegacy && !string.IsNullOrWhiteSpace(v2FailureReason))
                         {
                             Debug.LogWarning($"Skipped level {levelId}: cannot satisfy constraints. {v2FailureReason}");
@@ -234,6 +276,21 @@ namespace HexWords.EditorTools
                                 r = coords[i].r
                             });
                         }
+                    }
+
+                    if (_profile.requireAllTargetsSolvable &&
+                        !SolvabilityValidator.ValidateAll(cells, targetWords, out var failedTargets))
+                    {
+                        skippedUnsolved++;
+                        Debug.LogWarning($"Skipped level {levelId}: unsolved targets after build [{string.Join(", ", failedTargets)}]");
+                        continue;
+                    }
+
+                    if (!PassesWordSetQuality(targetWords, out var qualityReason))
+                    {
+                        skippedQuality++;
+                        Debug.LogWarning($"Skipped level {levelId}: quality gate rejected words. Reason={qualityReason}");
+                        continue;
                     }
 
                     for (var i = 0; i < targetWords.Count; i++)
@@ -269,62 +326,111 @@ namespace HexWords.EditorTools
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
-            Debug.Log($"Generation complete. Generated={generated}, Candidates={candidates.Count}, WordsRange={_profile.targetWordsMin}-{_profile.targetWordsMax}, Canceled={canceled}");
+            var summary =
+                $"Generated={generated}/{_levelsCount}\n" +
+                $"Skipped existing={skippedExisting}\n" +
+                $"Skipped constraints={skippedConstraints}\n" +
+                $"Skipped unsolved={skippedUnsolved}\n" +
+                $"Skipped quality={skippedQuality}\n" +
+                $"Candidates={candidates.Count}\n" +
+                $"Output={_outputFolder}\n" +
+                $"Canceled={canceled}\n" +
+                $"First constraint reason={firstConstraintReason ?? "n/a"}";
+
+            if (generated == 0)
+            {
+                Debug.LogWarning($"Generation complete with 0 levels.\n{summary}");
+            }
+            else
+            {
+                Debug.Log($"Generation complete.\n{summary}");
+            }
+
+            EditorUtility.DisplayDialog("HexWords Auto Generation", summary, "OK");
         }
 
         private List<string> BuildCandidates(Dictionary<string, int> popularityMap)
         {
             var useLegacy = _useLegacyGenerator || _profile.generationAlgorithm == GenerationAlgorithm.Legacy;
-            var enforceCommonEnOnly = _profile.language == Language.EN && popularityMap.Count > 0;
+            var enBlacklist = _profile.language == Language.EN ? LoadGeneratorBlacklistEn() : null;
             var repeatCap = _profile.allowSingleRepeatFallback
                 ? Mathf.Max(_profile.maxLetterRepeats, 1)
                 : _profile.maxLetterRepeats;
 
-            var filteredEntries = LevelGenerator.FilterWords(_dictionary, _profile);
+            List<string> all;
             var appliedCategoryFallback = false;
-            if (!useLegacy && filteredEntries.Count < Mathf.Max(30, _profile.targetWordsMin * 12) && !string.IsNullOrWhiteSpace(_profile.category))
-            {
-                var tempProfile = ScriptableObject.CreateInstance<GenerationProfile>();
-                CopyProfile(_profile, tempProfile);
-                tempProfile.category = string.Empty;
-                filteredEntries = LevelGenerator.FilterWords(_dictionary, tempProfile);
-                UnityEngine.Object.DestroyImmediate(tempProfile);
-                appliedCategoryFallback = true;
-            }
+            var frequencyDrivenEn = _profile.language == Language.EN && popularityMap.Count > 0;
 
-            var all = filteredEntries
-                .Select(e => WordNormalizer.Normalize(e.word))
-                .Where(w => !string.IsNullOrWhiteSpace(w))
-                .Where(w => w.Length >= _profile.minLength && w.Length <= _profile.maxLength)
-                .Where(w => useLegacy == false || !_preferNaturalEnglishWords || _profile.language != Language.EN || LooksNaturalEnglishWord(w))
-                .Where(w => !useLegacy || CountRepeats(w) <= repeatCap)
-                .Distinct()
-                .ToList();
-
-            if (enforceCommonEnOnly)
+            if (frequencyDrivenEn)
             {
-                all = all
-                    .Where(popularityMap.ContainsKey)
-                    .OrderBy(w => popularityMap.TryGetValue(w, out var rank) ? rank : int.MaxValue)
-                    .ThenBy(w => w.Length)
-                    .ThenBy(w => w, StringComparer.Ordinal)
+                all = popularityMap
+                    .OrderBy(p => p.Value)
+                    .Select(p => p.Key)
+                    .Where(w => w.Length >= _profile.minLength && w.Length <= _profile.maxLength)
+                    .Where(w => IsAllowedEnglishCandidate(w, popularityMap, enBlacklist))
+                    .Distinct(StringComparer.Ordinal)
                     .ToList();
+
+                if (_dictionary != null && !IsGeneralCategory(_profile.category))
+                {
+                    var categorySet = LevelGenerator.FilterWords(_dictionary, _profile)
+                        .Select(e => WordNormalizer.Normalize(e.word))
+                        .Where(w => !string.IsNullOrWhiteSpace(w))
+                        .ToHashSet(StringComparer.Ordinal);
+                    var intersected = all.Where(categorySet.Contains).ToList();
+                    if (intersected.Count >= Mathf.Max(20, _profile.targetWordsMin * 8))
+                    {
+                        all = intersected;
+                    }
+                    else
+                    {
+                        appliedCategoryFallback = true;
+                    }
+                }
             }
             else
             {
-                all = all
+                if (_dictionary == null)
+                {
+                    return new List<string>();
+                }
+
+                var filteredEntries = LevelGenerator.FilterWords(_dictionary, _profile);
+                if (!useLegacy && filteredEntries.Count < Mathf.Max(30, _profile.targetWordsMin * 12) && !string.IsNullOrWhiteSpace(_profile.category))
+                {
+                    var tempProfile = ScriptableObject.CreateInstance<GenerationProfile>();
+                    CopyProfile(_profile, tempProfile);
+                    tempProfile.category = string.Empty;
+                    filteredEntries = LevelGenerator.FilterWords(_dictionary, tempProfile);
+                    UnityEngine.Object.DestroyImmediate(tempProfile);
+                    appliedCategoryFallback = true;
+                }
+
+                all = filteredEntries
+                    .Select(e => WordNormalizer.Normalize(e.word))
+                    .Where(w => !string.IsNullOrWhiteSpace(w))
+                    .Where(w => w.Length >= _profile.minLength && w.Length <= _profile.maxLength)
+                    .Where(w => !useLegacy || CountRepeats(w) <= repeatCap)
+                    .Distinct(StringComparer.Ordinal)
                     .OrderByDescending(w => ScoreWord(w, _profile.language, popularityMap, false))
                     .ThenBy(w => w, StringComparer.Ordinal)
                     .ToList();
             }
 
+            if (useLegacy)
+            {
+                all = all.Where(w => CountRepeats(w) <= repeatCap).ToList();
+            }
+
             if (appliedCategoryFallback)
             {
-                Debug.Log($"Candidates: category fallback enabled for V2 (category='{_profile.category}') -> {all.Count} words. CommonENOnly={enforceCommonEnOnly}.");
+                Debug.Log($"Candidates: category fallback enabled (category='{_profile.category}') -> {all.Count} words.");
             }
             else
             {
-                Debug.Log($"Candidates: {all.Count} words (language={_profile.language}, category='{_profile.category}', mode={(useLegacy ? "Legacy" : "V2")}, CommonENOnly={enforceCommonEnOnly}).");
+                Debug.Log(
+                    $"Candidates: {all.Count} words (language={_profile.language}, category='{_profile.category}', mode={(useLegacy ? "Legacy" : "V2")}, " +
+                    $"source={(frequencyDrivenEn ? "EN-frequency" : "dictionary")}).");
             }
 
             return all;
@@ -387,14 +493,29 @@ namespace HexWords.EditorTools
 
             var targetScoreGoal = Mathf.Max(minTargets * _profile.minLength, minTargets * 3);
             var resampleAttempts = Mathf.Max(1, _profile.maxResampleAttempts);
-            var placementAttempts = Mathf.Clamp(_attemptsPerLevel / resampleAttempts, 1, 300);
+            var scaledPlacementAttempts = _attemptsPerLevel / Mathf.Max(1, resampleAttempts / 3);
+            var placementAttempts = Mathf.Clamp(Mathf.Max(12, scaledPlacementAttempts), 4, 300);
             var minCells = _useMinimalHexes ? _minCells : _profile.cellCount;
+            var placementMaxCells = Mathf.Max(
+                DefaultAutoBoardCells,
+                _profile.cellCount,
+                Mathf.Max(minCells, _profile.hexBudgetMax > 0 ? _profile.hexBudgetMax : 0));
             var selectionFails = 0;
             var placementFails = 0;
             var solvabilityFails = 0;
+            var selectionSolverFails = 0;
+            var selectionQualityFails = 0;
+            var selectionMergedLengthFails = 0;
             var desiredCounts = GenerationPlanUtility.BuildDesiredWordCounts(minTargets, maxTargets, _strictTargetWordCount);
             var levelSolveTimer = Stopwatch.StartNew();
-            const int levelSolveBudgetMs = 2500;
+            const int levelSolveBudgetMs = 5000;
+            var selectionModeFallbacks = 0;
+            var placementModeFallbacks = 0;
+            var objectiveFallbacks = 0;
+            var selectionAvoidModes = _profile.avoidDuplicateLetters
+                ? new[] { true, false }
+                : new[] { false };
+            var objectiveModes = BuildObjectiveModes(_profile.objective);
 
             for (var d = 0; d < desiredCounts.Count; d++)
             {
@@ -411,69 +532,147 @@ namespace HexWords.EditorTools
                         break;
                     }
 
-                    var selectionOptions = new WordSetSelectionOptions
+                    WordSetSelectionResult selection = null;
+                    var selectedWithAvoidDuplicates = _profile.avoidDuplicateLetters;
+                    for (var om = 0; om < objectiveModes.Count; om++)
                     {
-                        language = _profile.language,
-                        objective = _profile.objective,
-                        avoidDuplicateLetters = _profile.avoidDuplicateLetters,
-                        minWords = _strictTargetWordCount ? desiredCount : minTargets,
-                        maxWords = _strictTargetWordCount ? desiredCount : maxTargets,
-                        hexBudgetMin = _profile.hexBudgetMin,
-                        hexBudgetMax = _profile.hexBudgetMax > 0 ? _profile.hexBudgetMax : _profile.cellCount,
-                        targetScore = targetScoreGoal,
-                        greedyRestarts = Mathf.Max(1, _profile.greedyRestarts),
-                        beamWidth = Mathf.Max(2, _profile.beamWidth),
-                        overlapWeight = _profile.overlapWeight,
-                        diversityWeight = _profile.diversityWeight,
-                        seed = seed + attempt * 97 + desiredCount * 17,
-                        candidatePoolLimit = Mathf.Clamp(_candidateWindow, 200, 4000),
-                        maxSolverMilliseconds = 220,
-                        beamInputLimit = 700,
-                        beamExpansionLimit = 120000
-                    };
+                        var objectiveMode = objectiveModes[om];
+                        for (var sm = 0; sm < selectionAvoidModes.Length; sm++)
+                        {
+                            var useAvoidDuplicatesForSelection = selectionAvoidModes[sm];
+                            var isObjectiveFallback = om > 0;
+                            var useRelaxedBudget = isObjectiveFallback || !useAvoidDuplicatesForSelection;
+                            var selectionOptions = new WordSetSelectionOptions
+                            {
+                                language = _profile.language,
+                                objective = objectiveMode,
+                                avoidDuplicateLetters = useAvoidDuplicatesForSelection,
+                                minWords = desiredCount,
+                                maxWords = desiredCount,
+                                hexBudgetMin = useRelaxedBudget ? 0 : _profile.hexBudgetMin,
+                                hexBudgetMax = useRelaxedBudget
+                                    ? placementMaxCells
+                                    : (_profile.hexBudgetMax > 0 ? _profile.hexBudgetMax : placementMaxCells),
+                                targetScore = targetScoreGoal,
+                                greedyRestarts = Mathf.Max(1, _profile.greedyRestarts),
+                                beamWidth = Mathf.Max(2, _profile.beamWidth),
+                                overlapWeight = _profile.overlapWeight,
+                                diversityWeight = _profile.diversityWeight,
+                                seed = seed + attempt * 97 + desiredCount * 17 + sm * 7919 + om * 3571,
+                                candidatePoolLimit = ShouldUseUnlimitedPool(objectiveMode, useAvoidDuplicatesForSelection) ? 0 : Mathf.Clamp(_candidateWindow, 200, 4000),
+                                maxSolverMilliseconds = ShouldUseUnlimitedPool(objectiveMode, useAvoidDuplicatesForSelection) ? 550 : 300,
+                                beamInputLimit = 900,
+                                beamExpansionLimit = 180000
+                            };
 
-                    if (!WordSetSelector.TrySelect(available, selectionOptions, out var selection))
+                            if (!WordSetSelector.TrySelect(available, selectionOptions, out selection))
+                            {
+                                continue;
+                            }
+
+                            selectedWithAvoidDuplicates = useAvoidDuplicatesForSelection;
+                            if (sm > 0)
+                            {
+                                selectionModeFallbacks++;
+                            }
+
+                            if (om > 0)
+                            {
+                                objectiveFallbacks++;
+                            }
+
+                            break;
+                        }
+
+                        if (selection != null)
+                        {
+                            break;
+                        }
+                    }
+
+                    if (selection == null)
                     {
                         selectionFails++;
+                        selectionSolverFails++;
                         continue;
                     }
 
-                    if (_strictTargetWordCount && selection.words.Count != desiredCount)
+                    if (!PassesWordSetQuality(selection.words, out _))
                     {
                         selectionFails++;
+                        selectionQualityFails++;
                         continue;
                     }
 
-                    var placementOptions = new BoardPlacementOptions
+                    var selectedWords = selection.words.ToList();
+                    var estimatedMergedLength = EstimateMergedLength(selectedWords, seed + attempt * 43 + desiredCount * 13, 6);
+                    if (estimatedMergedLength > placementMaxCells &&
+                        !TrySelectPlacementFriendlyWords(available, desiredCount, placementMaxCells, seed + attempt * 59 + desiredCount * 19, out selectedWords, out estimatedMergedLength))
                     {
-                        language = _profile.language,
-                        minCells = minCells,
-                        maxCells = _profile.cellCount,
-                        fillerLettersMax = Mathf.Max(_profile.fillerLettersMax, Mathf.Max(0, minCells - selection.hexCount)),
-                        avoidDuplicateLetters = _profile.avoidDuplicateLetters,
-                        maxLetterRepeats = Mathf.Max(0, _profile.maxLetterRepeats),
-                        hexBudgetMin = _profile.hexBudgetMin,
-                        hexBudgetMax = _profile.hexBudgetMax,
-                        attempts = placementAttempts,
-                        seed = seed + attempt * 193 + desiredCount * 31,
-                        requireAllTargetsSolvable = _profile.requireAllTargetsSolvable
-                    };
+                        selectionFails++;
+                        selectionMergedLengthFails++;
+                        continue;
+                    }
 
-                    if (!BoardPlacer.TryPlace(selection.words, placementOptions, out var placement))
+                    if (!PassesWordSetQuality(selectedWords, out _))
+                    {
+                        selectionFails++;
+                        selectionQualityFails++;
+                        continue;
+                    }
+
+                    BoardPlacementResult placement = null;
+                    var placementAvoidModes = selectedWithAvoidDuplicates
+                        ? new[] { true, false }
+                        : new[] { false };
+                    for (var pm = 0; pm < placementAvoidModes.Length; pm++)
+                    {
+                        var useAvoidDuplicatesForPlacement = placementAvoidModes[pm];
+                        var placementOptions = new BoardPlacementOptions
+                        {
+                            language = _profile.language,
+                            minCells = minCells,
+                            maxCells = placementMaxCells,
+                            fillerLettersMax = Mathf.Max(_profile.fillerLettersMax, Mathf.Max(0, minCells - selection.hexCount)),
+                            avoidDuplicateLetters = useAvoidDuplicatesForPlacement,
+                            maxLetterRepeats = useAvoidDuplicatesForPlacement
+                                ? Mathf.Max(0, _profile.maxLetterRepeats)
+                                : Mathf.Max(3, _profile.maxLetterRepeats),
+                            hexBudgetMin = useAvoidDuplicatesForPlacement ? _profile.hexBudgetMin : 0,
+                            hexBudgetMax = useAvoidDuplicatesForPlacement ? _profile.hexBudgetMax : placementMaxCells,
+                            attempts = placementAttempts,
+                            seed = seed + attempt * 193 + desiredCount * 31 + pm * 1009,
+                            requireAllTargetsSolvable = _profile.requireAllTargetsSolvable
+                        };
+
+                        if (!BoardPlacer.TryPlace(selectedWords, placementOptions, out placement))
+                        {
+                            continue;
+                        }
+
+                        if (pm > 0)
+                        {
+                            placementModeFallbacks++;
+                        }
+
+                        break;
+                    }
+
+                    if (placement == null)
                     {
                         placementFails++;
                         continue;
                     }
 
                     if (_profile.requireAllTargetsSolvable &&
-                        !SolvabilityValidator.ValidateAll(placement.cells, selection.words, out var failed))
+                        !SolvabilityValidator.ValidateAll(placement.cells, selectedWords, out var failed))
                     {
                         solvabilityFails++;
                         Debug.Log($"Level {seed}: resample due to unsolved targets [{string.Join(", ", failed)}]");
                         continue;
                     }
 
-                    targetWords = selection.words.ToList();
+                    targetWords = selectedWords;
                     cells = placement.cells;
                     return true;
                 }
@@ -482,9 +681,230 @@ namespace HexWords.EditorTools
             failureReason =
                 $"V2 failed for level {seed}. Available={available.Count}, " +
                 $"WordsRange={minTargets}-{maxTargets}, ReuseLimit={_maxWordReuseAcrossLevels}, " +
-                $"selectionFails={selectionFails}, placementFails={placementFails}, solvabilityFails={solvabilityFails}, " +
-                $"Category='{_profile.category}', CellCount={_profile.cellCount}, ElapsedMs={levelSolveTimer.ElapsedMilliseconds}.";
+                $"selectionFails={selectionFails}, selectionSolverFails={selectionSolverFails}, " +
+                $"selectionQualityFails={selectionQualityFails}, selectionMergedFails={selectionMergedLengthFails}, " +
+                $"placementFails={placementFails}, solvabilityFails={solvabilityFails}, " +
+                $"selectionModeFallbacks={selectionModeFallbacks}, objectiveFallbacks={objectiveFallbacks}, placementModeFallbacks={placementModeFallbacks}, " +
+                $"Category='{_profile.category}', CellCount={_profile.cellCount}, PlacementMaxCells={placementMaxCells}, ElapsedMs={levelSolveTimer.ElapsedMilliseconds}.";
             return false;
+        }
+
+        private static List<GenerationObjective> BuildObjectiveModes(GenerationObjective primary)
+        {
+            var list = new List<GenerationObjective> { primary };
+            if (primary != GenerationObjective.MinHexForKWords)
+            {
+                list.Add(GenerationObjective.MinHexForKWords);
+            }
+
+            return list;
+        }
+
+        private static bool ShouldUseUnlimitedPool(GenerationObjective objective, bool avoidDuplicateLetters)
+        {
+            return objective == GenerationObjective.MaxWordsUnderHexBudget && avoidDuplicateLetters;
+        }
+
+        private bool TrySelectPlacementFriendlyWords(
+            IReadOnlyList<string> pool,
+            int desiredCount,
+            int maxMergedLength,
+            int seed,
+            out List<string> selectedWords,
+            out int mergedLength)
+        {
+            selectedWords = null;
+            mergedLength = int.MaxValue;
+            if (pool == null || pool.Count < desiredCount)
+            {
+                return false;
+            }
+
+            var usablePool = pool
+                .Distinct(StringComparer.Ordinal)
+                .Where(w => w.Length >= _profile.minLength && w.Length <= _profile.maxLength)
+                .ToList();
+            if (usablePool.Count < desiredCount)
+            {
+                return false;
+            }
+
+            var restarts = 28;
+            var samplePerStep = 220;
+            List<string> best = null;
+            var bestLen = int.MaxValue;
+
+            for (var restart = 0; restart < restarts; restart++)
+            {
+                var rng = new System.Random(seed + restart * 2971);
+                if (!TryBuildPlacementFriendlySet(usablePool, desiredCount, samplePerStep, rng, out var candidate))
+                {
+                    continue;
+                }
+
+                if (!PassesWordSetQuality(candidate, out _))
+                {
+                    continue;
+                }
+
+                var len = EstimateMergedLength(candidate, seed + restart * 1777, 4);
+                if (len < bestLen)
+                {
+                    bestLen = len;
+                    best = candidate;
+                }
+
+                if (len <= maxMergedLength)
+                {
+                    selectedWords = candidate;
+                    mergedLength = len;
+                    return true;
+                }
+            }
+
+            if (best != null)
+            {
+                selectedWords = best;
+                mergedLength = bestLen;
+            }
+
+            return false;
+        }
+
+        private static bool TryBuildPlacementFriendlySet(
+            IReadOnlyList<string> pool,
+            int desiredCount,
+            int samplePerStep,
+            System.Random rng,
+            out List<string> selected)
+        {
+            selected = null;
+            if (pool == null || pool.Count < desiredCount)
+            {
+                return false;
+            }
+
+            var start = pool[rng.Next(pool.Count)];
+            var selectedSet = new HashSet<string>(StringComparer.Ordinal) { start };
+            var list = new List<string>(desiredCount) { start };
+            var merged = start;
+
+            while (list.Count < desiredCount)
+            {
+                string bestWord = null;
+                string bestMerged = null;
+                var bestLen = int.MaxValue;
+                var bestOverlap = -1;
+
+                var scans = Math.Min(samplePerStep, pool.Count);
+                for (var i = 0; i < scans; i++)
+                {
+                    var word = pool[rng.Next(pool.Count)];
+                    if (!selectedSet.Add(word))
+                    {
+                        continue;
+                    }
+
+                    selectedSet.Remove(word);
+                    if (!TryBestMerge(merged, word, out var mergedCandidate, out var overlap, out _))
+                    {
+                        continue;
+                    }
+
+                    var candidateLen = mergedCandidate.Length;
+                    if (candidateLen < bestLen || (candidateLen == bestLen && overlap > bestOverlap))
+                    {
+                        bestLen = candidateLen;
+                        bestOverlap = overlap;
+                        bestWord = word;
+                        bestMerged = mergedCandidate;
+                    }
+                }
+
+                if (bestWord == null)
+                {
+                    return false;
+                }
+
+                selectedSet.Add(bestWord);
+                list.Add(bestWord);
+                merged = bestMerged;
+            }
+
+            selected = list;
+            return true;
+        }
+
+        private static int EstimateMergedLength(IReadOnlyList<string> words, int seed, int restarts)
+        {
+            if (words == null || words.Count == 0)
+            {
+                return 0;
+            }
+
+            var normalized = words
+                .Select(WordNormalizer.Normalize)
+                .Where(w => !string.IsNullOrWhiteSpace(w))
+                .Distinct(StringComparer.Ordinal)
+                .ToList();
+            if (normalized.Count == 0)
+            {
+                return 0;
+            }
+
+            var attempts = Math.Max(1, restarts);
+            var best = int.MaxValue;
+            for (var attempt = 0; attempt < attempts; attempt++)
+            {
+                var rng = new System.Random(seed + attempt * 1543);
+                var pool = new List<string>(normalized);
+                var startIndex = rng.Next(pool.Count);
+                var merged = pool[startIndex];
+                pool.RemoveAt(startIndex);
+
+                while (pool.Count > 0)
+                {
+                    var bestIndex = -1;
+                    var bestMerged = string.Empty;
+                    var bestMergedLen = int.MaxValue;
+                    var bestOverlap = -1;
+
+                    for (var i = 0; i < pool.Count; i++)
+                    {
+                        if (!TryBestMerge(merged, pool[i], out var candidate, out var overlap, out _))
+                        {
+                            continue;
+                        }
+
+                        if (candidate.Length < bestMergedLen ||
+                            (candidate.Length == bestMergedLen && overlap > bestOverlap))
+                        {
+                            bestIndex = i;
+                            bestMerged = candidate;
+                            bestMergedLen = candidate.Length;
+                            bestOverlap = overlap;
+                        }
+                    }
+
+                    if (bestIndex < 0)
+                    {
+                        merged += pool[0];
+                        pool.RemoveAt(0);
+                    }
+                    else
+                    {
+                        merged = bestMerged;
+                        pool.RemoveAt(bestIndex);
+                    }
+                }
+
+                if (merged.Length < best)
+                {
+                    best = merged.Length;
+                }
+            }
+
+            return best == int.MaxValue ? 0 : best;
         }
 
         private bool TryBuildWithDesired(
@@ -594,6 +1014,11 @@ namespace HexWords.EditorTools
                     continue;
                 }
 
+                if (!PassesWordSetQuality(selected, out _))
+                {
+                    continue;
+                }
+
                 var cellCount = ResolveCellCount(merged.Length, _profile.cellCount, _profile.fillerLettersMax);
                 if (cellCount < merged.Length)
                 {
@@ -625,6 +1050,10 @@ namespace HexWords.EditorTools
 
                 var take = _strictTargetWordCount ? desiredCount : Mathf.Clamp(validWords.Count, _profile.targetWordsMin, _profile.targetWordsMax);
                 targetWords = validWords.Take(take).ToList();
+                if (!PassesWordSetQuality(targetWords, out _))
+                {
+                    continue;
+                }
                 boardLetters = letters;
                 return true;
             }
@@ -988,6 +1417,280 @@ namespace HexWords.EditorTools
             }
 
             return result;
+        }
+
+        private static bool IsAllowedEnglishCandidate(
+            string word,
+            Dictionary<string, int> popularityMap,
+            HashSet<string> userBlacklist)
+        {
+            if (string.IsNullOrWhiteSpace(word))
+            {
+                return false;
+            }
+
+            if (!WordNormalizer.IsAsciiOrCyrillicLetterString(word))
+            {
+                return false;
+            }
+
+            if (word.Length < 3 || word.Length > 10)
+            {
+                return false;
+            }
+
+            if (!LooksNaturalEnglishWord(word))
+            {
+                return false;
+            }
+
+            if (CountCoreVowels(word) == 0)
+            {
+                return false;
+            }
+
+            if (IsCalendarTokenEn(word))
+            {
+                return false;
+            }
+
+            if (userBlacklist != null && userBlacklist.Contains(word))
+            {
+                return false;
+            }
+
+            if (popularityMap == null || !popularityMap.TryGetValue(word, out var rank))
+            {
+                return false;
+            }
+
+            return rank <= GetRankLimitByLength(word.Length);
+        }
+
+        private static int GetRankLimitByLength(int length)
+        {
+            if (length <= 3)
+            {
+                return 1200;
+            }
+
+            if (length == 4)
+            {
+                return 2600;
+            }
+
+            if (length <= 6)
+            {
+                return 5200;
+            }
+
+            return 7600;
+        }
+
+        private static bool IsCalendarTokenEn(string word)
+        {
+            if (_enCalendarTokensCache == null)
+            {
+                _enCalendarTokensCache = BuildEnCalendarTokens();
+            }
+
+            return _enCalendarTokensCache.Contains(word);
+        }
+
+        private static HashSet<string> BuildEnCalendarTokens()
+        {
+            var set = new HashSet<string>(StringComparer.Ordinal);
+            var culture = CultureInfo.GetCultureInfo("en-US");
+            var dtf = culture.DateTimeFormat;
+
+            for (var i = 0; i < dtf.DayNames.Length; i++)
+            {
+                var token = WordNormalizer.Normalize(dtf.DayNames[i]);
+                if (!string.IsNullOrWhiteSpace(token))
+                {
+                    set.Add(token);
+                }
+            }
+
+            for (var i = 0; i < dtf.AbbreviatedDayNames.Length; i++)
+            {
+                var token = WordNormalizer.Normalize(dtf.AbbreviatedDayNames[i]);
+                if (!string.IsNullOrWhiteSpace(token))
+                {
+                    set.Add(token);
+                }
+            }
+
+            for (var i = 0; i < dtf.MonthNames.Length; i++)
+            {
+                var token = WordNormalizer.Normalize(dtf.MonthNames[i]);
+                if (!string.IsNullOrWhiteSpace(token))
+                {
+                    set.Add(token);
+                }
+            }
+
+            for (var i = 0; i < dtf.AbbreviatedMonthNames.Length; i++)
+            {
+                var token = WordNormalizer.Normalize(dtf.AbbreviatedMonthNames[i]);
+                if (!string.IsNullOrWhiteSpace(token))
+                {
+                    set.Add(token);
+                }
+            }
+
+            set.Add("AM");
+            set.Add("PM");
+            return set;
+        }
+
+        private static HashSet<string> LoadGeneratorBlacklistEn()
+        {
+            if (_enGeneratorBlacklistCache != null)
+            {
+                return _enGeneratorBlacklistCache;
+            }
+
+            var result = new HashSet<string>(StringComparer.Ordinal)
+            {
+                "GMT", "UTC", "EST", "CST", "MST", "PST",
+                "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC",
+                "MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN",
+                "HTML", "XML", "RSS", "PDF", "DVD", "CD", "TV", "PC",
+                "MD", "MR", "MRS", "MS", "DR", "LTD", "INC", "CO"
+            };
+
+            var abs = Path.Combine(Directory.GetCurrentDirectory(), EnGeneratorBlacklistPath);
+            if (File.Exists(abs))
+            {
+                var lines = File.ReadAllLines(abs);
+                for (var i = 0; i < lines.Length; i++)
+                {
+                    var token = WordNormalizer.Normalize(lines[i]);
+                    if (string.IsNullOrWhiteSpace(token) || token.StartsWith("#", StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+
+                    result.Add(token);
+                }
+            }
+
+            _enGeneratorBlacklistCache = result;
+            return _enGeneratorBlacklistCache;
+        }
+
+        private bool PassesWordSetQuality(IReadOnlyList<string> words, out string reason)
+        {
+            reason = string.Empty;
+            if (words == null || words.Count == 0)
+            {
+                reason = "empty";
+                return false;
+            }
+
+            if (_profile.language != Language.EN)
+            {
+                return true;
+            }
+
+            var normalized = words
+                .Select(WordNormalizer.Normalize)
+                .Where(w => !string.IsNullOrWhiteSpace(w))
+                .Distinct(StringComparer.Ordinal)
+                .ToList();
+
+            if (normalized.Count < words.Count)
+            {
+                reason = "duplicates";
+                return false;
+            }
+
+            if (normalized.Any(w => CountCoreVowels(w) == 0))
+            {
+                reason = "no-vowel-token";
+                return false;
+            }
+
+            var shortCount = normalized.Count(w => w.Length <= 3);
+            if (shortCount > Math.Max(2, normalized.Count / 2))
+            {
+                reason = "too-many-short";
+                return false;
+            }
+
+            var longCount = normalized.Count(w => w.Length >= 5);
+            if (normalized.Count >= 4 && _profile.maxLength >= 5 && longCount < 1)
+            {
+                reason = "no-long-words";
+                return false;
+            }
+
+            var derivativePairs = 0;
+            for (var i = 0; i < normalized.Count; i++)
+            {
+                for (var j = i + 1; j < normalized.Count; j++)
+                {
+                    if (AreDerivativePair(normalized[i], normalized[j]))
+                    {
+                        derivativePairs++;
+                    }
+                }
+            }
+
+            if (derivativePairs > Math.Max(1, normalized.Count / 2))
+            {
+                reason = "too-many-derivatives";
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool AreDerivativePair(string a, string b)
+        {
+            if (string.IsNullOrWhiteSpace(a) || string.IsNullOrWhiteSpace(b))
+            {
+                return false;
+            }
+
+            if (a.Length > b.Length)
+            {
+                (a, b) = (b, a);
+            }
+
+            var lenDiff = b.Length - a.Length;
+            if (lenDiff <= 0 || lenDiff > 2)
+            {
+                return false;
+            }
+
+            return b.StartsWith(a, StringComparison.Ordinal) || b.EndsWith(a, StringComparison.Ordinal);
+        }
+
+        private static int CountCoreVowels(string word)
+        {
+            var count = 0;
+            for (var i = 0; i < word.Length; i++)
+            {
+                if (word[i] is 'A' or 'E' or 'I' or 'O' or 'U')
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private static bool IsGeneralCategory(string category)
+        {
+            if (string.IsNullOrWhiteSpace(category))
+            {
+                return true;
+            }
+
+            var normalized = WordNormalizer.Normalize(category);
+            return normalized is "GENERAL" or "COMMON" or "ANY" or "ALL";
         }
 
         private static void CopyProfile(GenerationProfile from, GenerationProfile to)

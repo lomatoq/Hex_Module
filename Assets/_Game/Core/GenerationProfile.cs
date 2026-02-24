@@ -32,6 +32,6 @@ namespace HexWords.Core
         public float overlapWeight = 90f;
         public float diversityWeight = 22f;
         public bool requireAllTargetsSolvable = true;
-        public bool useLegacyFallback = true;
+        public bool useLegacyFallback = false;
     }
 }

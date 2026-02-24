@@ -53,9 +53,12 @@ Implemented core mechanics for a hex-cell word game with:
 - V2 now retries target-word counts from `targetWordsMax` down to `targetWordsMin` when strict mode is enabled.
 - Auto-generator logs failure reasons (`selectionFails`, `placementFails`, `solvabilityFails`) to help tuning.
 - V2 has anti-freeze guards for large dictionaries: capped candidate pool, solver time budget, beam expansion cap, and cancelable progress bar during generation.
-- For EN, auto generation now uses only words present in `frequency_en.txt` (common-word gate), which suppresses rare dictionary entries.
+- For EN, auto generation is frequency-driven (`frequency_en.txt`) with automatic common-word filtering by rank and lexical heuristics.
+- In EN mode, generator can run even if the Dictionary asset is empty/outdated (candidate source is frequency list).
+- EN filters now reject calendar/time tokens and abbreviation-like noise automatically.
+- Optional extra exclusions can still be added in `generator_blacklist_en.txt` if project-specific.
 - Legacy generator remains available via profile (`generationAlgorithm=Legacy`) or window override.
-- If v2 cannot find a valid level, optional fallback to legacy is controlled by `useLegacyFallback`.
+- `useLegacyFallback` is hidden under advanced settings and is disabled by default for cleaner V2 output.
 
 ## CSV formats
 ### dictionary_ru.csv / dictionary_en.csv

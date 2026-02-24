@@ -63,8 +63,7 @@ namespace HexWords.EditorTools.GenerationV2
             for (var attempt = 0; attempt < attempts; attempt++)
             {
                 var rng = new Random(options.seed + attempt * 911);
-                var orderedWords = ShuffleWords(normalizedWords, rng);
-                var merged = MergeWords(orderedWords);
+                var merged = BuildMergedPath(normalizedWords, rng);
                 var baseLetters = BuildBaseLetters(merged, options.avoidDuplicateLetters);
 
                 if (!TryResolveCellCount(baseLetters.Count, options, out var cellCount))
@@ -106,6 +105,75 @@ namespace HexWords.EditorTools.GenerationV2
             }
 
             return copy;
+        }
+
+        private static string BuildMergedPath(IReadOnlyList<string> words, Random rng)
+        {
+            if (words == null || words.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            if (words.Count == 1)
+            {
+                return words[0];
+            }
+
+            var pool = words.ToList();
+            var startIndex = rng.Next(pool.Count);
+            var merged = pool[startIndex];
+            pool.RemoveAt(startIndex);
+
+            while (pool.Count > 0)
+            {
+                var bestIndex = -1;
+                var bestMerged = string.Empty;
+                var bestLength = int.MaxValue;
+                var bestOverlap = -1;
+
+                for (var i = 0; i < pool.Count; i++)
+                {
+                    if (!TryBestMergeWithMetrics(merged, pool[i], out var candidate, out var overlap, out _))
+                    {
+                        continue;
+                    }
+
+                    if (candidate.Length < bestLength)
+                    {
+                        bestLength = candidate.Length;
+                        bestOverlap = overlap;
+                        bestIndex = i;
+                        bestMerged = candidate;
+                        continue;
+                    }
+
+                    if (candidate.Length == bestLength && overlap > bestOverlap)
+                    {
+                        bestOverlap = overlap;
+                        bestIndex = i;
+                        bestMerged = candidate;
+                        continue;
+                    }
+
+                    if (candidate.Length == bestLength && overlap == bestOverlap && rng.NextDouble() < 0.15d)
+                    {
+                        bestIndex = i;
+                        bestMerged = candidate;
+                    }
+                }
+
+                if (bestIndex < 0)
+                {
+                    merged += pool[0];
+                    pool.RemoveAt(0);
+                    continue;
+                }
+
+                merged = bestMerged;
+                pool.RemoveAt(bestIndex);
+            }
+
+            return merged;
         }
 
         private static string MergeWords(IReadOnlyList<string> words)
@@ -163,6 +231,52 @@ namespace HexWords.EditorTools.GenerationV2
             }
 
             merged = best;
+            return true;
+        }
+
+        private static bool TryBestMergeWithMetrics(string a, string b, out string merged, out int overlap, out int addedLength)
+        {
+            merged = a + b;
+            overlap = 0;
+            addedLength = b.Length;
+
+            var best = merged;
+            var bestOverlap = 0;
+            var maxOverlap = Math.Min(a.Length, b.Length);
+
+            for (var k = maxOverlap; k > 0; k--)
+            {
+                if (a.EndsWith(b.Substring(0, k), StringComparison.Ordinal))
+                {
+                    var candidate = a + b.Substring(k);
+                    if (k > bestOverlap)
+                    {
+                        bestOverlap = k;
+                        best = candidate;
+                    }
+
+                    break;
+                }
+            }
+
+            for (var k = maxOverlap; k > 0; k--)
+            {
+                if (a.StartsWith(b.Substring(b.Length - k, k), StringComparison.Ordinal))
+                {
+                    var candidate = b + a.Substring(k);
+                    if (k > bestOverlap)
+                    {
+                        bestOverlap = k;
+                        best = candidate;
+                    }
+
+                    break;
+                }
+            }
+
+            merged = best;
+            overlap = bestOverlap;
+            addedLength = merged.Length - a.Length;
             return true;
         }
 

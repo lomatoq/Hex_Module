@@ -1,13 +1,11 @@
 # frequency_en.txt source
 
 - File: `frequency_en.txt`
-- Updated: 2026-02-22
-- Source list: `google-10000-english-usa-no-swears.txt`
-  - Repository: [first20hours/google-10000-english](https://github.com/first20hours/google-10000-english)
-  - README: the list is derived from Google Web Trillion Word Corpus / Peter Norvig subset.
+- Updated: 2026-02-24
+- Source list: `en_50k.txt` (post-processed to A-Z words only, 3-10 letters, de-duplicated, then top 12000)
+  - Repository: [hermitdave/FrequencyWords](https://github.com/hermitdave/FrequencyWords)
+  - Raw file: [content/2018/en/en_50k.txt](https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/en/en_50k.txt)
 
 ## License/usage note from source repo
 
-According to the upstream `LICENSE.md`, educational and personal/research use is permitted, and commercial use may require separate licensing from LDC.
-
-Before shipping commercially, verify legal suitability and replace this list with a clearly commercial-safe frequency source if needed.
+Upstream repository license is MIT (`LICENSE` in `hermitdave/FrequencyWords`).

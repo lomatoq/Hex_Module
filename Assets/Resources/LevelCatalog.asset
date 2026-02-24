@@ -12,14 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7e6f301aa3914d0a9fc1e8ce21e457b, type: 3}
   m_Name: LevelCatalog
   m_EditorClassIdentifier: Assembly-CSharp::HexWords.Core.LevelCatalog
-  levels:
-  - {fileID: 11400000, guid: e3eda90849f324e2ab4942d726500d4f, type: 2}
-  - {fileID: 11400000, guid: 4fb092f46e5ba43fbbd3bcf00a6a7a23, type: 2}
-  - {fileID: 11400000, guid: 13cb9d164a4804eee9019c6fccbdd00a, type: 2}
-  - {fileID: 11400000, guid: 709b4de8e0c76424ca64febace596e83, type: 2}
-  - {fileID: 11400000, guid: 5ca61983df1cb40ed9899f0fb0d4c680, type: 2}
-  - {fileID: 11400000, guid: d66767f54904747419c1ed4b47372368, type: 2}
-  - {fileID: 11400000, guid: 2746b187d3c374b04a3c3ebdfb59dc4a, type: 2}
-  - {fileID: 11400000, guid: 51e1be1c117b148afa44cdd991943103, type: 2}
-  - {fileID: 11400000, guid: 6d5f93b1e34644b94bf080d258272b85, type: 2}
-  - {fileID: 11400000, guid: 7b25b527011c14a7b9428b8a24cffd6b, type: 2}
+  levels: []
