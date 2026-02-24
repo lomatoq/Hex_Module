@@ -12,4 +12,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7e6f301aa3914d0a9fc1e8ce21e457b, type: 3}
   m_Name: LevelCatalog
   m_EditorClassIdentifier: Assembly-CSharp::HexWords.Core.LevelCatalog
-  levels: []
+  levels:
+  - {fileID: 11400000, guid: e3eda90849f324e2ab4942d726500d4f, type: 2}
+  - {fileID: 11400000, guid: 4fb092f46e5ba43fbbd3bcf00a6a7a23, type: 2}
+  - {fileID: 11400000, guid: 13cb9d164a4804eee9019c6fccbdd00a, type: 2}
+  - {fileID: 11400000, guid: 709b4de8e0c76424ca64febace596e83, type: 2}
+  - {fileID: 11400000, guid: 5ca61983df1cb40ed9899f0fb0d4c680, type: 2}
+  - {fileID: 11400000, guid: d66767f54904747419c1ed4b47372368, type: 2}
+  - {fileID: 11400000, guid: 2746b187d3c374b04a3c3ebdfb59dc4a, type: 2}
+  - {fileID: 11400000, guid: 51e1be1c117b148afa44cdd991943103, type: 2}
+  - {fileID: 11400000, guid: 6d5f93b1e34644b94bf080d258272b85, type: 2}
+  - {fileID: 11400000, guid: 7b25b527011c14a7b9428b8a24cffd6b, type: 2}
+  - {fileID: 11400000, guid: 0a71dcad6fad84c4181caa2cfdd1a14c, type: 2}
+  - {fileID: 11400000, guid: f7de2edf42bbf4275aeb38afe0d834f7, type: 2}
+  - {fileID: 11400000, guid: e012863f298344e9a8385c53d6ba8092, type: 2}
+  - {fileID: 11400000, guid: e38fb5127a46347d180d43f946e50491, type: 2}
+  - {fileID: 11400000, guid: 3abfa99eda5f14f66a2b06e683097617, type: 2}
+  - {fileID: 11400000, guid: 3d9d41d3482f04ba2bf713d20adaf951, type: 2}
+  - {fileID: 11400000, guid: 1019e6f7ecdcd40348d3b74d4cdc80a3, type: 2}
+  - {fileID: 11400000, guid: 0b5d92d7122094cba9b7772662b26143, type: 2}
+  - {fileID: 11400000, guid: e5c3ba7a1540843f0bd70ab7ffcd9e77, type: 2}
+  - {fileID: 11400000, guid: 8be3e6557f7dc4b5c9cb6848403fce48, type: 2}
