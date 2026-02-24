@@ -32,6 +32,7 @@ namespace HexWords.Tests.EditMode
             var placementOptions = new BoardPlacementOptions
             {
                 language = Language.EN,
+                boardLayoutMode = BoardLayoutMode.Fixed16Symmetric,
                 minCells = 6,
                 maxCells = 12,
                 fillerLettersMax = 2,
@@ -44,6 +45,8 @@ namespace HexWords.Tests.EditMode
 
             Assert.IsTrue(BoardPlacer.TryPlace(firstSelection.words, placementOptions, out var firstBoard));
             Assert.IsTrue(BoardPlacer.TryPlace(secondSelection.words, placementOptions, out var secondBoard));
+            Assert.AreEqual(HexBoardTemplate16.CellCount, firstBoard.cells.Count);
+            Assert.AreEqual(HexBoardTemplate16.CellCount, secondBoard.cells.Count);
 
             var firstLetters = firstBoard.cells.Select(c => c.letter).ToList();
             var secondLetters = secondBoard.cells.Select(c => c.letter).ToList();

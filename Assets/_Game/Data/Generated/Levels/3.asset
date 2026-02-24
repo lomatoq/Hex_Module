@@ -16,62 +16,79 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: B
-      q: 0
+      letter: A
+      q: -2
       r: 0
     - cellId: c2
-      letter: L
-      q: 1
-      r: 0
+      letter: I
+      q: -2
+      r: 1
     - cellId: c3
-      letter: O
-      q: 0
-      r: 1
+      letter: C
+      q: -2
+      r: 2
     - cellId: c4
-      letter: W
+      letter: E
       q: -1
-      r: 1
+      r: -1
     - cellId: c5
-      letter: A
+      letter: N
       q: -1
       r: 0
     - cellId: c6
-      letter: L
+      letter: S
+      q: -1
+      r: 1
+    - cellId: c7
+      letter: H
+      q: 0
+      r: -2
+    - cellId: c8
+      letter: D
       q: 0
       r: -1
-    - cellId: c7
-      letter: L
-      q: 1
-      r: -1
-    - cellId: c8
-      letter: S
-      q: 1
-      r: -2
     - cellId: c9
+      letter: R
+      q: 0
+      r: 0
+    - cellId: c10
+      letter: W
+      q: 0
+      r: 1
+    - cellId: c11
+      letter: G
+      q: 1
+      r: -2
+    - cellId: c12
       letter: A
+      q: 1
+      r: -1
+    - cellId: c13
+      letter: E
+      q: 1
+      r: 0
+    - cellId: c14
+      letter: K
       q: 2
       r: -2
-    - cellId: c10
-      letter: Y
+    - cellId: c15
+      letter: W
       q: 2
       r: -1
-    - cellId: c11
-      letter: O
+    - cellId: c16
+      letter: P
       q: 2
       r: 0
-    - cellId: c12
-      letter: R
-      q: 1
-      r: 1
-    - cellId: c13
-      letter: K
-      q: 0
-      r: 2
+  boardLayoutMode: 0
   validationMode: 0
   targetWords:
-  - WALLS
-  - SAY
-  - YORK
-  - BLOW
-  targetScore: 16
+  - ANDREW
+  - WARDEN
+  - WARNED
+  - ANSWER
+  targetScore: 24
+  minTargetWordsToComplete: 2
+  allowBonusWords: 1
+  allowBonusInLevelOnly: 1
+  bonusRequiresEmbeddedInLevelOnly: 1
   language: 1

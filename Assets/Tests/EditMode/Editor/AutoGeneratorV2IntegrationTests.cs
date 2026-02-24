@@ -34,6 +34,7 @@ namespace HexWords.Tests.EditMode
             var placementOptions = new BoardPlacementOptions
             {
                 language = Language.EN,
+                boardLayoutMode = BoardLayoutMode.Fixed16Symmetric,
                 minCells = 6,
                 maxCells = 12,
                 fillerLettersMax = 2,
@@ -47,7 +48,8 @@ namespace HexWords.Tests.EditMode
             Assert.IsTrue(BoardPlacer.TryPlace(selected.words, placementOptions, out var board));
             Assert.IsTrue(SolvabilityValidator.ValidateAll(board.cells, selected.words, out var failed));
             Assert.AreEqual(0, failed.Count);
-            Assert.LessOrEqual(board.cells.Count, 12);
+            Assert.AreEqual(HexBoardTemplate16.CellCount, board.cells.Count);
+            Assert.IsTrue(HexBoardTemplate16.HasCanonicalShape(new GridShape { cells = board.cells }));
         }
     }
 }

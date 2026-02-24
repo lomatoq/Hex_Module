@@ -13,10 +13,10 @@ namespace HexWords.Tests.EditMode
         }
 
         [Test]
-        public void BuildDesiredWordCounts_NonStrictMode_UsesOnlyMin()
+        public void BuildDesiredWordCounts_NonStrictMode_UsesAscendingRange()
         {
             var desired = GenerationPlanUtility.BuildDesiredWordCounts(4, 7, false);
-            CollectionAssert.AreEqual(new[] { 4 }, desired);
+            CollectionAssert.AreEqual(new[] { 4, 5, 6, 7 }, desired);
         }
     }
 }

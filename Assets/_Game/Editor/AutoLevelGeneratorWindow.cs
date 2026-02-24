@@ -94,11 +94,40 @@ namespace HexWords.EditorTools
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Board", EditorStyles.boldLabel);
-            _useMinimalHexes = EditorGUILayout.Toggle("Use Minimal Hexes", _useMinimalHexes);
-            _minCells = Mathf.Clamp(EditorGUILayout.IntField("Min Cells", _minCells), 3, _profile != null ? _profile.cellCount : 64);
             if (_profile != null)
             {
-                _profile.cellCount = Mathf.Clamp(EditorGUILayout.IntField("Max Cells", _profile.cellCount), _minCells, 64);
+                _profile.boardLayoutMode = (BoardLayoutMode)EditorGUILayout.EnumPopup("Layout Mode", _profile.boardLayoutMode);
+                if (_profile.boardLayoutMode == BoardLayoutMode.Fixed16Symmetric)
+                {
+                    _profile.fixedBoardCellCount = HexBoardTemplate16.CellCount;
+                    _profile.cellCount = HexBoardTemplate16.CellCount;
+                }
+
+                _useMinimalHexes = EditorGUILayout.Toggle("Use Minimal Hexes", _useMinimalHexes);
+                var maxCellsForUi = _profile.cellCount;
+                if (_profile.boardLayoutMode == BoardLayoutMode.Fixed16Symmetric)
+                {
+                    _minCells = HexBoardTemplate16.CellCount;
+                }
+                else
+                {
+                    _minCells = Mathf.Clamp(EditorGUILayout.IntField("Min Cells", _minCells), 3, maxCellsForUi);
+                }
+
+                if (_profile.boardLayoutMode == BoardLayoutMode.Fixed16Symmetric)
+                {
+                    EditorGUILayout.LabelField("Max Cells", HexBoardTemplate16.CellCount.ToString());
+                    _profile.cellCount = HexBoardTemplate16.CellCount;
+                }
+                else
+                {
+                    _profile.cellCount = Mathf.Clamp(EditorGUILayout.IntField("Max Cells", _profile.cellCount), _minCells, 64);
+                }
+            }
+            else
+            {
+                _useMinimalHexes = EditorGUILayout.Toggle("Use Minimal Hexes", _useMinimalHexes);
+                _minCells = Mathf.Clamp(EditorGUILayout.IntField("Min Cells", _minCells), 3, 64);
             }
 
             if (_profile != null)
@@ -114,12 +143,19 @@ namespace HexWords.EditorTools
                 _profile.targetWordsMax = Mathf.Clamp(EditorGUILayout.IntField("Target Words Max", _profile.targetWordsMax), _profile.targetWordsMin, 40);
                 _profile.minLength = Mathf.Clamp(EditorGUILayout.IntField("Word Length Min", _profile.minLength), 2, _profile.maxLength);
                 _profile.maxLength = Mathf.Clamp(EditorGUILayout.IntField("Word Length Max", _profile.maxLength), _profile.minLength, 32);
+                _profile.minTargetWordsToComplete = Mathf.Clamp(
+                    EditorGUILayout.IntField("Min Targets To Complete", _profile.minTargetWordsToComplete),
+                    0,
+                    _profile.targetWordsMax);
 
                 if (_showAdvanced)
                 {
                     _profile.maxLetterRepeats = Mathf.Clamp(EditorGUILayout.IntField("Max Letter Repeats", _profile.maxLetterRepeats), 0, 8);
                     _profile.allowSingleRepeatFallback = EditorGUILayout.Toggle("Allow +1 Repeat Fallback", _profile.allowSingleRepeatFallback);
                     _profile.fillerLettersMax = Mathf.Clamp(EditorGUILayout.IntField("Filler Letters Max", _profile.fillerLettersMax), 0, 16);
+                    _profile.allowBonusWords = EditorGUILayout.Toggle("Allow Bonus Words", _profile.allowBonusWords);
+                    _profile.allowBonusInLevelOnly = EditorGUILayout.Toggle("Allow Bonus In LevelOnly", _profile.allowBonusInLevelOnly);
+                    _profile.bonusRequiresEmbeddedInLevelOnly = EditorGUILayout.Toggle("Bonus Must Be Embedded (LevelOnly)", _profile.bonusRequiresEmbeddedInLevelOnly);
                 }
 
                 EditorGUILayout.Space();
@@ -264,17 +300,41 @@ namespace HexWords.EditorTools
 
                     if (cells == null)
                     {
-                        var coords = BuildCompactPathCoords(boardLetters.Count, levelIdNumber);
-                        cells = new List<CellDefinition>(boardLetters.Count);
-                        for (var i = 0; i < boardLetters.Count; i++)
+                        var useFixedLayout = _profile.boardLayoutMode == BoardLayoutMode.Fixed16Symmetric;
+                        if (useFixedLayout)
                         {
-                            cells.Add(new CellDefinition
+                            var letters = new List<char>(HexBoardTemplate16.CellCount);
+                            if (boardLetters != null)
                             {
-                                cellId = $"c{i + 1}",
-                                letter = boardLetters[i].ToString(),
-                                q = coords[i].q,
-                                r = coords[i].r
-                            });
+                                letters.AddRange(boardLetters);
+                            }
+
+                            while (letters.Count < HexBoardTemplate16.CellCount)
+                            {
+                                letters.Add(_profile.language == Language.RU ? 'О' : 'E');
+                            }
+
+                            if (letters.Count > HexBoardTemplate16.CellCount)
+                            {
+                                letters = letters.Take(HexBoardTemplate16.CellCount).ToList();
+                            }
+
+                            cells = HexBoardTemplate16.BuildCells(letters);
+                        }
+                        else
+                        {
+                            var coords = BuildCompactPathCoords(boardLetters.Count, levelIdNumber);
+                            cells = new List<CellDefinition>(boardLetters.Count);
+                            for (var i = 0; i < boardLetters.Count; i++)
+                            {
+                                cells.Add(new CellDefinition
+                                {
+                                    cellId = $"c{i + 1}",
+                                    letter = boardLetters[i].ToString(),
+                                    q = coords[i].q,
+                                    r = coords[i].r
+                                });
+                            }
                         }
                     }
 
@@ -306,6 +366,11 @@ namespace HexWords.EditorTools
                     level.targetWords = targetWords.ToArray();
                     level.targetScore = targetWords.Sum(w => w.Length);
                     level.shape = new GridShape { cells = cells };
+                    level.boardLayoutMode = _profile.boardLayoutMode;
+                    level.minTargetWordsToComplete = Mathf.Clamp(_profile.minTargetWordsToComplete, 0, targetWords.Count);
+                    level.allowBonusWords = _profile.allowBonusWords;
+                    level.allowBonusInLevelOnly = _profile.allowBonusInLevelOnly;
+                    level.bonusRequiresEmbeddedInLevelOnly = _profile.bonusRequiresEmbeddedInLevelOnly;
 
                     if (existing == null)
                     {
@@ -333,7 +398,10 @@ namespace HexWords.EditorTools
                 $"Skipped unsolved={skippedUnsolved}\n" +
                 $"Skipped quality={skippedQuality}\n" +
                 $"Candidates={candidates.Count}\n" +
+                $"LayoutMode={_profile.boardLayoutMode}\n" +
+                $"MinTargetsToComplete={_profile.minTargetWordsToComplete}\n" +
                 $"Output={_outputFolder}\n" +
+                $"EditorLog=/Users/hlebhlyaba/Library/Logs/Unity/Editor.log\n" +
                 $"Canceled={canceled}\n" +
                 $"First constraint reason={firstConstraintReason ?? "n/a"}";
 
@@ -483,6 +551,11 @@ namespace HexWords.EditorTools
                 .Distinct(StringComparer.Ordinal)
                 .ToList();
 
+            if (_profile.boardLayoutMode == BoardLayoutMode.Fixed16Symmetric)
+            {
+                available = available.Where(w => w.Length <= HexBoardTemplate16.CellCount).ToList();
+            }
+
             var minTargets = Mathf.Clamp(_profile.targetWordsMin, 1, 40);
             var maxTargets = Mathf.Clamp(_profile.targetWordsMax, minTargets, 40);
             if (available.Count < minTargets)
@@ -495,17 +568,21 @@ namespace HexWords.EditorTools
             var resampleAttempts = Mathf.Max(1, _profile.maxResampleAttempts);
             var scaledPlacementAttempts = _attemptsPerLevel / Mathf.Max(1, resampleAttempts / 3);
             var placementAttempts = Mathf.Clamp(Mathf.Max(12, scaledPlacementAttempts), 4, 300);
-            var minCells = _useMinimalHexes ? _minCells : _profile.cellCount;
-            var placementMaxCells = Mathf.Max(
-                DefaultAutoBoardCells,
-                _profile.cellCount,
-                Mathf.Max(minCells, _profile.hexBudgetMax > 0 ? _profile.hexBudgetMax : 0));
+            var useFixedLayout = _profile.boardLayoutMode == BoardLayoutMode.Fixed16Symmetric;
+            var minCells = useFixedLayout
+                ? HexBoardTemplate16.CellCount
+                : (_useMinimalHexes ? _minCells : _profile.cellCount);
+            var placementMaxCells = useFixedLayout
+                ? HexBoardTemplate16.CellCount
+                : Mathf.Max(
+                    DefaultAutoBoardCells,
+                    _profile.cellCount,
+                    Mathf.Max(minCells, _profile.hexBudgetMax > 0 ? _profile.hexBudgetMax : 0));
             var selectionFails = 0;
             var placementFails = 0;
             var solvabilityFails = 0;
             var selectionSolverFails = 0;
             var selectionQualityFails = 0;
-            var selectionMergedLengthFails = 0;
             var desiredCounts = GenerationPlanUtility.BuildDesiredWordCounts(minTargets, maxTargets, _strictTargetWordCount);
             var levelSolveTimer = Stopwatch.StartNew();
             const int levelSolveBudgetMs = 5000;
@@ -605,14 +682,6 @@ namespace HexWords.EditorTools
                     }
 
                     var selectedWords = selection.words.ToList();
-                    var estimatedMergedLength = EstimateMergedLength(selectedWords, seed + attempt * 43 + desiredCount * 13, 6);
-                    if (estimatedMergedLength > placementMaxCells &&
-                        !TrySelectPlacementFriendlyWords(available, desiredCount, placementMaxCells, seed + attempt * 59 + desiredCount * 19, out selectedWords, out estimatedMergedLength))
-                    {
-                        selectionFails++;
-                        selectionMergedLengthFails++;
-                        continue;
-                    }
 
                     if (!PassesWordSetQuality(selectedWords, out _))
                     {
@@ -631,6 +700,7 @@ namespace HexWords.EditorTools
                         var placementOptions = new BoardPlacementOptions
                         {
                             language = _profile.language,
+                            boardLayoutMode = _profile.boardLayoutMode,
                             minCells = minCells,
                             maxCells = placementMaxCells,
                             fillerLettersMax = Mathf.Max(_profile.fillerLettersMax, Mathf.Max(0, minCells - selection.hexCount)),
@@ -682,10 +752,10 @@ namespace HexWords.EditorTools
                 $"V2 failed for level {seed}. Available={available.Count}, " +
                 $"WordsRange={minTargets}-{maxTargets}, ReuseLimit={_maxWordReuseAcrossLevels}, " +
                 $"selectionFails={selectionFails}, selectionSolverFails={selectionSolverFails}, " +
-                $"selectionQualityFails={selectionQualityFails}, selectionMergedFails={selectionMergedLengthFails}, " +
+                $"selectionQualityFails={selectionQualityFails}, selectionMergedFails=0, " +
                 $"placementFails={placementFails}, solvabilityFails={solvabilityFails}, " +
                 $"selectionModeFallbacks={selectionModeFallbacks}, objectiveFallbacks={objectiveFallbacks}, placementModeFallbacks={placementModeFallbacks}, " +
-                $"Category='{_profile.category}', CellCount={_profile.cellCount}, PlacementMaxCells={placementMaxCells}, ElapsedMs={levelSolveTimer.ElapsedMilliseconds}.";
+                $"Category='{_profile.category}', Layout={_profile.boardLayoutMode}, CellCount={_profile.cellCount}, PlacementMaxCells={placementMaxCells}, ElapsedMs={levelSolveTimer.ElapsedMilliseconds}.";
             return false;
         }
 
@@ -1706,10 +1776,16 @@ namespace HexWords.EditorTools
             to.allowSingleRepeatFallback = from.allowSingleRepeatFallback;
             to.fillerLettersMax = from.fillerLettersMax;
             to.avoidDuplicateLetters = from.avoidDuplicateLetters;
+            to.boardLayoutMode = from.boardLayoutMode;
+            to.fixedBoardCellCount = from.fixedBoardCellCount;
             to.includeLetters = from.includeLetters;
             to.excludeLetters = from.excludeLetters;
             to.minDifficultyBand = from.minDifficultyBand;
             to.maxDifficultyBand = from.maxDifficultyBand;
+            to.minTargetWordsToComplete = from.minTargetWordsToComplete;
+            to.allowBonusWords = from.allowBonusWords;
+            to.allowBonusInLevelOnly = from.allowBonusInLevelOnly;
+            to.bonusRequiresEmbeddedInLevelOnly = from.bonusRequiresEmbeddedInLevelOnly;
 
             to.generationAlgorithm = from.generationAlgorithm;
             to.objective = from.objective;

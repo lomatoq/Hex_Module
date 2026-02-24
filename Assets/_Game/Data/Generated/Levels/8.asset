@@ -16,58 +16,79 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: L
-      q: 0
+      letter: Z
+      q: -2
       r: 0
     - cellId: c2
-      letter: I
-      q: 0
-      r: -1
-    - cellId: c3
-      letter: P
-      q: 1
-      r: -1
-    - cellId: c4
-      letter: S
-      q: 1
-      r: 0
-    - cellId: c5
-      letter: A
-      q: 0
+      letter: U
+      q: -2
       r: 1
+    - cellId: c3
+      letter: C
+      q: -2
+      r: 2
+    - cellId: c4
+      letter: H
+      q: -1
+      r: -1
+    - cellId: c5
+      letter: E
+      q: -1
+      r: 0
     - cellId: c6
-      letter: W
+      letter: F
       q: -1
       r: 1
     - cellId: c7
-      letter: I
-      q: -1
-      r: 0
+      letter: L
+      q: 0
+      r: -2
     - cellId: c8
       letter: R
-      q: -2
-      r: 0
-    - cellId: c9
-      letter: E
-      q: -2
-      r: 1
-    - cellId: c10
-      letter: P
-      q: -2
-      r: 2
-    - cellId: c11
-      letter: L
-      q: -1
-      r: 2
-    - cellId: c12
-      letter: Y
       q: 0
-      r: 2
+      r: -1
+    - cellId: c9
+      letter: A
+      q: 0
+      r: 0
+    - cellId: c10
+      letter: D
+      q: 0
+      r: 1
+    - cellId: c11
+      letter: D
+      q: 1
+      r: -2
+    - cellId: c12
+      letter: I
+      q: 1
+      r: -1
+    - cellId: c13
+      letter: M
+      q: 1
+      r: 0
+    - cellId: c14
+      letter: N
+      q: 2
+      r: -2
+    - cellId: c15
+      letter: E
+      q: 2
+      r: -1
+    - cellId: c16
+      letter: R
+      q: 2
+      r: 0
+  boardLayoutMode: 0
   validationMode: 0
   targetWords:
-  - WIRE
-  - SAW
-  - LIPS
-  - REPLY
-  targetScore: 16
+  - ADMIRE
+  - MARINE
+  - REMAIN
+  - REMIND
+  targetScore: 24
+  minTargetWordsToComplete: 2
+  allowBonusWords: 1
+  allowBonusInLevelOnly: 1
+  bonusRequiresEmbeddedInLevelOnly: 1
   language: 1

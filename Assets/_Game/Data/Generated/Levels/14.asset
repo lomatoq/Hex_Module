@@ -16,54 +16,79 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: E
-      q: 0
+      letter: H
+      q: -2
       r: 0
     - cellId: c2
-      letter: A
-      q: -1
-      r: 0
+      letter: V
+      q: -2
+      r: 1
     - cellId: c3
       letter: T
-      q: 0
-      r: -1
+      q: -2
+      r: 2
     - cellId: c4
-      letter: B
-      q: 1
+      letter: I
+      q: -1
       r: -1
     - cellId: c5
-      letter: O
-      q: 1
-      r: 0
-    - cellId: c6
-      letter: B
-      q: 0
-      r: 1
-    - cellId: c7
       letter: A
       q: -1
-      r: 1
-    - cellId: c8
-      letter: N
-      q: -2
-      r: 1
-    - cellId: c9
-      letter: G
-      q: -2
       r: 0
-    - cellId: c10
-      letter: L
+    - cellId: c6
+      letter: M
       q: -1
-      r: -1
-    - cellId: c11
-      letter: E
+      r: 1
+    - cellId: c7
+      letter: S
       q: 0
       r: -2
+    - cellId: c8
+      letter: R
+      q: 0
+      r: -1
+    - cellId: c9
+      letter: E
+      q: 0
+      r: 0
+    - cellId: c10
+      letter: N
+      q: 0
+      r: 1
+    - cellId: c11
+      letter: E
+      q: 1
+      r: -2
+    - cellId: c12
+      letter: I
+      q: 1
+      r: -1
+    - cellId: c13
+      letter: L
+      q: 1
+      r: 0
+    - cellId: c14
+      letter: D
+      q: 2
+      r: -2
+    - cellId: c15
+      letter: A
+      q: 2
+      r: -1
+    - cellId: c16
+      letter: G
+      q: 2
+      r: 0
+  boardLayoutMode: 0
   validationMode: 0
   targetWords:
-  - ANGLE
-  - BANG
-  - BOB
-  - EAT
-  targetScore: 15
+  - RAISED
+  - ISRAEL
+  - LADIES
+  - SERIAL
+  targetScore: 24
+  minTargetWordsToComplete: 2
+  allowBonusWords: 1
+  allowBonusInLevelOnly: 1
+  bonusRequiresEmbeddedInLevelOnly: 1
   language: 1

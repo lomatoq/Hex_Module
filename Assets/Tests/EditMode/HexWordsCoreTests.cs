@@ -58,9 +58,10 @@ namespace HexWords.Tests.EditMode
             var session = new LevelSessionState();
             var validator = new WordValidator(null);
 
-            var ok = validator.TryValidate("DOG", level, session, out var reason);
-            Assert.IsFalse(ok);
-            Assert.AreEqual(ValidationReason.NotInLevelTargets, reason);
+            var result = validator.Validate("DOG", level, session);
+            Assert.IsFalse(result.accepted);
+            Assert.AreEqual(WordSubmitOutcome.Rejected, result.outcome);
+            Assert.AreEqual(ValidationReason.NotInLevelTargets, result.reason);
         }
 
         [Test]
@@ -76,8 +77,8 @@ namespace HexWords.Tests.EditMode
             };
 
             var validator = new WordValidator(db);
-            Assert.IsTrue(validator.TryValidate("CAT", level, session, out _));
-            Assert.IsFalse(validator.TryValidate("КОТ", level, session, out _));
+            Assert.IsTrue(validator.Validate("CAT", level, session).accepted);
+            Assert.IsFalse(validator.Validate("КОТ", level, session).accepted);
         }
 
         [Test]
@@ -92,8 +93,8 @@ namespace HexWords.Tests.EditMode
             };
 
             var validator = new WordValidator(db);
-            Assert.IsFalse(validator.TryValidate("ЁЛКА", level, session, out _));
-            Assert.IsTrue(validator.TryValidate("ЕЛКА", level, session, out _));
+            Assert.IsFalse(validator.Validate("ЁЛКА", level, session).accepted);
+            Assert.IsTrue(validator.Validate("ЕЛКА", level, session).accepted);
         }
 
         [Test]

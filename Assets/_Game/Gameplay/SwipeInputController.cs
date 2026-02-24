@@ -95,19 +95,27 @@ namespace HexWords.Gameplay
 
             _isTrackingPath = false;
             var word = _pathBuilder.BuildWord();
-            var accepted = _session.TrySubmitWord(word, _level);
+            _session.TrySubmitWord(word, _level);
+            var outcome = _session.LastSubmitOutcome;
 
             foreach (var cellId in _pathBuilder.CellPath)
             {
                 if (gridView.CellViews.TryGetValue(cellId, out var view))
                 {
-                    if (accepted)
+                    switch (outcome)
                     {
-                        view.OnPathAccepted();
-                    }
-                    else
-                    {
-                        view.OnPathRejected();
+                        case WordSubmitOutcome.TargetAccepted:
+                            view.OnPathAccepted();
+                            break;
+                        case WordSubmitOutcome.BonusAccepted:
+                            view.OnPathBonusAccepted();
+                            break;
+                        case WordSubmitOutcome.AlreadyAccepted:
+                            view.OnPathAlreadyAccepted();
+                            break;
+                        default:
+                            view.OnPathRejected();
+                            break;
                     }
                 }
             }

@@ -8,6 +8,7 @@ namespace HexWords.EditorTools.GenerationV2
     public sealed class BoardPlacementOptions
     {
         public Language language = Language.EN;
+        public BoardLayoutMode boardLayoutMode = BoardLayoutMode.Fixed16Symmetric;
         public int minCells = 3;
         public int maxCells = 18;
         public int fillerLettersMax;
@@ -59,6 +60,11 @@ namespace HexWords.EditorTools.GenerationV2
                 return false;
             }
 
+            if (options.boardLayoutMode == BoardLayoutMode.Fixed16Symmetric)
+            {
+                return TryPlaceFixed16(normalizedWords, options, out result);
+            }
+
             var attempts = Math.Max(1, options.attempts);
             for (var attempt = 0; attempt < attempts; attempt++)
             {
@@ -93,6 +99,418 @@ namespace HexWords.EditorTools.GenerationV2
             }
 
             return false;
+        }
+
+        private static readonly int[][] FixedNeighbors = BuildFixedNeighbors();
+
+        private static bool TryPlaceFixed16(
+            IReadOnlyList<string> normalizedWords,
+            BoardPlacementOptions options,
+            out BoardPlacementResult result)
+        {
+            result = null;
+            var attempts = Math.Max(1, options.attempts);
+            var sortedWords = normalizedWords
+                .OrderByDescending(w => w.Length)
+                .ThenBy(w => w, StringComparer.Ordinal)
+                .ToList();
+
+            for (var attempt = 0; attempt < attempts; attempt++)
+            {
+                var rng = new Random(options.seed + attempt * 911);
+                var board = new char[HexBoardTemplate16.CellCount];
+                if (!TryPlaceWordsRecursive(sortedWords, 0, board, options, rng))
+                {
+                    continue;
+                }
+
+                if (!FillFixedBoard(board, options, rng))
+                {
+                    continue;
+                }
+
+                if (CountRepeats(board) > Math.Max(0, options.maxLetterRepeats))
+                {
+                    continue;
+                }
+
+                var cells = HexBoardTemplate16.BuildCells(board);
+                if (options.requireAllTargetsSolvable &&
+                    !SolvabilityValidator.ValidateAll(cells, normalizedWords, out _))
+                {
+                    continue;
+                }
+
+                result = new BoardPlacementResult
+                {
+                    cells = cells,
+                    mergedPath = string.Join("|", sortedWords)
+                };
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool TryPlaceWordsRecursive(
+            IReadOnlyList<string> words,
+            int wordIndex,
+            char[] board,
+            BoardPlacementOptions options,
+            Random rng)
+        {
+            if (wordIndex >= words.Count)
+            {
+                return true;
+            }
+
+            var word = words[wordIndex];
+            if (word.Length > HexBoardTemplate16.CellCount)
+            {
+                return false;
+            }
+
+            var candidates = CollectPathCandidates(word, board, options, rng, 96);
+            if (candidates.Count == 0)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < candidates.Count; i++)
+            {
+                var candidate = candidates[i];
+                var changed = new List<int>();
+                if (!TryApplyPath(word, candidate.path, board, options, changed))
+                {
+                    continue;
+                }
+
+                if (TryPlaceWordsRecursive(words, wordIndex + 1, board, options, rng))
+                {
+                    return true;
+                }
+
+                for (var c = 0; c < changed.Count; c++)
+                {
+                    board[changed[c]] = '\0';
+                }
+            }
+
+            return false;
+        }
+
+        private static List<PathCandidate> CollectPathCandidates(
+            string word,
+            char[] board,
+            BoardPlacementOptions options,
+            Random rng,
+            int maxCandidates)
+        {
+            var list = new List<PathCandidate>(Math.Max(8, maxCandidates / 2));
+            var path = new int[word.Length];
+            var visited = new bool[HexBoardTemplate16.CellCount];
+            var starts = Enumerable.Range(0, HexBoardTemplate16.CellCount)
+                .OrderBy(_ => rng.Next())
+                .ToList();
+
+            for (var s = 0; s < starts.Count; s++)
+            {
+                var start = starts[s];
+                if (!CanUseCellForLetter(start, word[0], board, options))
+                {
+                    continue;
+                }
+
+                visited[start] = true;
+                path[0] = start;
+                CollectPathsDfs(word, 1, path, visited, board, options, list, maxCandidates, rng);
+                visited[start] = false;
+
+                if (list.Count >= maxCandidates)
+                {
+                    break;
+                }
+            }
+
+            return list
+                .OrderByDescending(c => c.score)
+                .ThenBy(_ => rng.Next())
+                .Take(maxCandidates)
+                .ToList();
+        }
+
+        private static void CollectPathsDfs(
+            string word,
+            int depth,
+            int[] path,
+            bool[] visited,
+            char[] board,
+            BoardPlacementOptions options,
+            List<PathCandidate> collector,
+            int maxCandidates,
+            Random rng)
+        {
+            if (collector.Count >= maxCandidates)
+            {
+                return;
+            }
+
+            if (depth >= word.Length)
+            {
+                var copied = new int[path.Length];
+                Array.Copy(path, copied, path.Length);
+                collector.Add(new PathCandidate
+                {
+                    path = copied,
+                    score = ScorePath(word, copied, board, rng)
+                });
+                return;
+            }
+
+            var prev = path[depth - 1];
+            var neighbors = FixedNeighbors[prev]
+                .OrderByDescending(n => board[n] == word[depth] ? 1 : 0)
+                .ThenBy(_ => rng.Next())
+                .ToList();
+
+            for (var i = 0; i < neighbors.Count; i++)
+            {
+                var next = neighbors[i];
+                if (visited[next])
+                {
+                    continue;
+                }
+
+                if (!CanUseCellForLetter(next, word[depth], board, options))
+                {
+                    continue;
+                }
+
+                visited[next] = true;
+                path[depth] = next;
+                CollectPathsDfs(word, depth + 1, path, visited, board, options, collector, maxCandidates, rng);
+                visited[next] = false;
+
+                if (collector.Count >= maxCandidates)
+                {
+                    return;
+                }
+            }
+        }
+
+        private static bool CanUseCellForLetter(
+            int index,
+            char letter,
+            char[] board,
+            BoardPlacementOptions options)
+        {
+            var current = board[index];
+            if (current != '\0')
+            {
+                return current == letter;
+            }
+
+            if (!options.avoidDuplicateLetters)
+            {
+                return true;
+            }
+
+            for (var i = 0; i < board.Length; i++)
+            {
+                if (i != index && board[i] == letter)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool TryApplyPath(
+            string word,
+            int[] path,
+            char[] board,
+            BoardPlacementOptions options,
+            List<int> changedIndices)
+        {
+            for (var i = 0; i < path.Length; i++)
+            {
+                var idx = path[i];
+                if (board[idx] != '\0')
+                {
+                    if (board[idx] != word[i])
+                    {
+                        return false;
+                    }
+
+                    continue;
+                }
+
+                if (options.avoidDuplicateLetters)
+                {
+                    for (var b = 0; b < board.Length; b++)
+                    {
+                        if (board[b] == word[i])
+                        {
+                            return false;
+                        }
+                    }
+                }
+
+                board[idx] = word[i];
+                changedIndices.Add(idx);
+            }
+
+            if (CountRepeats(board) > Math.Max(0, options.maxLetterRepeats))
+            {
+                for (var i = 0; i < changedIndices.Count; i++)
+                {
+                    board[changedIndices[i]] = '\0';
+                }
+
+                changedIndices.Clear();
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool FillFixedBoard(char[] board, BoardPlacementOptions options, Random rng)
+        {
+            var counts = new Dictionary<char, int>();
+            for (var i = 0; i < board.Length; i++)
+            {
+                if (board[i] == '\0')
+                {
+                    continue;
+                }
+
+                counts.TryGetValue(board[i], out var c);
+                counts[board[i]] = c + 1;
+            }
+
+            var alphabet = options.language == Language.RU ? RuAlphabet : EnAlphabet;
+            var common = options.language == Language.RU ? RuCommon : EnCommon;
+
+            for (var i = 0; i < board.Length; i++)
+            {
+                if (board[i] != '\0')
+                {
+                    continue;
+                }
+
+                var filled = false;
+                var source = rng.NextDouble() < 0.88d ? common : alphabet;
+                for (var pass = 0; pass < 2 && !filled; pass++)
+                {
+                    var currentSource = pass == 0 ? source : alphabet;
+                    for (var k = 0; k < currentSource.Length; k++)
+                    {
+                        var candidate = currentSource[(k + rng.Next(currentSource.Length)) % currentSource.Length];
+                        if (options.avoidDuplicateLetters && counts.ContainsKey(candidate))
+                        {
+                            continue;
+                        }
+
+                        counts.TryGetValue(candidate, out var existing);
+                        counts[candidate] = existing + 1;
+                        if (CountRepeats(counts) > Math.Max(0, options.maxLetterRepeats))
+                        {
+                            if (existing == 0)
+                            {
+                                counts.Remove(candidate);
+                            }
+                            else
+                            {
+                                counts[candidate] = existing;
+                            }
+
+                            continue;
+                        }
+
+                        board[i] = candidate;
+                        filled = true;
+                        break;
+                    }
+                }
+
+                if (!filled)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static double ScorePath(string word, int[] path, char[] board, Random rng)
+        {
+            var overlap = 0;
+            var newCells = 0;
+            var centerBonus = 0d;
+            for (var i = 0; i < path.Length; i++)
+            {
+                var idx = path[i];
+                if (board[idx] == word[i])
+                {
+                    overlap++;
+                }
+                else if (board[idx] == '\0')
+                {
+                    newCells++;
+                }
+
+                var coord = HexBoardTemplate16.Coordinates[idx];
+                centerBonus += 3d - Math.Abs(coord.q) - Math.Abs(coord.r);
+            }
+
+            return overlap * 12d - newCells * 2d + centerBonus + rng.NextDouble();
+        }
+
+        private static int CountRepeats(char[] letters)
+        {
+            var counts = new Dictionary<char, int>();
+            for (var i = 0; i < letters.Length; i++)
+            {
+                var ch = letters[i];
+                if (ch == '\0')
+                {
+                    continue;
+                }
+
+                counts.TryGetValue(ch, out var count);
+                counts[ch] = count + 1;
+            }
+
+            return CountRepeats(counts);
+        }
+
+        private static int[][] BuildFixedNeighbors()
+        {
+            var neighbors = new int[HexBoardTemplate16.CellCount][];
+            for (var i = 0; i < HexBoardTemplate16.CellCount; i++)
+            {
+                var id = HexBoardTemplate16.CellIds[i];
+                var ids = HexBoardTemplate16.GetNeighbors(id);
+                var list = new List<int>(ids.Count);
+                for (var n = 0; n < ids.Count; n++)
+                {
+                    if (int.TryParse(ids[n].Substring(1), out var parsed))
+                    {
+                        list.Add(parsed - 1);
+                    }
+                }
+
+                neighbors[i] = list.ToArray();
+            }
+
+            return neighbors;
+        }
+
+        private sealed class PathCandidate
+        {
+            public int[] path;
+            public double score;
         }
 
         private static List<string> ShuffleWords(List<string> words, Random rng)

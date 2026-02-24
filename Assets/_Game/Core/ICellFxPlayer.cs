@@ -4,6 +4,8 @@ namespace HexWords.Core
     {
         void OnSelected();
         void OnPathAccepted();
+        void OnPathBonusAccepted();
+        void OnPathAlreadyAccepted();
         void OnPathRejected();
     }
 }

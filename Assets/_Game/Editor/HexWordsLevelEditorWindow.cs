@@ -53,7 +53,12 @@ namespace HexWords.EditorTools
             _level.levelId = EditorGUILayout.TextField("Level ID", _level.levelId);
             _level.language = (Language)EditorGUILayout.EnumPopup("Language", _level.language);
             _level.validationMode = (ValidationMode)EditorGUILayout.EnumPopup("Validation Mode", _level.validationMode);
+            _level.boardLayoutMode = (BoardLayoutMode)EditorGUILayout.EnumPopup("Board Layout", _level.boardLayoutMode);
             _level.targetScore = EditorGUILayout.IntField("Target Score", _level.targetScore);
+            _level.minTargetWordsToComplete = Mathf.Max(0, EditorGUILayout.IntField("Min Targets To Complete", _level.minTargetWordsToComplete));
+            _level.allowBonusWords = EditorGUILayout.Toggle("Allow Bonus Words", _level.allowBonusWords);
+            _level.allowBonusInLevelOnly = EditorGUILayout.Toggle("Allow Bonus In LevelOnly", _level.allowBonusInLevelOnly);
+            _level.bonusRequiresEmbeddedInLevelOnly = EditorGUILayout.Toggle("Bonus Embedded In LevelOnly", _level.bonusRequiresEmbeddedInLevelOnly);
         }
 
         private void DrawCells()
@@ -200,6 +205,11 @@ namespace HexWords.EditorTools
             var candidates = LevelGenerator.FilterWords(_dictionary, _generationProfile);
             var cells = LevelGenerator.GenerateCells(_generationProfile, candidates);
             _level.shape.cells = cells;
+            _level.boardLayoutMode = _generationProfile.boardLayoutMode;
+            _level.minTargetWordsToComplete = _generationProfile.minTargetWordsToComplete;
+            _level.allowBonusWords = _generationProfile.allowBonusWords;
+            _level.allowBonusInLevelOnly = _generationProfile.allowBonusInLevelOnly;
+            _level.bonusRequiresEmbeddedInLevelOnly = _generationProfile.bonusRequiresEmbeddedInLevelOnly;
 
             var words = new List<string>();
             for (var i = 0; i < Mathf.Min(5, candidates.Count); i++)
@@ -234,7 +244,9 @@ namespace HexWords.EditorTools
 
             LevelGenerator.RepackCellsCompact(_level.shape.cells);
             EditorUtility.SetDirty(_level);
-            Debug.Log("Repacked cell coordinates to compact hex layout.");
+            Debug.Log(_level.shape.cells.Count == HexBoardTemplate16.CellCount
+                ? "Applied fixed16 canonical hex layout."
+                : "Repacked cell coordinates to compact hex layout.");
         }
 
         private void CreateLevelAsset()

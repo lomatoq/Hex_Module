@@ -18,9 +18,19 @@ namespace HexWords.Gameplay
         {
             Clear();
 
-            for (var i = 0; i < level.shape.cells.Count; i++)
+            var cells = level.shape.cells;
+            if (level.boardLayoutMode == BoardLayoutMode.Fixed16Symmetric &&
+                cells != null &&
+                cells.Count == HexBoardTemplate16.CellCount &&
+                !HexBoardTemplate16.HasCanonicalShape(level.shape))
             {
-                var cell = level.shape.cells[i];
+                cells = new List<CellDefinition>(cells);
+                HexBoardTemplate16.ApplyCanonicalLayout(cells);
+            }
+
+            for (var i = 0; i < cells.Count; i++)
+            {
+                var cell = cells[i];
                 var view = Instantiate(cellPrefab, gridRoot);
                 view.Bind(cell);
                 view.GetComponent<RectTransform>().anchoredPosition = AxialToPixel(cell.q, cell.r, cellSize);

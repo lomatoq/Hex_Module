@@ -16,66 +16,79 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: H
-      q: 0
+      letter: Y
+      q: -2
       r: 0
     - cellId: c2
-      letter: A
-      q: 1
-      r: -1
-    - cellId: c3
-      letter: D
-      q: 1
-      r: 0
-    - cellId: c4
-      letter: I
-      q: 0
+      letter: W
+      q: -2
       r: 1
+    - cellId: c3
+      letter: G
+      q: -2
+      r: 2
+    - cellId: c4
+      letter: Q
+      q: -1
+      r: -1
     - cellId: c5
       letter: E
       q: -1
-      r: 1
+      r: 0
     - cellId: c6
       letter: R
       q: -1
-      r: 0
+      r: 1
     - cellId: c7
-      letter: R
-      q: 0
-      r: -1
-    - cellId: c8
-      letter: O
+      letter: L
       q: 0
       r: -2
-    - cellId: c9
-      letter: R
-      q: -1
+    - cellId: c8
+      letter: N
+      q: 0
       r: -1
-    - cellId: c10
-      letter: E
-      q: -2
+    - cellId: c9
+      letter: I
+      q: 0
       r: 0
-    - cellId: c11
-      letter: L
-      q: -2
+    - cellId: c10
+      letter: A
+      q: 0
       r: 1
+    - cellId: c11
+      letter: A
+      q: 1
+      r: -2
     - cellId: c12
       letter: D
-      q: -2
-      r: 2
+      q: 1
+      r: -1
     - cellId: c13
-      letter: E
-      q: -1
-      r: 2
+      letter: M
+      q: 1
+      r: 0
     - cellId: c14
+      letter: J
+      q: 2
+      r: -2
+    - cellId: c15
+      letter: E
+      q: 2
+      r: -1
+    - cellId: c16
       letter: R
-      q: 0
-      r: 2
+      q: 2
+      r: 0
+  boardLayoutMode: 0
   validationMode: 0
   targetWords:
-  - ELDER
-  - DIE
-  - HAD
-  - ERROR
-  targetScore: 16
+  - ADMIRE
+  - MARINE
+  - REMAIN
+  - REMIND
+  targetScore: 24
+  minTargetWordsToComplete: 2
+  allowBonusWords: 1
+  allowBonusInLevelOnly: 1
+  bonusRequiresEmbeddedInLevelOnly: 1
   language: 1

@@ -10,6 +10,7 @@ namespace HexWords.Gameplay
     {
         [SerializeField] private Text letterText;
         [SerializeField] private Image background;
+        [SerializeField] private FeedbackPalette feedbackPalette;
 
         public string CellId { get; private set; }
 
@@ -71,19 +72,43 @@ namespace HexWords.Gameplay
             StopFxRoutine();
             if (background != null)
             {
-                background.color = new Color(0.85f, 0.95f, 1f, 1f);
+                background.color = feedbackPalette != null
+                    ? feedbackPalette.selectedCellColor
+                    : new Color(0.85f, 0.95f, 1f, 1f);
                 transform.localScale = Vector3.one * 1.05f;
             }
         }
 
         public void OnPathAccepted()
         {
-            PlayFlashAndReturn(new Color(0.75f, 1f, 0.75f, 1f), 0.2f);
+            var color = feedbackPalette != null
+                ? feedbackPalette.targetAcceptedCellColor
+                : new Color(0.75f, 1f, 0.75f, 1f);
+            PlayFlashAndReturn(color, 0.2f);
+        }
+
+        public void OnPathBonusAccepted()
+        {
+            var color = feedbackPalette != null
+                ? feedbackPalette.bonusAcceptedCellColor
+                : new Color(0.65f, 0.95f, 1f, 1f);
+            PlayFlashAndReturn(color, 0.2f);
+        }
+
+        public void OnPathAlreadyAccepted()
+        {
+            var color = feedbackPalette != null
+                ? feedbackPalette.alreadyAcceptedCellColor
+                : new Color(0.55f, 0.7f, 1f, 1f);
+            PlayFlashAndReturn(color, 0.2f);
         }
 
         public void OnPathRejected()
         {
-            PlayFlashAndReturn(new Color(1f, 0.8f, 0.8f, 1f), 0.2f);
+            var color = feedbackPalette != null
+                ? feedbackPalette.rejectedCellColor
+                : new Color(1f, 0.8f, 0.8f, 1f);
+            PlayFlashAndReturn(color, 0.2f);
         }
 
         public void ResetFx()

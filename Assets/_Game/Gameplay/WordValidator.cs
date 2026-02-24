@@ -12,56 +12,86 @@ namespace HexWords.Gameplay
             _dictionaryMap = BuildMap(dictionary);
         }
 
-        public bool TryValidate(string word, LevelDefinition level, LevelSessionState sessionState, out ValidationReason reason)
+        public WordValidationResult Validate(string word, LevelDefinition level, LevelSessionState sessionState)
         {
+            if (level == null)
+            {
+                return Reject(string.Empty, ValidationReason.NotInLevelTargets);
+            }
+
+            if (sessionState == null)
+            {
+                sessionState = new LevelSessionState();
+            }
+
             var normalized = WordNormalizer.Normalize(word);
             if (normalized.Length < 2)
             {
-                reason = ValidationReason.TooShort;
-                return false;
+                return Reject(normalized, ValidationReason.TooShort);
             }
 
             if (!WordNormalizer.IsAsciiOrCyrillicLetterString(normalized))
             {
-                reason = ValidationReason.InvalidCharacters;
-                return false;
+                return Reject(normalized, ValidationReason.InvalidCharacters);
             }
 
             if (sessionState.acceptedWords.Contains(normalized))
             {
-                reason = ValidationReason.AlreadyAccepted;
-                return false;
+                return new WordValidationResult
+                {
+                    accepted = false,
+                    outcome = WordSubmitOutcome.AlreadyAccepted,
+                    reason = ValidationReason.AlreadyAccepted,
+                    normalizedWord = normalized
+                };
+            }
+
+            if (IsTargetWord(normalized, level))
+            {
+                return new WordValidationResult
+                {
+                    accepted = true,
+                    outcome = WordSubmitOutcome.TargetAccepted,
+                    reason = ValidationReason.None,
+                    normalizedWord = normalized
+                };
             }
 
             if (level.validationMode == ValidationMode.LevelOnly)
             {
-                if (level.targetWords == null)
+                if (!level.allowBonusWords || !level.allowBonusInLevelOnly)
                 {
-                    reason = ValidationReason.NotInLevelTargets;
-                    return false;
+                    return Reject(normalized, ValidationReason.NotInLevelTargets);
                 }
 
-                for (var i = 0; i < level.targetWords.Length; i++)
+                if (level.bonusRequiresEmbeddedInLevelOnly && !IsEmbeddedInTargets(normalized, level.targetWords))
                 {
-                    if (WordNormalizer.Normalize(level.targetWords[i]) == normalized)
-                    {
-                        reason = ValidationReason.None;
-                        return true;
-                    }
+                    return Reject(normalized, ValidationReason.NotInLevelTargets);
                 }
 
-                reason = ValidationReason.NotInLevelTargets;
-                return false;
+                return new WordValidationResult
+                {
+                    accepted = true,
+                    outcome = WordSubmitOutcome.BonusAccepted,
+                    reason = ValidationReason.None,
+                    normalizedWord = normalized
+                };
             }
 
-            if (_dictionaryMap.TryGetValue(level.language, out var words) && words.Contains(normalized))
+            if (level.allowBonusWords &&
+                _dictionaryMap.TryGetValue(level.language, out var words) &&
+                words.Contains(normalized))
             {
-                reason = ValidationReason.None;
-                return true;
+                return new WordValidationResult
+                {
+                    accepted = true,
+                    outcome = WordSubmitOutcome.BonusAccepted,
+                    reason = ValidationReason.None,
+                    normalizedWord = normalized
+                };
             }
 
-            reason = ValidationReason.NotInDictionary;
-            return false;
+            return Reject(normalized, ValidationReason.NotInDictionary);
         }
 
         private static Dictionary<Language, HashSet<string>> BuildMap(DictionaryDatabase dictionary)
@@ -88,6 +118,54 @@ namespace HexWords.Gameplay
             }
 
             return map;
+        }
+
+        private static WordValidationResult Reject(string normalizedWord, ValidationReason reason)
+        {
+            return new WordValidationResult
+            {
+                accepted = false,
+                outcome = WordSubmitOutcome.Rejected,
+                reason = reason,
+                normalizedWord = normalizedWord
+            };
+        }
+
+        private static bool IsTargetWord(string normalizedWord, LevelDefinition level)
+        {
+            if (level == null || level.targetWords == null)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < level.targetWords.Length; i++)
+            {
+                if (WordNormalizer.Normalize(level.targetWords[i]) == normalizedWord)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool IsEmbeddedInTargets(string normalizedWord, IReadOnlyList<string> targetWords)
+        {
+            if (targetWords == null || targetWords.Count == 0)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < targetWords.Count; i++)
+            {
+                var target = WordNormalizer.Normalize(targetWords[i]);
+                if (target.IndexOf(normalizedWord, System.StringComparison.Ordinal) >= 0)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

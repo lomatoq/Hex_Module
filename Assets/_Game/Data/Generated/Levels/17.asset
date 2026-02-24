@@ -16,58 +16,79 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: C
-      q: 0
+      letter: L
+      q: -2
       r: 0
     - cellId: c2
-      letter: A
-      q: 1
-      r: -1
-    - cellId: c3
-      letter: R
-      q: 1
-      r: 0
-    - cellId: c4
-      letter: S
-      q: 0
-      r: 1
-    - cellId: c5
-      letter: H
-      q: -1
-      r: 1
-    - cellId: c6
       letter: O
+      q: -2
+      r: 1
+    - cellId: c3
+      letter: U
+      q: -2
+      r: 2
+    - cellId: c4
+      letter: R
+      q: -1
+      r: -1
+    - cellId: c5
+      letter: A
       q: -1
       r: 0
+    - cellId: c6
+      letter: K
+      q: -1
+      r: 1
     - cellId: c7
-      letter: P
+      letter: A
+      q: 0
+      r: -2
+    - cellId: c8
+      letter: T
       q: 0
       r: -1
-    - cellId: c8
+    - cellId: c9
+      letter: G
+      q: 0
+      r: 0
+    - cellId: c10
+      letter: I
+      q: 0
+      r: 1
+    - cellId: c11
+      letter: C
+      q: 1
+      r: -2
+    - cellId: c12
       letter: I
       q: 1
-      r: -2
-    - cellId: c9
-      letter: C
+      r: -1
+    - cellId: c13
+      letter: N
+      q: 1
+      r: 0
+    - cellId: c14
+      letter: A
       q: 2
       r: -2
-    - cellId: c10
-      letter: K
+    - cellId: c15
+      letter: F
       q: 2
       r: -1
-    - cellId: c11
-      letter: E
+    - cellId: c16
+      letter: Y
       q: 2
       r: 0
-    - cellId: c12
-      letter: D
-      q: 1
-      r: 1
+  boardLayoutMode: 0
   validationMode: 0
   targetWords:
-  - PICKED
-  - PICK
-  - SHOP
-  - CARS
-  targetScore: 18
+  - TRAGIC
+  - ACTING
+  - RACING
+  - TAKING
+  targetScore: 24
+  minTargetWordsToComplete: 2
+  allowBonusWords: 1
+  allowBonusInLevelOnly: 1
+  bonusRequiresEmbeddedInLevelOnly: 1
   language: 1

@@ -16,62 +16,79 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: H
-      q: 0
+      letter: A
+      q: -2
       r: 0
     - cellId: c2
-      letter: A
-      q: 1
-      r: 0
+      letter: Z
+      q: -2
+      r: 1
     - cellId: c3
-      letter: S
-      q: 0
-      r: 1
+      letter: H
+      q: -2
+      r: 2
     - cellId: c4
-      letter: P
+      letter: E
       q: -1
-      r: 1
+      r: -1
     - cellId: c5
-      letter: R
+      letter: N
       q: -1
       r: 0
     - cellId: c6
-      letter: E
-      q: 0
-      r: -1
+      letter: S
+      q: -1
+      r: 1
     - cellId: c7
-      letter: A
-      q: 1
-      r: -1
+      letter: Y
+      q: 0
+      r: -2
     - cellId: c8
       letter: D
-      q: 2
-      r: -2
+      q: 0
+      r: -1
     - cellId: c9
+      letter: R
+      q: 0
+      r: 0
+    - cellId: c10
+      letter: W
+      q: 0
+      r: 1
+    - cellId: c11
       letter: O
       q: 1
       r: -2
-    - cellId: c10
-      letter: G
-      q: 0
-      r: -2
-    - cellId: c11
-      letter: R
-      q: -1
-      r: -1
     - cellId: c12
-      letter: E
-      q: -2
-      r: 0
+      letter: A
+      q: 1
+      r: -1
     - cellId: c13
+      letter: E
+      q: 1
+      r: 0
+    - cellId: c14
+      letter: X
+      q: 2
+      r: -2
+    - cellId: c15
       letter: W
-      q: -2
-      r: 1
+      q: 2
+      r: -1
+    - cellId: c16
+      letter: V
+      q: 2
+      r: 0
+  boardLayoutMode: 0
   validationMode: 0
   targetWords:
-  - SPREAD
-  - DOG
-  - GREW
-  - HAS
-  targetScore: 16
+  - ANDREW
+  - WARDEN
+  - WARNED
+  - ANSWER
+  targetScore: 24
+  minTargetWordsToComplete: 2
+  allowBonusWords: 1
+  allowBonusInLevelOnly: 1
+  bonusRequiresEmbeddedInLevelOnly: 1
   language: 1

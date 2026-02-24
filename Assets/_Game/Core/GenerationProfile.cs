@@ -16,13 +16,19 @@ namespace HexWords.Core
         public bool allowSingleRepeatFallback = true;
         public int fillerLettersMax = 0;
         public bool avoidDuplicateLetters = true;
+        public BoardLayoutMode boardLayoutMode = BoardLayoutMode.Fixed16Symmetric;
+        public int fixedBoardCellCount = HexBoardTemplate16.CellCount;
         public string includeLetters = string.Empty;
         public string excludeLetters = string.Empty;
         public int minDifficultyBand;
         public int maxDifficultyBand = 10;
+        public int minTargetWordsToComplete = 2;
+        public bool allowBonusWords = true;
+        public bool allowBonusInLevelOnly = true;
+        public bool bonusRequiresEmbeddedInLevelOnly = true;
 
         [Header("Generation V2")]
-        public GenerationAlgorithm generationAlgorithm = GenerationAlgorithm.Legacy;
+        public GenerationAlgorithm generationAlgorithm = GenerationAlgorithm.GreedyBeamV2;
         public GenerationObjective objective = GenerationObjective.MinHexForKWords;
         public int hexBudgetMin = 0;
         public int hexBudgetMax = 0;
@@ -32,6 +38,6 @@ namespace HexWords.Core
         public float overlapWeight = 90f;
         public float diversityWeight = 22f;
         public bool requireAllTargetsSolvable = true;
-        public bool useLegacyFallback = false;
+        public bool useLegacyFallback = true;
     }
 }

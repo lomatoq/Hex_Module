@@ -2,6 +2,6 @@ namespace HexWords.Core
 {
     public interface IWordValidator
     {
-        bool TryValidate(string word, LevelDefinition level, LevelSessionState sessionState, out ValidationReason reason);
+        WordValidationResult Validate(string word, LevelDefinition level, LevelSessionState sessionState);
     }
 }

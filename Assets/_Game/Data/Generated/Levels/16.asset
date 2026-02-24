@@ -16,70 +16,79 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: W
-      q: 0
+      letter: L
+      q: -2
       r: 0
     - cellId: c2
       letter: I
-      q: -1
+      q: -2
       r: 1
     - cellId: c3
-      letter: T
-      q: 0
-      r: 1
-    - cellId: c4
-      letter: C
-      q: 1
-      r: 0
-    - cellId: c5
-      letter: H
-      q: 1
-      r: -1
-    - cellId: c6
-      letter: O
-      q: 0
-      r: -1
-    - cellId: c7
-      letter: S
-      q: -1
-      r: 0
-    - cellId: c8
-      letter: E
-      q: -2
-      r: 0
-    - cellId: c9
-      letter: E
-      q: -2
-      r: 1
-    - cellId: c10
-      letter: M
-      q: -2
-      r: 2
-    - cellId: c11
       letter: U
-      q: -1
+      q: -2
       r: 2
-    - cellId: c12
+    - cellId: c4
+      letter: G
+      q: -1
+      r: -1
+    - cellId: c5
+      letter: E
+      q: -1
+      r: 0
+    - cellId: c6
+      letter: L
+      q: -1
+      r: 1
+    - cellId: c7
+      letter: I
+      q: 0
+      r: -2
+    - cellId: c8
+      letter: N
+      q: 0
+      r: -1
+    - cellId: c9
+      letter: A
+      q: 0
+      r: 0
+    - cellId: c10
       letter: S
       q: 0
-      r: 2
-    - cellId: c13
-      letter: C
-      q: 1
       r: 1
-    - cellId: c14
-      letter: L
-      q: 2
+    - cellId: c11
+      letter: S
+      q: 1
+      r: -2
+    - cellId: c12
+      letter: K
+      q: 1
+      r: -1
+    - cellId: c13
+      letter: R
+      q: 1
       r: 0
+    - cellId: c14
+      letter: Q
+      q: 2
+      r: -2
     - cellId: c15
-      letter: E
+      letter: Y
       q: 2
       r: -1
+    - cellId: c16
+      letter: B
+      q: 2
+      r: 0
+  boardLayoutMode: 0
   validationMode: 0
   targetWords:
-  - MUSCLE
-  - SEEM
-  - CHOSE
-  - WITCH
-  targetScore: 20
+  - ANGELS
+  - SIGNAL
+  - SINGLE
+  - ALIENS
+  targetScore: 24
+  minTargetWordsToComplete: 2
+  allowBonusWords: 1
+  allowBonusInLevelOnly: 1
+  bonusRequiresEmbeddedInLevelOnly: 1
   language: 1

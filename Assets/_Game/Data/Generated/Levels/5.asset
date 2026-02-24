@@ -16,58 +16,79 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: O
-      q: 0
+      letter: N
+      q: -2
       r: 0
     - cellId: c2
-      letter: T
-      q: -1
-      r: 0
+      letter: Y
+      q: -2
+      r: 1
     - cellId: c3
-      letter: H
-      q: -1
-      r: 1
-    - cellId: c4
-      letter: E
-      q: 0
-      r: 1
-    - cellId: c5
-      letter: R
-      q: 1
-      r: 0
-    - cellId: c6
-      letter: I
-      q: 1
-      r: -1
-    - cellId: c7
-      letter: D
-      q: 0
-      r: -1
-    - cellId: c8
-      letter: I
-      q: 0
-      r: -2
-    - cellId: c9
-      letter: D
-      q: -1
-      r: -1
-    - cellId: c10
-      letter: R
-      q: -2
-      r: 0
-    - cellId: c11
-      letter: O
-      q: -2
-      r: 1
-    - cellId: c12
-      letter: P
+      letter: F
       q: -2
       r: 2
+    - cellId: c4
+      letter: A
+      q: -1
+      r: -1
+    - cellId: c5
+      letter: D
+      q: -1
+      r: 0
+    - cellId: c6
+      letter: V
+      q: -1
+      r: 1
+    - cellId: c7
+      letter: W
+      q: 0
+      r: -2
+    - cellId: c8
+      letter: R
+      q: 0
+      r: -1
+    - cellId: c9
+      letter: E
+      q: 0
+      r: 0
+    - cellId: c10
+      letter: G
+      q: 0
+      r: 1
+    - cellId: c11
+      letter: A
+      q: 1
+      r: -2
+    - cellId: c12
+      letter: N
+      q: 1
+      r: -1
+    - cellId: c13
+      letter: W
+      q: 1
+      r: 0
+    - cellId: c14
+      letter: J
+      q: 2
+      r: -2
+    - cellId: c15
+      letter: S
+      q: 2
+      r: -1
+    - cellId: c16
+      letter: P
+      q: 2
+      r: 0
+  boardLayoutMode: 0
   validationMode: 0
   targetWords:
-  - OTHER
-  - RID
-  - DID
-  - DROP
-  targetScore: 15
+  - ANDREW
+  - WARDEN
+  - WARNED
+  - ANSWER
+  targetScore: 24
+  minTargetWordsToComplete: 2
+  allowBonusWords: 1
+  allowBonusInLevelOnly: 1
+  bonusRequiresEmbeddedInLevelOnly: 1
   language: 1

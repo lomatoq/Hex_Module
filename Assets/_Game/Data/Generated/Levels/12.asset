@@ -16,74 +16,79 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: M
-      q: 0
+      letter: W
+      q: -2
       r: 0
     - cellId: c2
-      letter: U
-      q: 0
+      letter: O
+      q: -2
       r: 1
     - cellId: c3
-      letter: M
-      q: 1
-      r: 0
+      letter: B
+      q: -2
+      r: 2
     - cellId: c4
-      letter: S
-      q: 1
+      letter: N
+      q: -1
       r: -1
     - cellId: c5
-      letter: A
-      q: 0
-      r: -1
-    - cellId: c6
-      letter: Y
+      letter: G
       q: -1
       r: 0
-    - cellId: c7
+    - cellId: c6
       letter: N
       q: -1
       r: 1
-    - cellId: c8
-      letter: E
-      q: -2
-      r: 2
-    - cellId: c9
-      letter: W
-      q: -2
-      r: 1
-    - cellId: c10
-      letter: S
-      q: -2
-      r: 0
-    - cellId: c11
-      letter: M
-      q: -1
-      r: -1
-    - cellId: c12
-      letter: A
+    - cellId: c7
+      letter: V
       q: 0
       r: -2
-    - cellId: c13
-      letter: R
+    - cellId: c8
+      letter: A
+      q: 0
+      r: -1
+    - cellId: c9
+      letter: E
+      q: 0
+      r: 0
+    - cellId: c10
+      letter: A
+      q: 0
+      r: 1
+    - cellId: c11
+      letter: O
       q: 1
       r: -2
+    - cellId: c12
+      letter: R
+      q: 1
+      r: -1
+    - cellId: c13
+      letter: D
+      q: 1
+      r: 0
     - cellId: c14
-      letter: I
+      letter: Q
       q: 2
       r: -2
     - cellId: c15
-      letter: N
+      letter: S
       q: 2
       r: -1
     - cellId: c16
-      letter: E
+      letter: Y
       q: 2
       r: 0
+  boardLayoutMode: 0
   validationMode: 0
   targetWords:
-  - MARINE
-  - NEWS
-  - SAY
-  - MUM
-  targetScore: 16
+  - GARDEN
+  - DANGER
+  - ORANGE
+  - DRAGON
+  targetScore: 24
+  minTargetWordsToComplete: 2
+  allowBonusWords: 1
+  allowBonusInLevelOnly: 1
+  bonusRequiresEmbeddedInLevelOnly: 1
   language: 1

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using HexWords.Core;
+using UnityEngine;
 
 namespace HexWords.EditorTools
 {
@@ -26,6 +27,11 @@ namespace HexWords.EditorTools
 
         public static List<CellDefinition> GenerateCells(GenerationProfile profile, List<DictionaryEntry> candidates)
         {
+            var isFixed16 = profile.boardLayoutMode == BoardLayoutMode.Fixed16Symmetric;
+            var cellCount = isFixed16
+                ? HexBoardTemplate16.CellCount
+                : Mathf.Max(1, profile.cellCount);
+
             var letters = new List<char>();
             foreach (var entry in candidates)
             {
@@ -41,13 +47,18 @@ namespace HexWords.EditorTools
                 letters.Add(profile.language == Language.RU ? 'А' : 'A');
             }
 
-            var rng = new Random(1);
+            var rng = new System.Random(1);
             var selectedLetters = profile.avoidDuplicateLetters
-                ? SelectUniqueLetters(profile, letters, rng)
-                : SelectWithRepeats(profile.cellCount, letters, rng);
+                ? SelectUniqueLetters(profile, letters, rng, cellCount)
+                : SelectWithRepeats(cellCount, letters, rng);
 
-            var cells = new List<CellDefinition>();
-            for (var i = 0; i < profile.cellCount; i++)
+            if (isFixed16)
+            {
+                return HexBoardTemplate16.BuildCells(selectedLetters);
+            }
+
+            var cells = new List<CellDefinition>(cellCount);
+            for (var i = 0; i < cellCount; i++)
             {
                 cells.Add(new CellDefinition
                 {
@@ -61,7 +72,7 @@ namespace HexWords.EditorTools
             return cells;
         }
 
-        private static List<char> SelectWithRepeats(int count, List<char> source, Random rng)
+        private static List<char> SelectWithRepeats(int count, List<char> source, System.Random rng)
         {
             var result = new List<char>(count);
             for (var i = 0; i < count; i++)
@@ -72,11 +83,11 @@ namespace HexWords.EditorTools
             return result;
         }
 
-        private static List<char> SelectUniqueLetters(GenerationProfile profile, List<char> source, Random rng)
+        private static List<char> SelectUniqueLetters(GenerationProfile profile, List<char> source, System.Random rng, int targetCount)
         {
             var unique = source.Distinct().ToList();
             var alphabet = profile.language == Language.RU ? RuAlphabet : EnAlphabet;
-            for (var i = 0; i < alphabet.Length && unique.Count < profile.cellCount; i++)
+            for (var i = 0; i < alphabet.Length && unique.Count < targetCount; i++)
             {
                 var ch = alphabet[i];
                 if (!unique.Contains(ch))
@@ -85,9 +96,9 @@ namespace HexWords.EditorTools
                 }
             }
 
-            if (unique.Count < profile.cellCount)
+            if (unique.Count < targetCount)
             {
-                return SelectWithRepeats(profile.cellCount, source, rng);
+                return SelectWithRepeats(targetCount, source, rng);
             }
 
             for (var i = unique.Count - 1; i > 0; i--)
@@ -96,7 +107,7 @@ namespace HexWords.EditorTools
                 (unique[i], unique[j]) = (unique[j], unique[i]);
             }
 
-            return unique.Take(profile.cellCount).ToList();
+            return unique.Take(targetCount).ToList();
         }
 
         private static bool MatchesLetters(string word, string include, string exclude)
@@ -186,6 +197,12 @@ namespace HexWords.EditorTools
         {
             if (cells == null || cells.Count == 0)
             {
+                return;
+            }
+
+            if (cells.Count == HexBoardTemplate16.CellCount)
+            {
+                HexBoardTemplate16.ApplyCanonicalLayout(cells);
                 return;
             }
 

@@ -13,6 +13,17 @@ namespace HexWords.EditorTools
                 return false;
             }
 
+            if (level.boardLayoutMode == BoardLayoutMode.Fixed16Symmetric &&
+                level.shape != null &&
+                level.shape.cells != null &&
+                level.shape.cells.Count == HexBoardTemplate16.CellCount &&
+                !HexBoardTemplate16.HasCanonicalShape(level.shape))
+            {
+                var copy = new List<CellDefinition>(level.shape.cells);
+                HexBoardTemplate16.ApplyCanonicalLayout(copy);
+                return CanBuildWord(new GridShape { cells = copy }, rawWord);
+            }
+
             return CanBuildWord(level.shape, rawWord);
         }
 

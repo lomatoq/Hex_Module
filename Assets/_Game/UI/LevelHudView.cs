@@ -1,3 +1,4 @@
+using HexWords.Core;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,6 +10,7 @@ namespace HexWords.UI
         [SerializeField] private Text scoreText;
         [SerializeField] private Slider progressBar;
         [SerializeField] private Text lastWordText;
+        [SerializeField] private FeedbackPalette feedbackPalette;
 
         public void SetLevel(string levelId)
         {
@@ -34,13 +36,18 @@ namespace HexWords.UI
 
         public void SetLastWord(string text, bool accepted)
         {
+            SetLastWord(text, accepted ? WordSubmitOutcome.TargetAccepted : WordSubmitOutcome.Rejected);
+        }
+
+        public void SetLastWord(string text, WordSubmitOutcome outcome)
+        {
             if (lastWordText == null)
             {
                 return;
             }
 
             lastWordText.text = text;
-            lastWordText.color = accepted ? new Color(0.2f, 0.5f, 0.2f) : new Color(0.7f, 0.2f, 0.2f);
+            lastWordText.color = GetHudColor(outcome);
         }
 
         public void SetCurrentWord(string text)
@@ -51,7 +58,31 @@ namespace HexWords.UI
             }
 
             lastWordText.text = text;
-            lastWordText.color = new Color(0.2f, 0.2f, 0.2f);
+            lastWordText.color = feedbackPalette != null
+                ? feedbackPalette.hudCurrentWordColor
+                : new Color(0.2f, 0.2f, 0.2f);
+        }
+
+        private Color GetHudColor(WordSubmitOutcome outcome)
+        {
+            if (feedbackPalette == null)
+            {
+                return outcome switch
+                {
+                    WordSubmitOutcome.TargetAccepted => new Color(0.2f, 0.5f, 0.2f),
+                    WordSubmitOutcome.BonusAccepted => new Color(0.1f, 0.55f, 0.65f),
+                    WordSubmitOutcome.AlreadyAccepted => new Color(0.2f, 0.35f, 0.8f),
+                    _ => new Color(0.7f, 0.2f, 0.2f)
+                };
+            }
+
+            return outcome switch
+            {
+                WordSubmitOutcome.TargetAccepted => feedbackPalette.hudTargetAcceptedColor,
+                WordSubmitOutcome.BonusAccepted => feedbackPalette.hudBonusAcceptedColor,
+                WordSubmitOutcome.AlreadyAccepted => feedbackPalette.hudAlreadyAcceptedColor,
+                _ => feedbackPalette.hudRejectedColor
+            };
         }
     }
 }

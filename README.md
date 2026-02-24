@@ -4,6 +4,7 @@ Implemented core mechanics for a hex-cell word game with:
 - drag path over neighboring hexes (no cell reuse)
 - level score progression by word length
 - dual validation modes (`LevelOnly`, `Dictionary`)
+- bonus words and duplicate-submit outcomes (`BonusAccepted`, `AlreadyAccepted`)
 - CSV import pipeline into ScriptableObjects
 - minimal editor tooling (`Tools/HexWords/Level Editor`)
 
@@ -50,6 +51,8 @@ Implemented core mechanics for a hex-cell word game with:
 - Generation v2 (`GreedyBeamV2`) adds a two-stage pipeline:
   - `Word-set optimization` (`Greedy + Beam`) using `GenerationObjective`
   - `Board placement` with strict DFS solvability validation
+- `Fixed16Symmetric` layout mode uses a canonical 16-cell topology (`3-3-4-3-3`) for stable cross-level shape.
+- V2 placement in fixed mode uses the shared `HexBoardTemplate16` topology (same cell ids and coordinates for all generated levels).
 - V2 now retries target-word counts from `targetWordsMax` down to `targetWordsMin` when strict mode is enabled.
 - Auto-generator logs failure reasons (`selectionFails`, `placementFails`, `solvabilityFails`) to help tuning.
 - V2 has anti-freeze guards for large dictionaries: capped candidate pool, solver time budget, beam expansion cap, and cancelable progress bar during generation.
@@ -58,7 +61,17 @@ Implemented core mechanics for a hex-cell word game with:
 - EN filters now reject calendar/time tokens and abbreviation-like noise automatically.
 - Optional extra exclusions can still be added in `generator_blacklist_en.txt` if project-specific.
 - Legacy generator remains available via profile (`generationAlgorithm=Legacy`) or window override.
-- `useLegacyFallback` is hidden under advanced settings and is disabled by default for cleaner V2 output.
+- `useLegacyFallback` is hidden under advanced settings and is enabled by default for migration safety.
+
+## Runtime completion and word outcomes
+- Level completion requires both conditions:
+  - `currentScore >= targetScore`
+  - `acceptedTargetCount >= minTargetWordsToComplete`
+- Exact target matching is required for target progress (`BAY` and `BAYER` are counted independently).
+- Duplicate submit returns `AlreadyAccepted` (intended blue feedback state).
+- In `LevelOnly`, bonus words can be allowed only if they are embedded in any target word.
+- In `Dictionary`, bonus words are accepted when they are dictionary-valid and path-valid.
+- Bonus score contributes to total score (`currentScore`) and is also tracked separately (`bonusScore`).
 
 ## CSV formats
 ### dictionary_ru.csv / dictionary_en.csv
@@ -79,4 +92,4 @@ Header:
 - Runtime reads ScriptableObjects only.
 - `Е` and `Ё` are treated as different letters.
 - Preview-level selection stores selected asset in `RuntimePreviewConfig` under `Resources`.
-- `GenerationProfile` now includes v2 controls: objective, hex budgets, beam/restarth counts, overlap/diversity weights, and strict solvability toggle.
+- `GenerationProfile` includes v2 controls: objective, hex budgets, beam/restart counts, overlap/diversity weights, strict solvability toggle, fixed layout mode, and bonus/completion policy switches.

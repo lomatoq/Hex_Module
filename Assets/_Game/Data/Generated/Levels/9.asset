@@ -16,58 +16,79 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: J
-      q: 0
+      letter: Q
+      q: -2
       r: 0
     - cellId: c2
-      letter: O
-      q: 1
-      r: 0
+      letter: D
+      q: -2
+      r: 1
     - cellId: c3
-      letter: B
-      q: 0
-      r: 1
-    - cellId: c4
-      letter: L
-      q: -1
-      r: 1
-    - cellId: c5
       letter: O
+      q: -2
+      r: 2
+    - cellId: c4
+      letter: K
+      q: -1
+      r: -1
+    - cellId: c5
+      letter: E
       q: -1
       r: 0
     - cellId: c6
-      letter: W
+      letter: N
+      q: -1
+      r: 1
+    - cellId: c7
+      letter: B
+      q: 0
+      r: -2
+    - cellId: c8
+      letter: R
       q: 0
       r: -1
-    - cellId: c7
+    - cellId: c9
+      letter: I
+      q: 0
+      r: 0
+    - cellId: c10
+      letter: R
+      q: 0
+      r: 1
+    - cellId: c11
       letter: E
       q: 1
+      r: -2
+    - cellId: c12
+      letter: M
+      q: 1
       r: -1
-    - cellId: c8
+    - cellId: c13
+      letter: A
+      q: 1
+      r: 0
+    - cellId: c14
       letter: S
       q: 2
+      r: -2
+    - cellId: c15
+      letter: D
+      q: 2
       r: -1
-    - cellId: c9
+    - cellId: c16
       letter: T
       q: 2
       r: 0
-    - cellId: c10
-      letter: O
-      q: 1
-      r: 1
-    - cellId: c11
-      letter: N
-      q: 0
-      r: 2
-    - cellId: c12
-      letter: E
-      q: -1
-      r: 2
+  boardLayoutMode: 0
   validationMode: 0
   targetWords:
-  - BLOW
-  - JOB
-  - WEST
-  - STONE
-  targetScore: 16
+  - ADMIRE
+  - MARINE
+  - REMAIN
+  - REMIND
+  targetScore: 24
+  minTargetWordsToComplete: 2
+  allowBonusWords: 1
+  allowBonusInLevelOnly: 1
+  bonusRequiresEmbeddedInLevelOnly: 1
   language: 1

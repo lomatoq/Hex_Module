@@ -16,58 +16,79 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: B
-      q: 0
+      letter: X
+      q: -2
       r: 0
     - cellId: c2
       letter: L
-      q: 0
+      q: -2
       r: 1
     - cellId: c3
-      letter: A
-      q: -1
-      r: 1
-    - cellId: c4
-      letter: K
-      q: -1
-      r: 0
-    - cellId: c5
-      letter: E
-      q: 0
-      r: -1
-    - cellId: c6
-      letter: E
-      q: 1
-      r: -1
-    - cellId: c7
-      letter: P
-      q: 1
-      r: 0
-    - cellId: c8
-      letter: S
-      q: 2
-      r: 0
-    - cellId: c9
-      letter: I
-      q: 1
-      r: 1
-    - cellId: c10
-      letter: R
-      q: 0
-      r: 2
-    - cellId: c11
-      letter: E
-      q: -1
-      r: 2
-    - cellId: c12
-      letter: N
+      letter: Y
       q: -2
       r: 2
+    - cellId: c4
+      letter: T
+      q: -1
+      r: -1
+    - cellId: c5
+      letter: R
+      q: -1
+      r: 0
+    - cellId: c6
+      letter: O
+      q: -1
+      r: 1
+    - cellId: c7
+      letter: Z
+      q: 0
+      r: -2
+    - cellId: c8
+      letter: S
+      q: 0
+      r: -1
+    - cellId: c9
+      letter: C
+      q: 0
+      r: 0
+    - cellId: c10
+      letter: T
+      q: 0
+      r: 1
+    - cellId: c11
+      letter: G
+      q: 1
+      r: -2
+    - cellId: c12
+      letter: E
+      q: 1
+      r: -1
+    - cellId: c13
+      letter: A
+      q: 1
+      r: 0
+    - cellId: c14
+      letter: B
+      q: 2
+      r: -2
+    - cellId: c15
+      letter: R
+      q: 2
+      r: -1
+    - cellId: c16
+      letter: T
+      q: 2
+      r: 0
+  boardLayoutMode: 0
   validationMode: 0
   targetWords:
-  - BLAKE
-  - KEEPS
-  - SIR
-  - SIREN
-  targetScore: 18
+  - ACTORS
+  - ESCORT
+  - SECTOR
+  - TRACES
+  targetScore: 24
+  minTargetWordsToComplete: 2
+  allowBonusWords: 1
+  allowBonusInLevelOnly: 1
+  bonusRequiresEmbeddedInLevelOnly: 1
   language: 1

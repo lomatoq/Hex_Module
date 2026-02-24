@@ -16,54 +16,79 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: A
-      q: 0
+      letter: D
+      q: -2
       r: 0
     - cellId: c2
       letter: I
-      q: 0
-      r: -1
+      q: -2
+      r: 1
     - cellId: c3
-      letter: R
-      q: 1
-      r: -1
+      letter: P
+      q: -2
+      r: 2
     - cellId: c4
-      letter: O
-      q: 1
-      r: 0
-    - cellId: c5
-      letter: C
-      q: 0
-      r: 1
-    - cellId: c6
-      letter: K
+      letter: A
       q: -1
-      r: 1
-    - cellId: c7
+      r: -1
+    - cellId: c5
       letter: E
       q: -1
       r: 0
-    - cellId: c8
-      letter: T
+    - cellId: c6
+      letter: L
       q: -1
-      r: -1
-    - cellId: c9
-      letter: H
+      r: 1
+    - cellId: c7
+      letter: L
       q: 0
       r: -2
+    - cellId: c8
+      letter: R
+      q: 0
+      r: -1
+    - cellId: c9
+      letter: S
+      q: 0
+      r: 0
     - cellId: c10
+      letter: C
+      q: 0
+      r: 1
+    - cellId: c11
       letter: A
       q: 1
       r: -2
-    - cellId: c11
-      letter: N
+    - cellId: c12
+      letter: I
+      q: 1
+      r: -1
+    - cellId: c13
+      letter: W
+      q: 1
+      r: 0
+    - cellId: c14
+      letter: K
       q: 2
       r: -2
+    - cellId: c15
+      letter: G
+      q: 2
+      r: -1
+    - cellId: c16
+      letter: F
+      q: 2
+      r: 0
+  boardLayoutMode: 0
   validationMode: 0
   targetWords:
-  - AIR
-  - ROCK
-  - ROCKET
-  - ETHAN
-  targetScore: 18
+  - LADIES
+  - ISRAEL
+  - RAISED
+  - SERIAL
+  targetScore: 24
+  minTargetWordsToComplete: 2
+  allowBonusWords: 1
+  allowBonusInLevelOnly: 1
+  bonusRequiresEmbeddedInLevelOnly: 1
   language: 1

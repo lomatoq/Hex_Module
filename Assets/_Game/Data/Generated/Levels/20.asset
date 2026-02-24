@@ -16,54 +16,79 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: C
-      q: 0
+      letter: W
+      q: -2
       r: 0
     - cellId: c2
-      letter: L
-      q: 1
-      r: -1
+      letter: C
+      q: -2
+      r: 1
     - cellId: c3
-      letter: A
-      q: 0
-      r: -1
-    - cellId: c4
-      letter: R
-      q: -1
-      r: 0
-    - cellId: c5
-      letter: A
-      q: -1
-      r: 1
-    - cellId: c6
-      letter: D
-      q: 0
-      r: 1
-    - cellId: c7
-      letter: A
-      q: 1
-      r: 0
-    - cellId: c8
-      letter: R
-      q: 1
-      r: 1
-    - cellId: c9
-      letter: E
-      q: 0
-      r: 2
-    - cellId: c10
-      letter: A
-      q: -1
-      r: 2
-    - cellId: c11
       letter: D
       q: -2
       r: 2
+    - cellId: c4
+      letter: R
+      q: -1
+      r: -1
+    - cellId: c5
+      letter: S
+      q: -1
+      r: 0
+    - cellId: c6
+      letter: L
+      q: -1
+      r: 1
+    - cellId: c7
+      letter: P
+      q: 0
+      r: -2
+    - cellId: c8
+      letter: E
+      q: 0
+      r: -1
+    - cellId: c9
+      letter: O
+      q: 0
+      r: 0
+    - cellId: c10
+      letter: S
+      q: 0
+      r: 1
+    - cellId: c11
+      letter: K
+      q: 1
+      r: -2
+    - cellId: c12
+      letter: C
+      q: 1
+      r: -1
+    - cellId: c13
+      letter: U
+      q: 1
+      r: 0
+    - cellId: c14
+      letter: F
+      q: 2
+      r: -2
+    - cellId: c15
+      letter: R
+      q: 2
+      r: -1
+    - cellId: c16
+      letter: J
+      q: 2
+      r: 0
+  boardLayoutMode: 0
   validationMode: 0
   targetWords:
-  - CLARA
-  - RADAR
-  - DARE
-  - READ
-  targetScore: 18
+  - LOCKER
+  - CLOSER
+  - SUCKER
+  - SOURCE
+  targetScore: 24
+  minTargetWordsToComplete: 2
+  allowBonusWords: 1
+  allowBonusInLevelOnly: 1
+  bonusRequiresEmbeddedInLevelOnly: 1
   language: 1

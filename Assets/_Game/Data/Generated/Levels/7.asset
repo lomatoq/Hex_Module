@@ -16,62 +16,79 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: C
-      q: 0
+      letter: V
+      q: -2
       r: 0
     - cellId: c2
-      letter: A
-      q: 0
+      letter: G
+      q: -2
       r: 1
     - cellId: c3
-      letter: U
-      q: 1
-      r: 0
+      letter: N
+      q: -2
+      r: 2
     - cellId: c4
-      letter: G
-      q: 1
+      letter: E
+      q: -1
       r: -1
     - cellId: c5
-      letter: H
-      q: 0
-      r: -1
-    - cellId: c6
-      letter: T
+      letter: C
       q: -1
       r: 0
-    - cellId: c7
-      letter: O
+    - cellId: c6
+      letter: A
       q: -1
       r: 1
+    - cellId: c7
+      letter: C
+      q: 0
+      r: -2
     - cellId: c8
-      letter: U
-      q: -1
-      r: 2
+      letter: S
+      q: 0
+      r: -1
     - cellId: c9
+      letter: T
+      q: 0
+      r: 0
+    - cellId: c10
       letter: R
       q: 0
-      r: 2
-    - cellId: c10
-      letter: A
-      q: 1
       r: 1
     - cellId: c11
-      letter: N
-      q: 2
-      r: 0
+      letter: O
+      q: 1
+      r: -2
     - cellId: c12
-      letter: N
-      q: 2
+      letter: R
+      q: 1
       r: -1
     - cellId: c13
-      letter: A
+      letter: O
+      q: 1
+      r: 0
+    - cellId: c14
+      letter: P
       q: 2
       r: -2
+    - cellId: c15
+      letter: Q
+      q: 2
+      r: -1
+    - cellId: c16
+      letter: F
+      q: 2
+      r: 0
+  boardLayoutMode: 0
   validationMode: 0
   targetWords:
-  - CAUGHT
-  - TOUR
-  - RAN
-  - ANNA
-  targetScore: 17
+  - ACTORS
+  - ESCORT
+  - SECTOR
+  - TRACES
+  targetScore: 24
+  minTargetWordsToComplete: 2
+  allowBonusWords: 1
+  allowBonusInLevelOnly: 1
+  bonusRequiresEmbeddedInLevelOnly: 1
   language: 1

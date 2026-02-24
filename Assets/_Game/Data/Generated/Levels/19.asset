@@ -16,46 +16,79 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: B
-      q: 0
+      letter: R
+      q: -2
       r: 0
     - cellId: c2
-      letter: I
-      q: -1
-      r: 0
+      letter: E
+      q: -2
+      r: 1
     - cellId: c3
-      letter: R
-      q: -1
-      r: 1
+      letter: P
+      q: -2
+      r: 2
     - cellId: c4
-      letter: D
-      q: 0
-      r: 1
+      letter: C
+      q: -1
+      r: -1
     - cellId: c5
-      letter: S
-      q: 1
+      letter: A
+      q: -1
       r: 0
     - cellId: c6
-      letter: H
-      q: 1
-      r: -1
+      letter: D
+      q: -1
+      r: 1
     - cellId: c7
-      letter: I
-      q: 0
-      r: -1
-    - cellId: c8
-      letter: P
+      letter: O
       q: 0
       r: -2
-    - cellId: c9
+    - cellId: c8
       letter: S
-      q: -1
+      q: 0
       r: -1
+    - cellId: c9
+      letter: H
+      q: 0
+      r: 0
+    - cellId: c10
+      letter: C
+      q: 0
+      r: 1
+    - cellId: c11
+      letter: L
+      q: 1
+      r: -2
+    - cellId: c12
+      letter: E
+      q: 1
+      r: -1
+    - cellId: c13
+      letter: D
+      q: 1
+      r: 0
+    - cellId: c14
+      letter: T
+      q: 2
+      r: -2
+    - cellId: c15
+      letter: F
+      q: 2
+      r: -1
+    - cellId: c16
+      letter: G
+      q: 2
+      r: 0
+  boardLayoutMode: 0
   validationMode: 0
   targetWords:
-  - BIRD
-  - BIRDS
-  - SHIP
-  - SHIPS
-  targetScore: 18
+  - SHARED
+  - SACRED
+  - SCARED
+  - CHASED
+  targetScore: 24
+  minTargetWordsToComplete: 2
+  allowBonusWords: 1
+  allowBonusInLevelOnly: 1
+  bonusRequiresEmbeddedInLevelOnly: 1
   language: 1

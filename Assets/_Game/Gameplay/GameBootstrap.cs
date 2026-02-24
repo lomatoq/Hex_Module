@@ -65,7 +65,7 @@ namespace HexWords.Gameplay
 
             _session.ScoreChanged += OnScoreChanged;
             _session.LevelCompleted += OnLevelCompleted;
-            _session.WordSubmitted += OnWordSubmitted;
+            _session.WordSubmittedDetailed += OnWordSubmittedDetailed;
 
             gridView.Build(resolvedLevel);
             inputController.Initialize(resolvedLevel, _session, adjacency);
@@ -73,7 +73,7 @@ namespace HexWords.Gameplay
             _session.StartSession();
             hudView.SetLevel(resolvedLevel.levelId);
             hudView.SetScore(0, resolvedLevel.targetScore);
-            hudView.SetLastWord(string.Empty, true);
+            hudView.SetCurrentWord(string.Empty);
 
             if (levelCompletePanel != null)
             {
@@ -119,7 +119,7 @@ namespace HexWords.Gameplay
 
             _session.ScoreChanged -= OnScoreChanged;
             _session.LevelCompleted -= OnLevelCompleted;
-            _session.WordSubmitted -= OnWordSubmitted;
+            _session.WordSubmittedDetailed -= OnWordSubmittedDetailed;
             _session = null;
         }
 
@@ -128,9 +128,10 @@ namespace HexWords.Gameplay
             hudView.SetScore(current, target);
         }
 
-        private void OnWordSubmitted(string word, bool accepted)
+        private void OnWordSubmittedDetailed(string word, WordSubmitOutcome outcome, ValidationReason reason)
         {
-            hudView.SetLastWord(word, accepted);
+            _ = reason;
+            hudView.SetLastWord(word, outcome);
         }
 
         private void OnLevelCompleted()
