@@ -16,17 +16,23 @@ MonoBehaviour:
   category: general
   minLength: 3
   maxLength: 6
-  cellCount: 10
+  cellCount: 16
   targetWordsMin: 4
   targetWordsMax: 6
   maxLetterRepeats: 0
   allowSingleRepeatFallback: 1
   fillerLettersMax: 0
   avoidDuplicateLetters: 1
+  boardLayoutMode: 0
+  fixedBoardCellCount: 16
   includeLetters: 
   excludeLetters: 
   minDifficultyBand: 0
   maxDifficultyBand: 10
+  minTargetWordsToComplete: 2
+  allowBonusWords: 1
+  allowBonusInLevelOnly: 1
+  bonusRequiresEmbeddedInLevelOnly: 1
   generationAlgorithm: 1
   objective: 1
   hexBudgetMin: 6
