@@ -461,10 +461,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HexWords.Gameplay.GameBootstrap
   levelDefinition: {fileID: 11400000, guid: e3eda90849f324e2ab4942d726500d4f, type: 2}
+  levelCatalog: {fileID: 11400000, guid: 377c090097c5e46ab87734cfd638f244, type: 2}
   dictionaryDatabase: {fileID: 11400000, guid: debb57b8e80bb4d3bb9b71fbe59fd328, type: 2}
   gridView: {fileID: 1391419644}
   inputController: {fileID: 983078662}
   hudView: {fileID: 1135655144}
+  levelCompleteView: {fileID: 2203000003}
+  homeScreenView: {fileID: 2202000003}
+  settingsPopup: {fileID: 2204000003}
+  foundWordsScreen: {fileID: 2205000003}
+  tutorialController: {fileID: 2207000003}
+  adsManager: {fileID: 2208000003}
   levelCompletePanel: {fileID: 2127333831}
 --- !u!4 &616077339
 Transform:
@@ -740,9 +747,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HexWords.UI.LevelHudView
   levelText: {fileID: 439632608}
+  coinText: {fileID: 0}
+  settingsButton: {fileID: 0}
+  foundWordsButton: {fileID: 0}
   scoreText: {fileID: 667261624}
   progressBar: {fileID: 50033884}
   lastWordText: {fileID: 1578051343}
+  feedbackPalette: {fileID: 0}
+  wordPreviewRoot: {fileID: 0}
+  wordPreviewText: {fileID: 0}
+  scoreBadgeRoot: {fileID: 0}
+  scoreBadgeText: {fileID: 0}
+  hintButton: {fileID: 0}
+  hintChargeText: {fileID: 0}
+  hintRvIcon: {fileID: 0}
+  hintEmptyIcon: {fileID: 0}
 --- !u!1 &1202938739
 GameObject:
   m_ObjectHideFlags: 0
@@ -945,6 +964,12 @@ RectTransform:
   - {fileID: 1839421925}
   - {fileID: 1135655143}
   - {fileID: 2127333832}
+  - {fileID: 2201000002}
+  - {fileID: 2202000002}
+  - {fileID: 2203000002}
+  - {fileID: 2204000002}
+  - {fileID: 2205000002}
+  - {fileID: 2206000002}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -1475,6 +1500,491 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2127333831}
   m_CullTransparentMesh: 1
+# ── SplashScreen ─────────────────────────────────────────────────────────────
+--- !u!1 &2201000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2201000002}
+  - component: {fileID: 2201000003}
+  m_Layer: 5
+  m_Name: SplashScreen
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &2201000002
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2201000001}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1290689474}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &2201000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2201000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e4eab4e0d97e4993804588c4cb0a999, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::HexWords.UI.SplashScreen
+  loadingBar: {fileID: 0}
+  loadingText: {fileID: 0}
+  minDisplaySeconds: 1.5
+  homeScreenView: {fileID: 2202000003}
+# ── HomeScreenView ────────────────────────────────────────────────────────────
+--- !u!1 &2202000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2202000002}
+  - component: {fileID: 2202000003}
+  m_Layer: 5
+  m_Name: HomeScreenView
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &2202000002
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2202000001}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1290689474}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &2202000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2202000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8237aafa480644fbbc1501dcf5ec556, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::HexWords.UI.HomeScreenView
+  coinText: {fileID: 0}
+  settingsButton: {fileID: 0}
+  playButton: {fileID: 0}
+  playButtonText: {fileID: 0}
+  dailyChallengeButton: {fileID: 0}
+  root: {fileID: 0}
+# ── LevelCompleteView ─────────────────────────────────────────────────────────
+--- !u!1 &2203000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2203000002}
+  - component: {fileID: 2203000003}
+  m_Layer: 5
+  m_Name: LevelCompleteView
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &2203000002
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2203000001}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1290689474}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &2203000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2203000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82e639f7953d04b6ba9b84a2592d21a7, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::HexWords.UI.LevelCompleteView
+  root: {fileID: 0}
+  levelCompleteText: {fileID: 0}
+  coinRewardButton: {fileID: 0}
+  coinRewardText: {fileID: 0}
+  coinIcon: {fileID: 0}
+  nextLevelButton: {fileID: 0}
+  nextLevelButtonText: {fileID: 0}
+  mainMenuButton: {fileID: 0}
+  adBannerSlot: {fileID: 0}
+# ── SettingsPausePopup ────────────────────────────────────────────────────────
+--- !u!1 &2204000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2204000002}
+  - component: {fileID: 2204000003}
+  m_Layer: 5
+  m_Name: SettingsPausePopup
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &2204000002
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2204000001}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1290689474}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &2204000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2204000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4113c2227a1bf48b79caf39cee5bf959, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::HexWords.UI.SettingsPausePopup
+  root: {fileID: 0}
+  sfxToggle: {fileID: 0}
+  musicToggle: {fileID: 0}
+  vibrationToggle: {fileID: 0}
+  closeButton: {fileID: 0}
+  soundManager: {fileID: 2209000003}
+# ── FoundWordsScreen ──────────────────────────────────────────────────────────
+--- !u!1 &2205000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2205000002}
+  - component: {fileID: 2205000003}
+  m_Layer: 5
+  m_Name: FoundWordsScreen
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &2205000002
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2205000001}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1290689474}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &2205000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2205000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a859fd62e05a4a289432c4d71868ada, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::HexWords.UI.FoundWordsScreen
+  root: {fileID: 0}
+  wordListContainer: {fileID: 0}
+  wordEntryPrefab: {fileID: 0}
+  closeButton: {fileID: 0}
+  targetWordColor: {r: 0.2, g: 0.6, b: 0.2, a: 1}
+  bonusWordColor: {r: 0.1, g: 0.55, b: 0.65, a: 1}
+# ── RateUsPopup ───────────────────────────────────────────────────────────────
+--- !u!1 &2206000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2206000002}
+  - component: {fileID: 2206000003}
+  m_Layer: 5
+  m_Name: RateUsPopup
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &2206000002
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2206000001}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1290689474}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &2206000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2206000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7562b610e28194326bb53b890a6a9444, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::HexWords.UI.RateUsPopup
+  root: {fileID: 0}
+  starButtons: []
+  starImages: []
+  starSelectedColor: {r: 1, g: 0.92, b: 0.016, a: 1}
+  starUnselectedColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  rateNowButton: {fileID: 0}
+  closeButton: {fileID: 0}
+  thankYouPopup: {fileID: 0}
+  thankYouAutoHideSeconds: 2
+  appStoreUrl: https://apps.apple.com/app/idXXXXXXXXXX
+  googlePlayUrl: https://play.google.com/store/apps/details?id=com.yourcompany.yourapp
+# ── TutorialController ────────────────────────────────────────────────────────
+--- !u!1 &2207000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2207000002}
+  - component: {fileID: 2207000003}
+  m_Layer: 0
+  m_Name: TutorialController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2207000002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2207000001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2207000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2207000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8756cfbb056794640be0cba2ed860033, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::HexWords.Gameplay.TutorialController
+  dimOverlay: {fileID: 0}
+  instructionText: {fileID: 0}
+  tapToContinuePrompt: {fileID: 0}
+  swipeTrailPrefab: {fileID: 0}
+  hintButtonHighlight: {fileID: 0}
+# ── AdsManager ───────────────────────────────────────────────────────────────
+--- !u!1 &2208000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2208000002}
+  - component: {fileID: 2208000003}
+  m_Layer: 0
+  m_Name: AdsManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2208000002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2208000001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2208000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2208000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4aff935ec57d84070b442d8b23db7b6d, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::HexWords.Gameplay.AdsManager
+# ── SoundManager ─────────────────────────────────────────────────────────────
+--- !u!1 &2209000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2209000002}
+  - component: {fileID: 2209000003}
+  m_Layer: 0
+  m_Name: SoundManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2209000002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2209000001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2209000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2209000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d4a1d6750a0e4a0395a1fca986405fa, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::HexWords.Core.SoundManager
+  tapClip: {fileID: 0}
+  wordAcceptedClip: {fileID: 0}
+  wordRejectedClip: {fileID: 0}
+  levelCompleteClip: {fileID: 0}
+  coinsClip: {fileID: 0}
+  hintUsedClip: {fileID: 0}
+  ambientMusicClip: {fileID: 0}
+  musicSource: {fileID: 0}
+  sfxSources: []
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -1486,3 +1996,6 @@ SceneRoots:
   - {fileID: 1391419645}
   - {fileID: 983078663}
   - {fileID: 616077339}
+  - {fileID: 2207000002}
+  - {fileID: 2208000002}
+  - {fileID: 2209000002}
