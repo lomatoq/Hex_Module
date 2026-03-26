@@ -69,10 +69,11 @@ namespace HexWords.UI
             if (nextLevelButtonText != null)
                 nextLevelButtonText.text = $"Next Level {levelNumber + 1}";
 
-            // Action buttons disabled until coin reward is collected
-            SetActionButtonsInteractable(false);
+            // If no coin button assigned — unlock immediately; otherwise wait for tap
+            bool hasCoinButton = coinRewardButton != null;
+            SetActionButtonsInteractable(!hasCoinButton);
 
-            if (coinRewardButton != null)
+            if (hasCoinButton)
                 coinRewardButton.interactable = true;
 
             SetRootVisible(true);
