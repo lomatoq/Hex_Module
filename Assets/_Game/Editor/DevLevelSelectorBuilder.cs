@@ -90,12 +90,17 @@ namespace HexWords.Editor
             StyleButton(goGO, new Color(0.1f, 0.7f, 0.1f));
             var goBtn = goGO.GetComponent<Button>();
 
-            // ── 8. Close button (✕) ────────────────────────────────────────
+            // ── 8. Restart button ──────────────────────────────────────────
+            var restartGO  = CreateLabelledButton("RestartBtn", panelGO.transform, "↺  RESTART", new Vector2(0, -105), new Vector2(180, 40));
+            StyleButton(restartGO, new Color(0.15f, 0.45f, 0.75f));
+            var restartBtn = restartGO.GetComponent<Button>();
+
+            // ── 9. Close button (✕) ────────────────────────────────────────
             var closeGO = CreateLabelledButton("CloseBtn", panelGO.transform, "✕", new Vector2(130, 90), new Vector2(40, 40));
             StyleButton(closeGO, new Color(0.7f, 0.1f, 0.1f));
             var closeBtn = closeGO.GetComponent<Button>();
 
-            // ── 9. Wire references via SerializedObject ────────────────────
+            // ── 10. Wire references via SerializedObject ───────────────────
             var so = new SerializedObject(selector);
 
             so.FindProperty("triggerZone").objectReferenceValue      = triggerBtn;
@@ -105,6 +110,7 @@ namespace HexWords.Editor
             so.FindProperty("prevButton").objectReferenceValue       = prevBtn;
             so.FindProperty("nextButton").objectReferenceValue       = nextBtn;
             so.FindProperty("goButton").objectReferenceValue         = goBtn;
+            so.FindProperty("restartButton").objectReferenceValue    = restartBtn;
 
             // Wire GameBootstrap if present
             var bootstrap = Object.FindFirstObjectByType<HexWords.Gameplay.GameBootstrap>();
