@@ -209,6 +209,41 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!1 &295330620
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 295330621}
+  m_Layer: 5
+  m_Name: WordEntry
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &295330621
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 295330620}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2132000002}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &439632606
 GameObject:
   m_ObjectHideFlags: 0
@@ -466,12 +501,12 @@ MonoBehaviour:
   gridView: {fileID: 1391419644}
   inputController: {fileID: 983078662}
   hudView: {fileID: 1135655144}
-  levelCompleteView: {fileID: 2203000003}
-  homeScreenView: {fileID: 2202000003}
-  settingsPopup: {fileID: 2204000003}
-  foundWordsScreen: {fileID: 2205000003}
-  tutorialController: {fileID: 2207000003}
-  adsManager: {fileID: 2208000003}
+  levelCompleteView: {fileID: 2130000003}
+  homeScreenView: {fileID: 2129000003}
+  settingsPopup: {fileID: 2131000003}
+  foundWordsScreen: {fileID: 2132000003}
+  tutorialController: {fileID: 2134000003}
+  adsManager: {fileID: 2135000003}
   levelCompletePanel: {fileID: 2127333831}
 --- !u!4 &616077339
 Transform:
@@ -567,6 +602,135 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 667261622}
   m_CullTransparentMesh: 1
+--- !u!1 &977037292
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 977037293}
+  - component: {fileID: 977037294}
+  m_Layer: 0
+  m_Name: Audio Source
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &977037293
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 977037292}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2136000002}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!82 &977037294
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 977037292}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &983078661
 GameObject:
   m_ObjectHideFlags: 0
@@ -964,12 +1128,12 @@ RectTransform:
   - {fileID: 1839421925}
   - {fileID: 1135655143}
   - {fileID: 2127333832}
-  - {fileID: 2201000002}
-  - {fileID: 2202000002}
-  - {fileID: 2203000002}
-  - {fileID: 2204000002}
-  - {fileID: 2205000002}
-  - {fileID: 2206000002}
+  - {fileID: 2128000002}
+  - {fileID: 2129000002}
+  - {fileID: 2130000002}
+  - {fileID: 2131000002}
+  - {fileID: 2132000002}
+  - {fileID: 2133000002}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -1500,8 +1664,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2127333831}
   m_CullTransparentMesh: 1
-# ── SplashScreen ─────────────────────────────────────────────────────────────
---- !u!1 &2201000001
+--- !u!1 &2128000001
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1509,8 +1672,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 2201000002}
-  - component: {fileID: 2201000003}
+  - component: {fileID: 2128000002}
+  - component: {fileID: 2128000003}
   m_Layer: 5
   m_Name: SplashScreen
   m_TagString: Untagged
@@ -1518,13 +1681,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!224 &2201000002
+--- !u!224 &2128000002
 RectTransform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2201000001}
+  m_GameObject: {fileID: 2128000001}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -1537,24 +1700,23 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &2201000003
+--- !u!114 &2128000003
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2201000001}
+  m_GameObject: {fileID: 2128000001}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1e4eab4e0d97e4993804588c4cb0a999, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HexWords.UI.SplashScreen
   loadingBar: {fileID: 0}
   loadingText: {fileID: 0}
   minDisplaySeconds: 1.5
-  homeScreenView: {fileID: 2202000003}
-# ── HomeScreenView ────────────────────────────────────────────────────────────
---- !u!1 &2202000001
+  homeScreenView: {fileID: 2129000003}
+--- !u!1 &2129000001
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1562,8 +1724,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 2202000002}
-  - component: {fileID: 2202000003}
+  - component: {fileID: 2129000002}
+  - component: {fileID: 2129000003}
   m_Layer: 5
   m_Name: HomeScreenView
   m_TagString: Untagged
@@ -1571,13 +1733,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!224 &2202000002
+--- !u!224 &2129000002
 RectTransform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2202000001}
+  m_GameObject: {fileID: 2129000001}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -1590,17 +1752,17 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &2202000003
+--- !u!114 &2129000003
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2202000001}
+  m_GameObject: {fileID: 2129000001}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f8237aafa480644fbbc1501dcf5ec556, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HexWords.UI.HomeScreenView
   coinText: {fileID: 0}
   settingsButton: {fileID: 0}
@@ -1608,8 +1770,7 @@ MonoBehaviour:
   playButtonText: {fileID: 0}
   dailyChallengeButton: {fileID: 0}
   root: {fileID: 0}
-# ── LevelCompleteView ─────────────────────────────────────────────────────────
---- !u!1 &2203000001
+--- !u!1 &2130000001
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1617,8 +1778,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 2203000002}
-  - component: {fileID: 2203000003}
+  - component: {fileID: 2130000002}
+  - component: {fileID: 2130000003}
   m_Layer: 5
   m_Name: LevelCompleteView
   m_TagString: Untagged
@@ -1626,13 +1787,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!224 &2203000002
+--- !u!224 &2130000002
 RectTransform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2203000001}
+  m_GameObject: {fileID: 2130000001}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -1645,17 +1806,17 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &2203000003
+--- !u!114 &2130000003
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2203000001}
+  m_GameObject: {fileID: 2130000001}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 82e639f7953d04b6ba9b84a2592d21a7, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HexWords.UI.LevelCompleteView
   root: {fileID: 0}
   levelCompleteText: {fileID: 0}
@@ -1666,8 +1827,7 @@ MonoBehaviour:
   nextLevelButtonText: {fileID: 0}
   mainMenuButton: {fileID: 0}
   adBannerSlot: {fileID: 0}
-# ── SettingsPausePopup ────────────────────────────────────────────────────────
---- !u!1 &2204000001
+--- !u!1 &2131000001
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1675,8 +1835,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 2204000002}
-  - component: {fileID: 2204000003}
+  - component: {fileID: 2131000002}
+  - component: {fileID: 2131000003}
   m_Layer: 5
   m_Name: SettingsPausePopup
   m_TagString: Untagged
@@ -1684,13 +1844,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!224 &2204000002
+--- !u!224 &2131000002
 RectTransform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2204000001}
+  m_GameObject: {fileID: 2131000001}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -1703,26 +1863,25 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &2204000003
+--- !u!114 &2131000003
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2204000001}
+  m_GameObject: {fileID: 2131000001}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4113c2227a1bf48b79caf39cee5bf959, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HexWords.UI.SettingsPausePopup
   root: {fileID: 0}
   sfxToggle: {fileID: 0}
   musicToggle: {fileID: 0}
   vibrationToggle: {fileID: 0}
   closeButton: {fileID: 0}
-  soundManager: {fileID: 2209000003}
-# ── FoundWordsScreen ──────────────────────────────────────────────────────────
---- !u!1 &2205000001
+  soundManager: {fileID: 2136000003}
+--- !u!1 &2132000001
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1730,8 +1889,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 2205000002}
-  - component: {fileID: 2205000003}
+  - component: {fileID: 2132000002}
+  - component: {fileID: 2132000003}
   m_Layer: 5
   m_Name: FoundWordsScreen
   m_TagString: Untagged
@@ -1739,18 +1898,19 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!224 &2205000002
+--- !u!224 &2132000002
 RectTransform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2205000001}
+  m_GameObject: {fileID: 2132000001}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 295330621}
   m_Father: {fileID: 1290689474}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -1758,17 +1918,17 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &2205000003
+--- !u!114 &2132000003
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2205000001}
+  m_GameObject: {fileID: 2132000001}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9a859fd62e05a4a289432c4d71868ada, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HexWords.UI.FoundWordsScreen
   root: {fileID: 0}
   wordListContainer: {fileID: 0}
@@ -1776,8 +1936,7 @@ MonoBehaviour:
   closeButton: {fileID: 0}
   targetWordColor: {r: 0.2, g: 0.6, b: 0.2, a: 1}
   bonusWordColor: {r: 0.1, g: 0.55, b: 0.65, a: 1}
-# ── RateUsPopup ───────────────────────────────────────────────────────────────
---- !u!1 &2206000001
+--- !u!1 &2133000001
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1785,8 +1944,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 2206000002}
-  - component: {fileID: 2206000003}
+  - component: {fileID: 2133000002}
+  - component: {fileID: 2133000003}
   m_Layer: 5
   m_Name: RateUsPopup
   m_TagString: Untagged
@@ -1794,13 +1953,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!224 &2206000002
+--- !u!224 &2133000002
 RectTransform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2206000001}
+  m_GameObject: {fileID: 2133000001}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -1813,17 +1972,17 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &2206000003
+--- !u!114 &2133000003
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2206000001}
+  m_GameObject: {fileID: 2133000001}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7562b610e28194326bb53b890a6a9444, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HexWords.UI.RateUsPopup
   root: {fileID: 0}
   starButtons: []
@@ -1836,8 +1995,7 @@ MonoBehaviour:
   thankYouAutoHideSeconds: 2
   appStoreUrl: https://apps.apple.com/app/idXXXXXXXXXX
   googlePlayUrl: https://play.google.com/store/apps/details?id=com.yourcompany.yourapp
-# ── TutorialController ────────────────────────────────────────────────────────
---- !u!1 &2207000001
+--- !u!1 &2134000001
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1845,8 +2003,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 2207000002}
-  - component: {fileID: 2207000003}
+  - component: {fileID: 2134000002}
+  - component: {fileID: 2134000003}
   m_Layer: 0
   m_Name: TutorialController
   m_TagString: Untagged
@@ -1854,13 +2012,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &2207000002
+--- !u!4 &2134000002
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2207000001}
+  m_GameObject: {fileID: 2134000001}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -1869,25 +2027,24 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2207000003
+--- !u!114 &2134000003
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2207000001}
+  m_GameObject: {fileID: 2134000001}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8756cfbb056794640be0cba2ed860033, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HexWords.Gameplay.TutorialController
   dimOverlay: {fileID: 0}
   instructionText: {fileID: 0}
   tapToContinuePrompt: {fileID: 0}
   swipeTrailPrefab: {fileID: 0}
   hintButtonHighlight: {fileID: 0}
-# ── AdsManager ───────────────────────────────────────────────────────────────
---- !u!1 &2208000001
+--- !u!1 &2135000001
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1895,8 +2052,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 2208000002}
-  - component: {fileID: 2208000003}
+  - component: {fileID: 2135000002}
+  - component: {fileID: 2135000003}
   m_Layer: 0
   m_Name: AdsManager
   m_TagString: Untagged
@@ -1904,13 +2061,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &2208000002
+--- !u!4 &2135000002
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2208000001}
+  m_GameObject: {fileID: 2135000001}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -1919,20 +2076,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2208000003
+--- !u!114 &2135000003
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2208000001}
+  m_GameObject: {fileID: 2135000001}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4aff935ec57d84070b442d8b23db7b6d, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HexWords.Gameplay.AdsManager
-# ── SoundManager ─────────────────────────────────────────────────────────────
---- !u!1 &2209000001
+--- !u!1 &2136000001
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1940,8 +2096,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 2209000002}
-  - component: {fileID: 2209000003}
+  - component: {fileID: 2136000002}
+  - component: {fileID: 2136000003}
   m_Layer: 0
   m_Name: SoundManager
   m_TagString: Untagged
@@ -1949,32 +2105,33 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &2209000002
+--- !u!4 &2136000002
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2209000001}
+  m_GameObject: {fileID: 2136000001}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 977037293}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2209000003
+--- !u!114 &2136000003
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2209000001}
+  m_GameObject: {fileID: 2136000001}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3d4a1d6750a0e4a0395a1fca986405fa, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HexWords.Core.SoundManager
   tapClip: {fileID: 0}
   wordAcceptedClip: {fileID: 0}
@@ -1996,6 +2153,6 @@ SceneRoots:
   - {fileID: 1391419645}
   - {fileID: 983078663}
   - {fileID: 616077339}
-  - {fileID: 2207000002}
-  - {fileID: 2208000002}
-  - {fileID: 2209000002}
+  - {fileID: 2134000002}
+  - {fileID: 2135000002}
+  - {fileID: 2136000002}
