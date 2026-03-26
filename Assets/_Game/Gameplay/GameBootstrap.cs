@@ -108,6 +108,25 @@ namespace HexWords.Gameplay
             }
         }
 
+        /// <summary>Dev-only: jump directly to a specific level index.</summary>
+        public void JumpToLevel(int levelIndex)
+        {
+            _currentLevelIndex = Mathf.Max(0, levelIndex);
+            PlayerPrefs.SetInt(PrefLevelIndex, _currentLevelIndex);
+            PlayerPrefs.Save();
+
+            // Close home screen if open
+            if (homeScreenView != null)
+            {
+                homeScreenView.OnPlayClicked         -= StartGame;
+                homeScreenView.OnSettingsClicked     -= ShowSettings;
+                homeScreenView.OnDailyChallengeClicked -= OnDailyChallengeClicked;
+                homeScreenView.Hide();
+            }
+
+            LoadCurrentLevel();
+        }
+
         public void StartGame()
         {
             if (homeScreenView != null)

@@ -113,19 +113,23 @@ namespace HexWords.UI
 
         private void OnGoClicked()
         {
-            // Write directly to PlayerPrefs so GameBootstrap picks it up
-            PlayerPrefs.SetInt(PrefKey, _selectedLevel);
-            PlayerPrefs.Save();
-
             ClosePanel();
 
-            // Start the game at the selected level
             if (gameBootstrap != null)
-                gameBootstrap.StartGame();
+            {
+                // JumpToLevel sets _currentLevelIndex in memory AND saves to PlayerPrefs
+                gameBootstrap.JumpToLevel(_selectedLevel);
+            }
             else
-                Debug.LogWarning("[DevLevelSelector] GameBootstrap not assigned — set level only.");
+            {
+                // Fallback: write to PlayerPrefs and reload scene
+                PlayerPrefs.SetInt(PrefKey, _selectedLevel);
+                PlayerPrefs.Save();
+                var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+                UnityEngine.SceneManagement.SceneManager.LoadScene(scene.name);
+            }
 
-            Debug.Log($"[DevLevelSelector] Jumping to level index {_selectedLevel}");
+            Debug.Log($"[DevLevelSelector] Jumping to level index {_selectedLevel} (Level {_selectedLevel + 1})");
         }
 
         private void RefreshLabel()
