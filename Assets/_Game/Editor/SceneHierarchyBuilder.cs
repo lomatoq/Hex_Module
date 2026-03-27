@@ -49,22 +49,21 @@ namespace HexWords.Editor
             // ── Found Words Button ────────────────────────────────────────
             Wire(so, "foundWordsButton", GetOrCreateButton(hudGO, "FoundWordsButton", "📖", 18));
 
-            // ── Word Preview ──────────────────────────────────────────────
-            var previewRoot = GetOrCreateGO("WordPreview", hudGO.transform);
-            EnsureRect(previewRoot).sizeDelta = new Vector2(200, 50);
-            EnsureImage(previewRoot, new Color(0, 0, 0, 0.5f));
-            previewRoot.SetActive(false);
+            // ── Score Badge (optional, дочарны пад LastWordText) ─────────────
+            // WordPreview выкарыстоўвае той жа LastWordText — асобны аб'ект не патрэбны.
+            // Ствараем толькі апцыянальны бэдж з балімі (+7) побач з тэкстам.
+            var lastWordGO = hudGO.transform.Find("LastWordText")?.gameObject;
+            if (lastWordGO != null)
+            {
+                var badgeRoot = GetOrCreateGO("ScoreBadge", lastWordGO.transform);
+                EnsureRect(badgeRoot).sizeDelta = new Vector2(50, 26);
+                EnsureImage(badgeRoot, new Color(0.2f, 0.7f, 0.2f));
+                var badgeText = GetOrCreateText(badgeRoot, "BadgeText", "+7", 16, Color.white);
+                badgeRoot.SetActive(false);
 
-            var previewText = GetOrCreateText(previewRoot, "PreviewText", "WORD", 24, Color.white);
-            var badgeRoot   = GetOrCreateGO("ScoreBadge", previewRoot.transform);
-            EnsureRect(badgeRoot).sizeDelta = new Vector2(60, 30);
-            EnsureImage(badgeRoot, new Color(0.2f, 0.7f, 0.2f));
-            var badgeText = GetOrCreateText(badgeRoot, "BadgeText", "+7", 18, Color.white);
-
-            Wire(so, "wordPreviewRoot", previewRoot);
-            Wire(so, "wordPreviewText", previewText.GetComponent<Text>());
-            Wire(so, "scoreBadgeRoot",  badgeRoot);
-            Wire(so, "scoreBadgeText",  badgeText.GetComponent<Text>());
+                Wire(so, "scoreBadgeRoot", badgeRoot);
+                Wire(so, "scoreBadgeText", badgeText.GetComponent<Text>());
+            }
 
             // ── Hint Button ───────────────────────────────────────────────
             var hintGO  = GetOrCreateButton(hudGO, "HintButton", "💡", 20).gameObject;
