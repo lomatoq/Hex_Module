@@ -56,6 +56,11 @@ namespace HexWords.Gameplay
         {
             TearDownSession();
             UnsubscribeHud();
+
+            if (_wallet != null)
+                _wallet.BalanceChanged -= OnBalanceChanged;
+            if (_hintService != null)
+                _hintService.ChargesChanged -= OnHintChargesChanged;
         }
 
         // ── Boot flow ──────────────────────────────────────────────────────
