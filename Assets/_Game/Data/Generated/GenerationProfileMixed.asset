@@ -19,10 +19,10 @@ MonoBehaviour:
   cellCount: 16
   targetWordsMin: 4
   targetWordsMax: 6
-  maxLetterRepeats: 0
+  maxLetterRepeats: 2
   allowSingleRepeatFallback: 1
   fillerLettersMax: 2
-  avoidDuplicateLetters: 1
+  avoidDuplicateLetters: 0
   boardLayoutMode: 0
   fixedBoardCellCount: 16
   includeLetters: 
