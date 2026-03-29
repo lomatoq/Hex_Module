@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using HexWords.Core;
 using UnityEngine;
 using UnityEngine.UI;
@@ -24,6 +25,8 @@ namespace HexWords.UI
         [Header("Colours")]
         [SerializeField] private Color targetWordColor = new Color(0.2f, 0.6f, 0.2f);
         [SerializeField] private Color bonusWordColor  = new Color(0.1f, 0.55f, 0.65f);
+
+        private readonly List<GameObject> _spawnedEntries = new List<GameObject>();
 
         private void Awake()
         {
@@ -67,9 +70,11 @@ namespace HexWords.UI
         {
             if (wordListContainer == null || wordEntryPrefab == null) return;
 
-            // Clear previous entries
-            foreach (Transform child in wordListContainer)
-                Destroy(child.gameObject);
+            // Destroy previously spawned entries immediately so the list is
+            // clean before we add new ones (avoids double-entries on re-open).
+            foreach (var entry in _spawnedEntries)
+                if (entry != null) DestroyImmediate(entry);
+            _spawnedEntries.Clear();
 
             // Target words first
             foreach (var word in state.acceptedTargetWords)
@@ -95,10 +100,16 @@ namespace HexWords.UI
                 text.color = color;
             }
             go.SetActive(true);
+            _spawnedEntries.Add(go);
         }
 
         private void SetRootVisible(bool visible)
         {
+            // Always ensure the GO itself is active when showing —
+            // it may start inactive in the scene (set by SceneHierarchyBuilder).
+            if (visible && !gameObject.activeSelf)
+                gameObject.SetActive(true);
+
             if (root != null)
                 root.SetActive(visible);
             else
