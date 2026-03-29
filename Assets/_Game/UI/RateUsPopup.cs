@@ -55,11 +55,23 @@ namespace HexWords.UI
             if (rateNowButton != null)
                 rateNowButton.onClick.AddListener(OnRateNow);
 
-            if (closeButton != null)
-                closeButton.onClick.AddListener(OnDismissed);
-
             SetRootVisible(false);
             if (thankYouPopup != null) thankYouPopup.SetActive(false);
+        }
+
+        private void OnEnable()
+        {
+            if (closeButton != null)
+            {
+                closeButton.onClick.RemoveListener(OnDismissed);
+                closeButton.onClick.AddListener(OnDismissed);
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (closeButton != null)
+                closeButton.onClick.RemoveListener(OnDismissed);
         }
 
         // ── Public API ─────────────────────────────────────────────────────

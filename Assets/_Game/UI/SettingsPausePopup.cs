@@ -26,9 +26,6 @@ namespace HexWords.UI
 
         private void Awake()
         {
-            if (closeButton != null)
-                closeButton.onClick.AddListener(Hide);
-
             // Toggles — suppress listener during init
             if (sfxToggle != null)
                 sfxToggle.onValueChanged.AddListener(OnSfxToggled);
@@ -40,6 +37,21 @@ namespace HexWords.UI
                 vibrationToggle.onValueChanged.AddListener(OnVibrationToggled);
 
             SetRootVisible(false);
+        }
+
+        private void OnEnable()
+        {
+            if (closeButton != null)
+            {
+                closeButton.onClick.RemoveListener(Hide);
+                closeButton.onClick.AddListener(Hide);
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (closeButton != null)
+                closeButton.onClick.RemoveListener(Hide);
         }
 
         public void Show()
