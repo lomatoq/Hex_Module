@@ -629,15 +629,27 @@ namespace HexWords.EditorTools
                 : new[] { false };
             var objectiveModes = BuildObjectiveModes(_profile.objective);
 
-            // Anchor injection: when a length band is active, build a pool of
-            // "long" words. Each attempt will inject a random long word at
-            // position 0 so the greedy solver always starts with it, ensuring
-            // the quality gate (MixRequired / OneLongRequired) can be met.
-            var anchorMinLen = Mathf.Max(3, _profile.longWordMinLength);
-            var longAnchorPool = _profile.lengthBand != LengthBand.Free
-                ? available.Where(w => w.Length >= anchorMinLen).ToList()
-                : null;
-            var useAnchor = longAnchorPool != null && longAnchorPool.Count > 0;
+            // Stratified pool: when length diversity is required, pre-group candidates
+            // by word length and take equal quotas from each group. This ensures the
+            // greedy solver sees words of ALL lengths, not just the highest-QuickScore
+            // (longest) ones, so MixRequired / OneLongRequired can be satisfied.
+            // candidatePoolLimit is set to 0 for this pool so WordSetSelector does not
+            // re-sort and collapse it back to same-length candidates.
+            var useStratifiedPool = _profile.lengthBand != LengthBand.Free && available.Count > 100;
+            List<List<string>> stratifiedGroups = null;
+            if (useStratifiedPool)
+            {
+                stratifiedGroups = available
+                    .GroupBy(w => w.Length)
+                    .OrderBy(g => g.Key)
+                    .Select(g => g.ToList())
+                    .ToList();
+            }
+
+            var basePoolLimit = Mathf.Clamp(_candidateWindow, 200, 4000);
+            var perGroupQuota = stratifiedGroups != null && stratifiedGroups.Count > 0
+                ? Math.Max(10, basePoolLimit / stratifiedGroups.Count)
+                : 0;
 
             for (var d = 0; d < desiredCounts.Count; d++)
             {
@@ -654,19 +666,33 @@ namespace HexWords.EditorTools
                         break;
                     }
 
-                    // Build per-attempt selection pool: inject a random long anchor
-                    // word at position 0 so the greedy solver starts with it.
-                    var selectionPool = available;
-                    if (useAnchor)
+                    // Build per-attempt selection pool, shuffled to vary results.
+                    List<string> selectionPool;
+                    if (useStratifiedPool && stratifiedGroups != null)
                     {
-                        var anchorRng = new System.Random(seed + attempt * 13337 + d * 999983);
-                        var anchor = longAnchorPool[anchorRng.Next(longAnchorPool.Count)];
-                        var injected = new List<string>(available.Count) { anchor };
-                        for (var ai = 0; ai < available.Count; ai++)
+                        // Sample up to perGroupQuota words from each length group using
+                        // a partial Fisher-Yates shuffle seeded per attempt.
+                        var stratRng = new System.Random(seed + attempt * 13337 + d * 999983);
+                        var stratified = new List<string>(basePoolLimit);
+                        foreach (var grp in stratifiedGroups)
                         {
-                            if (available[ai] != anchor) injected.Add(available[ai]);
+                            var take = Math.Min(perGroupQuota, grp.Count);
+                            // Partial shuffle: swap each pick position with a random
+                            // remaining index (in-index space, not mutating grp).
+                            var indices = new int[grp.Count];
+                            for (var ii = 0; ii < indices.Length; ii++) indices[ii] = ii;
+                            for (var si = 0; si < take; si++)
+                            {
+                                var sj = si + stratRng.Next(indices.Length - si);
+                                (indices[si], indices[sj]) = (indices[sj], indices[si]);
+                                stratified.Add(grp[indices[si]]);
+                            }
                         }
-                        selectionPool = injected;
+                        selectionPool = stratified;
+                    }
+                    else
+                    {
+                        selectionPool = available;
                     }
 
                     WordSetSelectionResult selection = null;
@@ -696,7 +722,10 @@ namespace HexWords.EditorTools
                                 overlapWeight = _profile.overlapWeight,
                                 diversityWeight = _profile.diversityWeight,
                                 seed = seed + attempt * 97 + desiredCount * 17 + sm * 7919 + om * 3571,
-                                candidatePoolLimit = ShouldUseUnlimitedPool(objectiveMode, useAvoidDuplicatesForSelection) ? 0 : Mathf.Clamp(_candidateWindow, 200, 4000),
+                                // When using a stratified pool it is already pre-trimmed to ~basePoolLimit
+                                // words with even length distribution — skip WordSetSelector's internal
+                                // re-sort (which would collapse it back to same-length candidates).
+                                candidatePoolLimit = (useStratifiedPool || ShouldUseUnlimitedPool(objectiveMode, useAvoidDuplicatesForSelection)) ? 0 : basePoolLimit,
                                 maxSolverMilliseconds = ShouldUseUnlimitedPool(objectiveMode, useAvoidDuplicatesForSelection) ? 550 : 300,
                                 beamInputLimit = 900,
                                 beamExpansionLimit = 180000
