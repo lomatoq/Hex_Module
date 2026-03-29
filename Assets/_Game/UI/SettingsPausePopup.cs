@@ -1,3 +1,4 @@
+using System;
 using HexWords.Core;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,6 +8,7 @@ namespace HexWords.UI
     /// <summary>
     /// Settings / Pause popup. Opens from both the Home Screen and the in-game header.
     /// Controls sound, music, and vibration toggles.
+    /// When opened in-game, shows an additional "Main Menu" button.
     /// </summary>
     public class SettingsPausePopup : MonoBehaviour
     {
@@ -21,8 +23,13 @@ namespace HexWords.UI
         [Header("Close")]
         [SerializeField] private Button closeButton;
 
+        [Header("Main Menu (in-game only)")]
+        [SerializeField] private Button mainMenuButton;
+
         [Header("References")]
         [SerializeField] private SoundManager soundManager;
+
+        public event Action OnMainMenuClicked;
 
         private void Awake()
         {
@@ -46,16 +53,29 @@ namespace HexWords.UI
                 closeButton.onClick.RemoveListener(Hide);
                 closeButton.onClick.AddListener(Hide);
             }
+
+            if (mainMenuButton != null)
+            {
+                mainMenuButton.onClick.RemoveListener(OnMainMenuButtonClicked);
+                mainMenuButton.onClick.AddListener(OnMainMenuButtonClicked);
+            }
         }
 
         private void OnDisable()
         {
             if (closeButton != null)
                 closeButton.onClick.RemoveListener(Hide);
+
+            if (mainMenuButton != null)
+                mainMenuButton.onClick.RemoveListener(OnMainMenuButtonClicked);
         }
 
-        public void Show()
+        /// <param name="inGame">Pass true when opened during a level — shows the Main Menu button.</param>
+        public void Show(bool inGame = false)
         {
+            if (mainMenuButton != null)
+                mainMenuButton.gameObject.SetActive(inGame);
+
             // Sync toggles with current state
             if (sfxToggle != null)
             {
@@ -84,6 +104,12 @@ namespace HexWords.UI
         public void Hide()
         {
             SetRootVisible(false);
+        }
+
+        private void OnMainMenuButtonClicked()
+        {
+            Hide();
+            OnMainMenuClicked?.Invoke();
         }
 
         private void OnSfxToggled(bool value)

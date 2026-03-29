@@ -186,6 +186,15 @@ namespace HexWords.Gameplay
             _session.WordSubmittedDetailed += OnWordSubmittedDetailed;
             _session.StreakChanged         += OnStreakChanged;
 
+            // Normalise level shape in-memory so both Build and Initialize
+            // use consistent canonical coordinates (fixes c3 adjacency after grid fix)
+            if (_currentLevel.boardLayoutMode == BoardLayoutMode.Fixed16Symmetric &&
+                _currentLevel.shape?.cells != null &&
+                !HexBoardTemplate16.HasCanonicalShape(_currentLevel.shape))
+            {
+                HexBoardTemplate16.ApplyCanonicalLayout(_currentLevel.shape.cells);
+            }
+
             gridView.Build(_currentLevel);
             inputController.Initialize(_currentLevel, _session, adjacency);
             _session.StartSession();
@@ -259,17 +268,23 @@ namespace HexWords.Gameplay
         {
             if (hudView == null) return;
             UnsubscribeHud(); // prevent duplicate subscriptions on level reload
-            hudView.OnHintClicked      += OnHintClicked;
-            hudView.OnSettingsClicked  += ShowSettings;
+            hudView.OnHintClicked       += OnHintClicked;
+            hudView.OnSettingsClicked   += ShowSettingsInGame;
             hudView.OnFoundWordsClicked += ShowFoundWords;
+
+            if (settingsPopup != null)
+                settingsPopup.OnMainMenuClicked += GoToHomeScreen;
         }
 
         private void UnsubscribeHud()
         {
             if (hudView == null) return;
-            hudView.OnHintClicked      -= OnHintClicked;
-            hudView.OnSettingsClicked  -= ShowSettings;
+            hudView.OnHintClicked       -= OnHintClicked;
+            hudView.OnSettingsClicked   -= ShowSettingsInGame;
             hudView.OnFoundWordsClicked -= ShowFoundWords;
+
+            if (settingsPopup != null)
+                settingsPopup.OnMainMenuClicked -= GoToHomeScreen;
         }
 
         // ── Session callbacks ──────────────────────────────────────────────
@@ -402,7 +417,12 @@ namespace HexWords.Gameplay
 
         private void ShowSettings()
         {
-            settingsPopup?.Show();
+            settingsPopup?.Show(inGame: false);
+        }
+
+        private void ShowSettingsInGame()
+        {
+            settingsPopup?.Show(inGame: true);
         }
 
         private void ShowFoundWords()
