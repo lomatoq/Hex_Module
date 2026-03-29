@@ -32,6 +32,7 @@ namespace HexWords.EditorTools
 
         private int _startLevelId = 1001;
         private int _levelsCount = 20;
+        private int _levelSolveBudgetMs = 8000;
         private ValidationMode _validationMode = ValidationMode.LevelOnly;
         private int _maxWordReuseAcrossLevels = 3;
         private bool _overwriteExisting;
@@ -74,9 +75,13 @@ namespace HexWords.EditorTools
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Run", EditorStyles.boldLabel);
             _startLevelId = EditorGUILayout.IntField("Start Level ID", _startLevelId);
-            _levelsCount = Mathf.Clamp(EditorGUILayout.IntField("Levels Count", _levelsCount), 1, 500);
+            _levelsCount = Mathf.Clamp(EditorGUILayout.IntField("Levels Count", _levelsCount), 1, 100000);
             _validationMode = (ValidationMode)EditorGUILayout.EnumPopup("Validation Mode", _validationMode);
-            _maxWordReuseAcrossLevels = Mathf.Clamp(EditorGUILayout.IntField("Max Word Reuse (global)", _maxWordReuseAcrossLevels), 1, 100);
+            _maxWordReuseAcrossLevels = Mathf.Clamp(EditorGUILayout.IntField("Max Word Reuse (global)", _maxWordReuseAcrossLevels), 1, 1000);
+            EditorGUILayout.HelpBox(
+                $"Pool capacity ≈ candidates × reuse / wordsPerLevel. For thousands of levels, raise Max Word Reuse.",
+                MessageType.None);
+            _levelSolveBudgetMs = Mathf.Clamp(EditorGUILayout.IntField("Solve Budget (ms/level)", _levelSolveBudgetMs), 1000, 60000);
             _strictTargetWordCount = EditorGUILayout.Toggle("Strict Target Word Count", _strictTargetWordCount);
             _overwriteExisting = EditorGUILayout.Toggle("Overwrite Existing Assets", _overwriteExisting);
 
@@ -388,7 +393,9 @@ namespace HexWords.EditorTools
                     level.language = _profile.language;
                     level.validationMode = _validationMode;
                     level.targetWords = targetWords.ToArray();
-                    level.targetScore = targetWords.Sum(w => w.Length);
+                    // Use the same nonlinear score table as ScoreService so targetScore
+                    // matches exactly what the player can earn by finding all target words.
+                    level.targetScore = targetWords.Sum(w => ScoreForLength(WordNormalizer.Normalize(w).Length));
                     level.shape = new GridShape { cells = cells };
                     level.boardLayoutMode = _profile.boardLayoutMode;
                     level.minTargetWordsToComplete = Mathf.Clamp(_profile.minTargetWordsToComplete, 0, targetWords.Count);
@@ -620,7 +627,7 @@ namespace HexWords.EditorTools
             var selectionQualityFails = 0;
             var desiredCounts = GenerationPlanUtility.BuildDesiredWordCounts(minTargets, maxTargets, _strictTargetWordCount);
             var levelSolveTimer = Stopwatch.StartNew();
-            const int levelSolveBudgetMs = 5000;
+            var levelSolveBudgetMs = Mathf.Max(1000, _levelSolveBudgetMs);
             var selectionModeFallbacks = 0;
             var placementModeFallbacks = 0;
             var objectiveFallbacks = 0;
@@ -1825,6 +1832,26 @@ namespace HexWords.EditorTools
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Matches ScoreService.ScoreWord: nonlinear table (3→1, 4→3, 5→7, 6→13, 7→21, 8→31, 9→43, 10→57).
+        /// Used when setting level.targetScore so it matches what the player actually earns.
+        /// </summary>
+        private static int ScoreForLength(int len)
+        {
+            switch (len)
+            {
+                case 3:  return 1;
+                case 4:  return 3;
+                case 5:  return 7;
+                case 6:  return 13;
+                case 7:  return 21;
+                case 8:  return 31;
+                case 9:  return 43;
+                case 10: return 57;
+                default: return len > 10 ? 57 + (len - 10) * 14 : 0;
+            }
         }
 
         private static bool AreDerivativePair(string a, string b)

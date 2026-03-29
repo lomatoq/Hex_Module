@@ -202,6 +202,18 @@ namespace HexWords.Gameplay
 
             gridView.Build(_currentLevel);
             inputController.Initialize(_currentLevel, _session, adjacency);
+
+            // Recalculate targetScore using ScoreService so old assets (which stored
+            // sum-of-lengths instead of sum-of-score-table) display and complete correctly.
+            if (_currentLevel.targetWords != null && _currentLevel.targetWords.Length > 0)
+            {
+                var recalc = 0;
+                foreach (var w in _currentLevel.targetWords)
+                    recalc += _scoreService.ScoreWord(w, _currentLevel);
+                if (recalc > 0)
+                    _currentLevel.targetScore = recalc;
+            }
+
             _session.StartSession();
 
             // HUD
