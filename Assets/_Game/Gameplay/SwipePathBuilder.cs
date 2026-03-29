@@ -51,6 +51,22 @@ namespace HexWords.Gameplay
             return true;
         }
 
+        /// <summary>
+        /// Калі cellId — гэта перадапошняя клетка шляху, прыбірае апошнюю (backtrack).
+        /// Вяртае true і removedCellId калі адкат адбыўся.
+        /// </summary>
+        public bool TryBacktrack(string cellId, out string removedCellId)
+        {
+            removedCellId = null;
+            if (_cellPath.Count < 2) return false;
+            if (cellId != _cellPath[_cellPath.Count - 2]) return false;
+
+            removedCellId = _cellPath[_cellPath.Count - 1];
+            _cellPath.RemoveAt(_cellPath.Count - 1);
+            _visited.Remove(removedCellId);
+            return true;
+        }
+
         public string BuildWord()
         {
             var sb = new StringBuilder();

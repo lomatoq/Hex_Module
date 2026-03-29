@@ -6,32 +6,47 @@ namespace HexWords.Gameplay
     public class LevelSessionController
     {
         private readonly IWordValidator _wordValidator;
-        private readonly IScoreService _scoreService;
+        private readonly IScoreService  _scoreService;
 
         public LevelSessionController(IWordValidator wordValidator, IScoreService scoreService)
         {
             _wordValidator = wordValidator;
-            _scoreService = scoreService;
+            _scoreService  = scoreService;
         }
 
         public LevelSessionState State { get; } = new LevelSessionState();
         public WordSubmitOutcome LastSubmitOutcome { get; private set; } = WordSubmitOutcome.Rejected;
-        public ValidationReason LastSubmitReason { get; private set; } = ValidationReason.None;
-        public string LastSubmittedWord { get; private set; } = string.Empty;
+        public ValidationReason  LastSubmitReason  { get; private set; } = ValidationReason.None;
+        public string            LastSubmittedWord  { get; private set; } = string.Empty;
 
-        public event Action<int, int> ScoreChanged;
-        public event Action<string> WordAccepted;
-        public event Action<string, WordSubmitOutcome, ValidationReason> WordSubmittedDetailed;
-        public event Action<string, bool> WordSubmitted;
-        public event Action<ValidationReason> WordRejected;
-        public event Action LevelCompleted;
+        public event Action<int, int>                                     ScoreChanged;
+        public event Action<string>                                        WordAccepted;
+        public event Action<string, WordSubmitOutcome, ValidationReason>   WordSubmittedDetailed;
+        public event Action<string, bool>                                  WordSubmitted;
+        public event Action<ValidationReason>                              WordRejected;
+        public event Action                                                LevelCompleted;
+        /// <summary>Fired whenever the streak changes. Arg = new streak value (0 = broken).</summary>
+        public event Action<int>                                           StreakChanged;
 
         public void StartSession()
         {
             State.Reset();
             LastSubmitOutcome = WordSubmitOutcome.Rejected;
-            LastSubmitReason = ValidationReason.None;
+            LastSubmitReason  = ValidationReason.None;
             LastSubmittedWord = string.Empty;
+        }
+
+        /// <summary>
+        /// Non-mutating preview: validates the word and returns (score, isValid)
+        /// without modifying session state. Safe to call on every swipe cell-enter.
+        /// </summary>
+        public (int score, bool isValid) PreviewWord(string rawWord, LevelDefinition level)
+        {
+            if (level == null || string.IsNullOrEmpty(rawWord)) return (0, false);
+            var result = _wordValidator.Validate(rawWord, level, State);
+            if (!result.accepted) return (0, false);
+            var score = _scoreService.ScoreWord(result.normalizedWord, level);
+            return (score, true);
         }
 
         public bool TrySubmitWord(string rawWord, LevelDefinition level)
@@ -39,7 +54,7 @@ namespace HexWords.Gameplay
             if (level == null)
             {
                 LastSubmitOutcome = WordSubmitOutcome.Rejected;
-                LastSubmitReason = ValidationReason.NotInLevelTargets;
+                LastSubmitReason  = ValidationReason.NotInLevelTargets;
                 LastSubmittedWord = string.Empty;
                 WordRejected?.Invoke(ValidationReason.NotInLevelTargets);
                 WordSubmittedDetailed?.Invoke(string.Empty, LastSubmitOutcome, LastSubmitReason);
@@ -47,16 +62,22 @@ namespace HexWords.Gameplay
                 return false;
             }
 
-            var result = _wordValidator.Validate(rawWord, level, State);
+            var result     = _wordValidator.Validate(rawWord, level, State);
             var normalized = result.normalizedWord;
             LastSubmitOutcome = result.outcome;
-            LastSubmitReason = result.reason;
+            LastSubmitReason  = result.reason;
             LastSubmittedWord = normalized;
 
             if (!result.accepted)
             {
+                // Break streak only on a genuine wrong guess (not AlreadyAccepted)
                 if (result.outcome == WordSubmitOutcome.Rejected)
                 {
+                    if (State.currentStreak > 0)
+                    {
+                        State.currentStreak = 0;
+                        StreakChanged?.Invoke(0);
+                    }
                     WordRejected?.Invoke(result.reason);
                 }
 
@@ -80,6 +101,12 @@ namespace HexWords.Gameplay
                 State.bonusScore += scoreDelta;
             }
 
+            // Streak
+            State.currentStreak++;
+            if (State.currentStreak > State.bestStreak)
+                State.bestStreak = State.currentStreak;
+            StreakChanged?.Invoke(State.currentStreak);
+
             ScoreChanged?.Invoke(State.currentScore, level.targetScore);
             WordAccepted?.Invoke(normalized);
             WordSubmittedDetailed?.Invoke(normalized, result.outcome, result.reason);
@@ -88,7 +115,7 @@ namespace HexWords.Gameplay
             var maxPossibleTargets = level.targetWords != null ? level.targetWords.Length : 0;
             var minTargets = Math.Min(Math.Max(0, level.minTargetWordsToComplete), maxPossibleTargets);
             if (!State.isCompleted &&
-                State.currentScore >= level.targetScore &&
+                State.currentScore    >= level.targetScore &&
                 State.acceptedTargetCount >= minTargets)
             {
                 State.isCompleted = true;

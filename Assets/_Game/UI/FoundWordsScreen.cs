@@ -27,18 +27,33 @@ namespace HexWords.UI
 
         private void Awake()
         {
-            if (closeButton != null)
-                closeButton.onClick.AddListener(Hide);
+            // Only hide the root child panel; never deactivate own GO here.
+            // (Deactivating own GO in Awake() prevents OnEnable from firing at scene start.)
+            if (root != null)
+                root.SetActive(false);
+        }
 
-            SetRootVisible(false);
+        private void OnEnable()
+        {
+            if (closeButton != null)
+            {
+                closeButton.onClick.RemoveListener(Hide);
+                closeButton.onClick.AddListener(Hide);
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (closeButton != null)
+                closeButton.onClick.RemoveListener(Hide);
         }
 
         // ── Public API ─────────────────────────────────────────────────────
 
         public void Show(LevelSessionState state)
         {
-            PopulateList(state);
             SetRootVisible(true);
+            PopulateList(state);
         }
 
         public void Hide()
@@ -63,6 +78,11 @@ namespace HexWords.UI
             // Then bonus words
             foreach (var word in state.acceptedBonusWords)
                 AddEntry(word, bonusWordColor);
+
+            // Force layout rebuild so items are positioned correctly on first show
+            Canvas.ForceUpdateCanvases();
+            if (wordListContainer is RectTransform rt)
+                LayoutRebuilder.ForceRebuildLayoutImmediate(rt);
         }
 
         private void AddEntry(string word, Color color)
@@ -74,6 +94,7 @@ namespace HexWords.UI
                 text.text  = word;
                 text.color = color;
             }
+            go.SetActive(true);
         }
 
         private void SetRootVisible(bool visible)

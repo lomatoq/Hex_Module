@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using HexWords.Core;
 using HexWords.UI;
@@ -98,8 +99,11 @@ namespace HexWords.Gameplay
                 homeScreenView.SetCurrentLevel(_currentLevelIndex + 1);
                 homeScreenView.SetCoins(_wallet?.Balance ?? 0);
                 homeScreenView.Show();
-                homeScreenView.OnPlayClicked         += StartGame;
-                homeScreenView.OnSettingsClicked     += ShowSettings;
+                homeScreenView.OnPlayClicked           -= StartGame;
+                homeScreenView.OnSettingsClicked       -= ShowSettings;
+                homeScreenView.OnDailyChallengeClicked -= OnDailyChallengeClicked;
+                homeScreenView.OnPlayClicked           += StartGame;
+                homeScreenView.OnSettingsClicked       += ShowSettings;
                 homeScreenView.OnDailyChallengeClicked += OnDailyChallengeClicked;
             }
             else
@@ -177,9 +181,10 @@ namespace HexWords.Gameplay
             var validator = new WordValidator(dictionaryDatabase);
             _session = new LevelSessionController(validator, _scoreService);
 
-            _session.ScoreChanged         += OnScoreChanged;
-            _session.LevelCompleted       += OnLevelCompleted;
+            _session.ScoreChanged          += OnScoreChanged;
+            _session.LevelCompleted        += OnLevelCompleted;
             _session.WordSubmittedDetailed += OnWordSubmittedDetailed;
+            _session.StreakChanged         += OnStreakChanged;
 
             gridView.Build(_currentLevel);
             inputController.Initialize(_currentLevel, _session, adjacency);
@@ -190,6 +195,7 @@ namespace HexWords.Gameplay
             hudView.SetScore(0, _currentLevel.targetScore);
             hudView.SetCurrentWord(string.Empty);
             hudView.SetCoins(_wallet?.Balance ?? 0);
+            hudView.SetStreak(0);
 
             int hintCharges   = _hintService?.Charges ?? 0;
             bool rvAvailable  = adsManager?.IsRewardedAvailable() ?? false;
@@ -238,9 +244,10 @@ namespace HexWords.Gameplay
         {
             if (_session == null) return;
 
-            _session.ScoreChanged         -= OnScoreChanged;
-            _session.LevelCompleted       -= OnLevelCompleted;
+            _session.ScoreChanged          -= OnScoreChanged;
+            _session.LevelCompleted        -= OnLevelCompleted;
             _session.WordSubmittedDetailed -= OnWordSubmittedDetailed;
+            _session.StreakChanged         -= OnStreakChanged;
             _session = null;
 
             inputController.Unsubscribe();
@@ -251,6 +258,7 @@ namespace HexWords.Gameplay
         private void SubscribeHud()
         {
             if (hudView == null) return;
+            UnsubscribeHud(); // prevent duplicate subscriptions on level reload
             hudView.OnHintClicked      += OnHintClicked;
             hudView.OnSettingsClicked  += ShowSettings;
             hudView.OnFoundWordsClicked += ShowFoundWords;
@@ -269,6 +277,11 @@ namespace HexWords.Gameplay
         private void OnScoreChanged(int current, int target)
         {
             hudView.SetScore(current, target);
+        }
+
+        private void OnStreakChanged(int streak)
+        {
+            hudView.SetStreak(streak);
         }
 
         private void OnWordSubmittedDetailed(string word, WordSubmitOutcome outcome, ValidationReason reason)
@@ -330,7 +343,13 @@ namespace HexWords.Gameplay
 
         private void HideWinScreen()
         {
-            levelCompleteView?.Hide();
+            if (levelCompleteView != null)
+            {
+                levelCompleteView.OnCoinRewardCollected -= OnCoinRewardCollected;
+                levelCompleteView.OnNextLevelClicked    -= OnWinNextLevel;
+                levelCompleteView.OnMainMenuClicked     -= GoToHomeScreen;
+                levelCompleteView.Hide();
+            }
             if (levelCompletePanel != null) levelCompletePanel.SetActive(false);
         }
 
@@ -354,7 +373,9 @@ namespace HexWords.Gameplay
 
             if (_hintService.Charges > 0)
             {
+                _hintService.HintRevealed += OnHintRevealed;
                 _hintService.UseHint(_currentLevel, _session.State);
+                _hintService.HintRevealed -= OnHintRevealed;
             }
             else
             {
@@ -364,6 +385,17 @@ namespace HexWords.Gameplay
                     if (success) _hintService.RefillViaRV();
                 });
             }
+        }
+
+        private void OnHintRevealed(string word, int _)
+        {
+            if (_currentLevel == null || gridView == null) return;
+
+            var path = HintPathFinder.FindPath(word, _currentLevel.shape, new AdjacencyService());
+            if (path == null) return;
+
+            int count = Math.Min(gridView.HintRevealCount, path.Count);
+            gridView.PlayHintAnimation(path.GetRange(0, count));
         }
 
         // ── Settings / Found Words ─────────────────────────────────────────

@@ -22,6 +22,7 @@ namespace HexWords.Gameplay
 
         private Color _baseColor = Color.white;
         private Coroutine _fxRoutine;
+        private Coroutine _hintRoutine;
 
         public void Bind(CellDefinition cellDefinition)
         {
@@ -114,12 +115,72 @@ namespace HexWords.Gameplay
         public void ResetFx()
         {
             StopFxRoutine();
+            StopHintRoutine();
             transform.localScale = Vector3.one;
             if (background != null)
             {
                 background.color = _baseColor;
             }
         }
+
+        /// <summary>
+        /// Пульс у колер выбранага хекса з EaseInOut, пачынаецца праз <paramref name="delay"/> секунд.
+        /// Колькасць паўтораў і параметры бяруцца з <paramref name="config"/> (або дэфолтных калі null).
+        /// </summary>
+        public void PlayHintPulse(float delay = 0f, HintAnimationConfig config = null)
+        {
+            StopHintRoutine();
+            _hintRoutine = StartCoroutine(HintPulseRoutine(delay, config));
+        }
+
+        private IEnumerator HintPulseRoutine(float delay, HintAnimationConfig cfg)
+        {
+            if (delay > 0f) yield return new WaitForSeconds(delay);
+            if (background == null) yield break;
+
+            var targetColor  = feedbackPalette != null
+                ? feedbackPalette.selectedCellColor
+                : new Color(0.85f, 0.95f, 1f, 1f);
+
+            int   pulseCount   = cfg != null ? cfg.pulseCount          : 3;
+            float fadeIn       = cfg != null ? cfg.pulseFadeIn         : 0.22f;
+            float fadeOut      = cfg != null ? cfg.pulseFadeOut        : 0.22f;
+            float pause        = cfg != null ? cfg.pauseBetweenPulses  : 0.10f;
+            float peakScale    = cfg != null ? cfg.peakScale           : 1.12f;
+            var   targetScale  = Vector3.one * peakScale;
+
+            for (int i = 0; i < pulseCount; i++)
+            {
+                // Ease in — base → highlight
+                for (float t = 0f; t < fadeIn; t += Time.deltaTime)
+                {
+                    float k = SmoothStep(t / fadeIn);
+                    background.color     = Color.Lerp(_baseColor,   targetColor, k);
+                    transform.localScale = Vector3.Lerp(Vector3.one, targetScale, k);
+                    yield return null;
+                }
+                background.color     = targetColor;
+                transform.localScale = targetScale;
+
+                // Ease out — highlight → base
+                for (float t = 0f; t < fadeOut; t += Time.deltaTime)
+                {
+                    float k = SmoothStep(t / fadeOut);
+                    background.color     = Color.Lerp(targetColor,  _baseColor,  k);
+                    transform.localScale = Vector3.Lerp(targetScale, Vector3.one, k);
+                    yield return null;
+                }
+                background.color     = _baseColor;
+                transform.localScale = Vector3.one;
+
+                if (i < pulseCount - 1 && pause > 0f)
+                    yield return new WaitForSeconds(pause);
+            }
+
+            _hintRoutine = null;
+        }
+
+        private static float SmoothStep(float t) => t * t * (3f - 2f * t);
 
         private void PlayFlashAndReturn(Color flashColor, float duration)
         {
@@ -159,6 +220,15 @@ namespace HexWords.Gameplay
             {
                 StopCoroutine(_fxRoutine);
                 _fxRoutine = null;
+            }
+        }
+
+        private void StopHintRoutine()
+        {
+            if (_hintRoutine != null)
+            {
+                StopCoroutine(_hintRoutine);
+                _hintRoutine = null;
             }
         }
     }

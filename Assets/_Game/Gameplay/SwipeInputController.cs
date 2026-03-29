@@ -67,7 +67,7 @@ namespace HexWords.Gameplay
             {
                 cell.OnSelected();
                 trailView?.DrawPath(_pathBuilder.CellPath, gridView.CellViews);
-                hudView?.SetCurrentWord(_pathBuilder.BuildWord());
+                UpdateWordPreview();
             }
         }
 
@@ -78,17 +78,42 @@ namespace HexWords.Gameplay
                 return;
             }
 
+            // Backtrack: entering the second-to-last cell removes the last one
+            if (_pathBuilder.TryBacktrack(cell.CellId, out var removedId))
+            {
+                if (gridView.CellViews.TryGetValue(removedId, out var removedView))
+                    removedView.ResetFx();
+                trailView?.DrawPath(_pathBuilder.CellPath, gridView.CellViews);
+                UpdateWordPreview();
+                return;
+            }
+
             if (_pathBuilder.TryAppend(cell.CellId))
             {
                 cell.OnSelected();
                 trailView?.DrawPath(_pathBuilder.CellPath, gridView.CellViews);
-                hudView?.SetCurrentWord(_pathBuilder.BuildWord());
+                UpdateWordPreview();
+            }
+        }
+
+        private void UpdateWordPreview()
+        {
+            if (hudView == null) return;
+            var word = _pathBuilder.BuildWord();
+            if (_session != null && _level != null)
+            {
+                var (score, isValid) = _session.PreviewWord(word, _level);
+                hudView.ShowWordPreview(word, score, isValid);
+            }
+            else
+            {
+                hudView.SetCurrentWord(word);
             }
         }
 
         private void OnCellPointerUp(HexCellView cell)
         {
-            if (!_isTrackingPath)
+            if (!_isTrackingPath || _session == null)
             {
                 return;
             }
@@ -122,6 +147,7 @@ namespace HexWords.Gameplay
 
             _pathBuilder.Reset();
             trailView?.FadeOutAndClear(0.2f);
+            hudView?.HideWordPreview();
         }
     }
 }

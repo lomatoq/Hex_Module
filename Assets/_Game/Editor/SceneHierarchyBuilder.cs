@@ -1,3 +1,4 @@
+using HexWords.Core;
 using HexWords.Gameplay;
 using HexWords.UI;
 using UnityEditor;
@@ -23,6 +24,10 @@ namespace HexWords.Editor
             BuildHomeScreen();
             BuildLevelComplete();
             BuildSplash();
+            BuildFoundWordsScreen();
+            BuildSettingsPausePopup();
+            BuildRateUsPopup();
+            BuildTutorialController();
             BuildGameBootstrap();
 
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
@@ -42,9 +47,36 @@ namespace HexWords.Editor
             var hudGO = hud.gameObject;
             var so    = new SerializedObject(hud);
 
-            Wire(so, "coinText",        GetOrCreateText(hudGO, "CoinText",         "250", 22, Color.white));
-            Wire(so, "settingsButton",  GetOrCreateButton(hudGO, "SettingsButton",  "⚙",  18));
-            Wire(so, "foundWordsButton",GetOrCreateButton(hudGO, "FoundWordsButton","📖", 18));
+            // Level text
+            Wire(so, "levelText",
+                GetOrCreateText(hudGO, "LevelText", "Level 1", 20, Color.white).GetComponent<Text>());
+
+            // Coin text
+            Wire(so, "coinText",
+                GetOrCreateText(hudGO, "CoinText", "250", 22, Color.white).GetComponent<Text>());
+
+            // Buttons
+            Wire(so, "settingsButton",   GetOrCreateButton(hudGO, "SettingsButton",   "⚙",  18));
+            Wire(so, "foundWordsButton", GetOrCreateButton(hudGO, "FoundWordsButton", "📖", 18));
+
+            // Score text
+            Wire(so, "scoreText",
+                GetOrCreateText(hudGO, "ScoreText", "0/10", 18, Color.white).GetComponent<Text>());
+
+            // Progress bar — search for existing Slider first
+            var pbT = hudGO.transform.Find("ProgressBar");
+            if (pbT != null)
+            {
+                Wire(so, "progressBar", pbT.GetComponent<Slider>());
+            }
+            else
+            {
+                bool pbCreated;
+                var pbGO = GetOrCreateGO("ProgressBar", hudGO.transform, out pbCreated);
+                if (pbCreated) { AddRect(pbGO, new Vector2(300, 20)); }
+                var slider = pbGO.GetComponent<Slider>() ?? pbGO.AddComponent<Slider>();
+                Wire(so, "progressBar", slider);
+            }
 
             // Score Badge — дачарны да LastWordText, не чапае пазіцыю LastWordText
             var lastWordGO = hudGO.transform.Find("LastWordText")?.gameObject;
@@ -54,7 +86,6 @@ namespace HexWords.Editor
                 var badgeRoot = GetOrCreateGO("ScoreBadge", lastWordGO.transform, out badgeCreated);
                 if (badgeCreated)
                 {
-                    // Толькі для НОВАГА аб'екта задаём памер і выгляд
                     AddRect(badgeRoot, new Vector2(50, 26));
                     AddImage(badgeRoot, new Color(0.2f, 0.7f, 0.2f));
                     badgeRoot.SetActive(false);
@@ -192,6 +223,17 @@ namespace HexWords.Editor
             // Main Menu Button
             Wire(so, "mainMenuButton", GetOrCreateButton(lcGO, "MainMenuButton", "Menu", 18));
 
+            // Ad Banner Slot (optional, hidden by default)
+            bool bannerCreated;
+            var bannerGO = GetOrCreateGO("AdBannerSlot", lcGO.transform, out bannerCreated);
+            if (bannerCreated)
+            {
+                AddRect(bannerGO, new Vector2(320, 50));
+                AddImage(bannerGO, new Color(0.2f, 0.2f, 0.2f));
+                bannerGO.SetActive(false);
+            }
+            Wire(so, "adBannerSlot", bannerGO);
+
             so.ApplyModifiedProperties();
             EditorUtility.SetDirty(lc);
         }
@@ -222,6 +264,194 @@ namespace HexWords.Editor
 
             so.ApplyModifiedProperties();
             EditorUtility.SetDirty(splash);
+        }
+
+        // ══════════════════════════════════════════════════════════════════
+        // FOUND WORDS SCREEN
+        // ══════════════════════════════════════════════════════════════════
+        static void BuildFoundWordsScreen()
+        {
+            var fws = Object.FindFirstObjectByType<FoundWordsScreen>();
+            if (fws == null) { Debug.LogWarning("[Builder] FoundWordsScreen not found."); return; }
+
+            var fwsGO = fws.gameObject;
+            var so    = new SerializedObject(fws);
+
+            // Close button
+            Wire(so, "closeButton", GetOrCreateButton(fwsGO, "CloseButton", "✕", 20));
+
+            // ScrollView → Content (wordListContainer)
+            bool scrollCreated;
+            var scrollGO = GetOrCreateGO("ScrollView", fwsGO.transform, out scrollCreated);
+            if (scrollCreated) { AddRect(scrollGO, new Vector2(300, 400)); AddImage(scrollGO, new Color(0f, 0f, 0f, 0.1f)); }
+
+            bool contentCreated;
+            var contentGO = GetOrCreateGO("Content", scrollGO.transform, out contentCreated);
+            if (contentCreated) { AddRect(contentGO, new Vector2(300, 400)); }
+
+            Wire(so, "wordListContainer", contentGO.transform);
+
+            // WordEntry template — inactive GO with Text, used as instantiation template
+            bool weCreated;
+            var wordEntryGO = GetOrCreateGO("WordEntryTemplate", fwsGO.transform, out weCreated);
+            if (weCreated)
+            {
+                AddRect(wordEntryGO, new Vector2(280, 32));
+                var txt = wordEntryGO.AddComponent<Text>();
+                txt.text      = "WORD";
+                txt.fontSize  = 18;
+                txt.alignment = TextAnchor.MiddleLeft;
+                txt.color     = Color.white;
+                wordEntryGO.SetActive(false);
+            }
+            Wire(so, "wordEntryPrefab", wordEntryGO);
+
+            so.ApplyModifiedProperties();
+            EditorUtility.SetDirty(fws);
+
+            // Ensure the GO starts inactive so it is hidden at scene start.
+            // FoundWordsScreen.Awake() no longer calls gameObject.SetActive(false),
+            // so the scene must start with it inactive.
+            if (fwsGO.activeSelf)
+            {
+                fwsGO.SetActive(false);
+                EditorUtility.SetDirty(fwsGO);
+            }
+        }
+
+        // ══════════════════════════════════════════════════════════════════
+        // SETTINGS / PAUSE POPUP
+        // ══════════════════════════════════════════════════════════════════
+        static void BuildSettingsPausePopup()
+        {
+            var popup = Object.FindFirstObjectByType<SettingsPausePopup>();
+            if (popup == null) { Debug.LogWarning("[Builder] SettingsPausePopup not found."); return; }
+
+            var popupGO = popup.gameObject;
+            var so      = new SerializedObject(popup);
+
+            // Close button
+            Wire(so, "closeButton", GetOrCreateButton(popupGO, "CloseButton", "✕", 18));
+
+            // SFX Toggle
+            Wire(so, "sfxToggle",       GetOrCreateToggle(popupGO, "SfxToggle",       "Sound FX"));
+            // Music Toggle
+            Wire(so, "musicToggle",     GetOrCreateToggle(popupGO, "MusicToggle",     "Music"));
+            // Vibration Toggle
+            Wire(so, "vibrationToggle", GetOrCreateToggle(popupGO, "VibrationToggle", "Vibration"));
+
+            // SoundManager reference
+            var sm = Object.FindFirstObjectByType<SoundManager>();
+            if (sm != null) Wire(so, "soundManager", sm);
+
+            so.ApplyModifiedProperties();
+            EditorUtility.SetDirty(popup);
+        }
+
+        // ══════════════════════════════════════════════════════════════════
+        // RATE US POPUP
+        // ══════════════════════════════════════════════════════════════════
+        static void BuildRateUsPopup()
+        {
+            var rate = Object.FindFirstObjectByType<RateUsPopup>();
+            if (rate == null) { Debug.LogWarning("[Builder] RateUsPopup not found."); return; }
+
+            var rateGO = rate.gameObject;
+            var so     = new SerializedObject(rate);
+
+            // Rate Now button
+            Wire(so, "rateNowButton", GetOrCreateButton(rateGO, "RateNowButton", "Rate Now!", 18));
+
+            // Close button
+            Wire(so, "closeButton", GetOrCreateButton(rateGO, "CloseButton", "✕", 16));
+
+            // ThankYou sub-popup (hidden by default)
+            bool tyCreated;
+            var tyGO = GetOrCreateGO("ThankYouPopup", rateGO.transform, out tyCreated);
+            if (tyCreated)
+            {
+                AddRect(tyGO, new Vector2(220, 80));
+                AddImage(tyGO, new Color(0.1f, 0.1f, 0.1f, 0.9f));
+                GetOrCreateText(tyGO, "ThankYouText", "Thank you! ❤", 18, Color.white);
+                tyGO.SetActive(false);
+            }
+            Wire(so, "thankYouPopup", tyGO);
+
+            // 5 Star buttons + images
+            var spStars  = so.FindProperty("starButtons");
+            var spImages = so.FindProperty("starImages");
+            if (spStars  != null) spStars.arraySize  = 5;
+            if (spImages != null) spImages.arraySize = 5;
+
+            for (int i = 0; i < 5; i++)
+            {
+                bool starCreated;
+                var starGO = GetOrCreateGO($"Star{i + 1}", rateGO.transform, out starCreated);
+                if (starCreated)
+                {
+                    AddRect(starGO, new Vector2(48, 48));
+                    AddImage(starGO, new Color(0.8f, 0.7f, 0f));
+                    GetOrCreateText(starGO, "Label", "★", 24, Color.white);
+                }
+                var starBtn = starGO.GetComponent<Button>() ?? starGO.AddComponent<Button>();
+                var starImg = starGO.GetComponent<Image>();
+
+                if (spStars  != null) spStars.GetArrayElementAtIndex(i).objectReferenceValue  = starBtn;
+                if (spImages != null) spImages.GetArrayElementAtIndex(i).objectReferenceValue = starImg;
+            }
+
+            so.ApplyModifiedProperties();
+            EditorUtility.SetDirty(rate);
+        }
+
+        // ══════════════════════════════════════════════════════════════════
+        // TUTORIAL CONTROLLER
+        // ══════════════════════════════════════════════════════════════════
+        static void BuildTutorialController()
+        {
+            var tc = Object.FindFirstObjectByType<TutorialController>();
+            if (tc == null) { Debug.LogWarning("[Builder] TutorialController not found."); return; }
+
+            var tcGO = tc.gameObject;
+            var so   = new SerializedObject(tc);
+
+            // Dim overlay — full-screen dark panel
+            bool dimCreated;
+            var dimGO = GetOrCreateGO("DimOverlay", tcGO.transform, out dimCreated);
+            if (dimCreated)
+            {
+                AddRect(dimGO, new Vector2(1080, 1920));
+                AddImage(dimGO, new Color(0f, 0f, 0f, 0.7f));
+                dimGO.SetActive(false);
+            }
+            Wire(so, "dimOverlay", dimGO);
+
+            // Instruction text
+            bool instrCreated;
+            var instrGO = GetOrCreateText(tcGO, "InstructionText",
+                "Swipe the highlighted tiles!", 22, Color.white, out instrCreated);
+            Wire(so, "instructionText", instrGO.GetComponent<Text>());
+
+            // Tap to continue prompt
+            bool tapCreated;
+            var tapGO = GetOrCreateText(tcGO, "TapToContinue",
+                "Tap to continue...", 16, new Color(1f, 1f, 1f, 0.7f), out tapCreated);
+            if (tapCreated) tapGO.SetActive(false);
+            Wire(so, "tapToContinuePrompt", tapGO);
+
+            // Hint button highlight ring
+            bool hlCreated;
+            var hlGO = GetOrCreateGO("HintButtonHighlight", tcGO.transform, out hlCreated);
+            if (hlCreated)
+            {
+                AddRect(hlGO, new Vector2(80, 80));
+                AddImage(hlGO, new Color(1f, 1f, 0f, 0.35f));
+                hlGO.SetActive(false);
+            }
+            Wire(so, "hintButtonHighlight", hlGO);
+
+            so.ApplyModifiedProperties();
+            EditorUtility.SetDirty(tc);
         }
 
         // ══════════════════════════════════════════════════════════════════
@@ -310,6 +540,64 @@ namespace HexWords.Editor
             txt.color     = Color.white;
 
             return btn;
+        }
+
+        static Toggle GetOrCreateToggle(GameObject parent, string name, string label)
+        {
+            var existing = parent.transform.Find(name);
+            if (existing != null)
+            {
+                var t = existing.GetComponent<Toggle>();
+                return t != null ? t : existing.gameObject.AddComponent<Toggle>();
+            }
+
+            var go = new GameObject(name);
+            go.transform.SetParent(parent.transform, false);
+            var rt = go.AddComponent<RectTransform>();
+            rt.sizeDelta = new Vector2(200, 40);
+
+            // Background
+            var bgGO = new GameObject("Background");
+            bgGO.transform.SetParent(go.transform, false);
+            var bgRT = bgGO.AddComponent<RectTransform>();
+            bgRT.sizeDelta = new Vector2(40, 40);
+            bgRT.anchorMin = new Vector2(0, 0.5f);
+            bgRT.anchorMax = new Vector2(0, 0.5f);
+            bgRT.pivot     = new Vector2(0, 0.5f);
+            bgRT.anchoredPosition = Vector2.zero;
+            bgGO.AddComponent<Image>().color = new Color(0.25f, 0.25f, 0.25f);
+
+            // Checkmark
+            var ckGO = new GameObject("Checkmark");
+            ckGO.transform.SetParent(bgGO.transform, false);
+            var ckRT = ckGO.AddComponent<RectTransform>();
+            ckRT.anchorMin = Vector2.zero;
+            ckRT.anchorMax = Vector2.one;
+            ckRT.sizeDelta = Vector2.zero;
+            var ckImg = ckGO.AddComponent<Image>();
+            ckImg.color = new Color(0.2f, 0.8f, 0.2f);
+
+            // Label
+            var lblGO = new GameObject("Label");
+            lblGO.transform.SetParent(go.transform, false);
+            var lblRT = lblGO.AddComponent<RectTransform>();
+            lblRT.anchorMin = new Vector2(0, 0);
+            lblRT.anchorMax = new Vector2(1, 1);
+            lblRT.offsetMin = new Vector2(48, 0);
+            lblRT.offsetMax = Vector2.zero;
+            var lblTxt = lblGO.AddComponent<Text>();
+            lblTxt.text      = label;
+            lblTxt.fontSize  = 18;
+            lblTxt.color     = Color.white;
+            lblTxt.alignment = TextAnchor.MiddleLeft;
+
+            // Wire toggle
+            var toggle = go.AddComponent<Toggle>();
+            toggle.targetGraphic = bgGO.GetComponent<Image>();
+            toggle.graphic       = ckImg;
+            toggle.isOn          = true;
+
+            return toggle;
         }
 
         static GameObject GetOrCreateText(GameObject parent, string name, string content, int fontSize, Color color)

@@ -25,6 +25,12 @@ namespace HexWords.UI
         [SerializeField] private Text          lastWordText;
         [SerializeField] private FeedbackPalette feedbackPalette;
 
+        // ── Streak ─────────────────────────────────────────────────────────
+        // Паказваецца калі серыя >= 2. Хаваецца пры серыі 0 або 1.
+        [Header("Streak (optional)")]
+        [SerializeField] private GameObject streakRoot;
+        [SerializeField] private Text       streakText;
+
         // Апцыянальны бэдж з балімі ("+7") — з'яўляецца над словам калі слова валіднае.
         // Калі не прысвоены — проста не паказваецца.
         [Header("Score Badge (optional)")]
@@ -45,11 +51,12 @@ namespace HexWords.UI
 
         private void Awake()
         {
-            if (hintButton      != null) hintButton.onClick.AddListener(() => OnHintClicked?.Invoke());
-            if (settingsButton  != null) settingsButton.onClick.AddListener(() => OnSettingsClicked?.Invoke());
+            if (hintButton       != null) hintButton.onClick.AddListener(() => OnHintClicked?.Invoke());
+            if (settingsButton   != null) settingsButton.onClick.AddListener(() => OnSettingsClicked?.Invoke());
             if (foundWordsButton != null) foundWordsButton.onClick.AddListener(() => OnFoundWordsClicked?.Invoke());
 
             if (scoreBadgeRoot != null) scoreBadgeRoot.SetActive(false);
+            if (streakRoot     != null) streakRoot.SetActive(false);
         }
 
         // ── Header ─────────────────────────────────────────────────────────
@@ -125,6 +132,16 @@ namespace HexWords.UI
             if (scoreBadgeRoot != null) scoreBadgeRoot.SetActive(false);
             lastWordText.text  = text;
             lastWordText.color = GetHudColor(outcome);
+        }
+
+        // ── Streak ─────────────────────────────────────────────────────────
+
+        /// <summary>Shows the streak badge when streak >= 2, hides it otherwise.</summary>
+        public void SetStreak(int streak)
+        {
+            bool show = streak >= 2;
+            if (streakRoot != null) streakRoot.SetActive(show);
+            if (streakText != null && show) streakText.text = $"x{streak}";
         }
 
         // ── Hint ───────────────────────────────────────────────────────────
