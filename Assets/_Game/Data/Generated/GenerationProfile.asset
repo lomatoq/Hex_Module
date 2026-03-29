@@ -33,6 +33,8 @@ MonoBehaviour:
   allowBonusWords: 1
   allowBonusInLevelOnly: 1
   bonusRequiresEmbeddedInLevelOnly: 1
+  lengthBand: 1
+  longWordMinLength: 7
   generationAlgorithm: 1
   objective: 1
   hexBudgetMin: 6
