@@ -49,6 +49,14 @@ namespace HexWords.EditorTools
         private static HashSet<string> _enGeneratorBlacklistCache;
         private static HashSet<string> _enCalendarTokensCache;
 
+        // ── Word-set deduplication ─────────────────────────────────────────
+        // Fingerprint = sorted words joined with '|'.
+        // Prevents the same word set from being used across levels in one run.
+        private readonly HashSet<string> _usedWordSetFingerprints = new HashSet<string>(StringComparer.Ordinal);
+
+        private static string WordSetFingerprint(IEnumerable<string> words)
+            => string.Join("|", words.Select(WordNormalizer.Normalize).OrderBy(w => w, StringComparer.Ordinal));
+
         [MenuItem("Tools/HexWords/Generate Levels (Auto)")]
         public static void Open()
         {
@@ -143,6 +151,11 @@ namespace HexWords.EditorTools
                 _profile.targetWordsMax = Mathf.Clamp(EditorGUILayout.IntField("Target Words Max", _profile.targetWordsMax), _profile.targetWordsMin, 40);
                 _profile.minLength = Mathf.Clamp(EditorGUILayout.IntField("Word Length Min", _profile.minLength), 2, _profile.maxLength);
                 _profile.maxLength = Mathf.Clamp(EditorGUILayout.IntField("Word Length Max", _profile.maxLength), _profile.minLength, 32);
+                _profile.lengthBand = (LengthBand)EditorGUILayout.EnumPopup("Length Band", _profile.lengthBand);
+                if (_profile.lengthBand != LengthBand.Free)
+                {
+                    _profile.longWordMinLength = Mathf.Clamp(EditorGUILayout.IntField("  Long Word Min Length", _profile.longWordMinLength), 3, 16);
+                }
                 _profile.minTargetWordsToComplete = Mathf.Clamp(
                     EditorGUILayout.IntField("Min Targets To Complete", _profile.minTargetWordsToComplete),
                     0,
@@ -232,12 +245,14 @@ namespace HexWords.EditorTools
             }
 
             var globalWordUse = new Dictionary<string, int>(StringComparer.Ordinal);
+            _usedWordSetFingerprints.Clear(); // reset per generation run
             var generated = 0;
             var canceled = false;
             var skippedExisting = 0;
             var skippedConstraints = 0;
             var skippedUnsolved = 0;
             var skippedQuality = 0;
+            var skippedDuplicate = 0;
             string firstConstraintReason = null;
 
             try
@@ -353,6 +368,15 @@ namespace HexWords.EditorTools
                         continue;
                     }
 
+                    // Reject exact duplicate word sets across levels in this run
+                    var fingerprint = WordSetFingerprint(targetWords);
+                    if (!_usedWordSetFingerprints.Add(fingerprint))
+                    {
+                        skippedDuplicate++;
+                        Debug.LogWarning($"Skipped level {levelId}: duplicate word set [{string.Join(", ", targetWords)}]");
+                        continue;
+                    }
+
                     for (var i = 0; i < targetWords.Count; i++)
                     {
                         globalWordUse.TryGetValue(targetWords[i], out var used);
@@ -397,6 +421,7 @@ namespace HexWords.EditorTools
                 $"Skipped constraints={skippedConstraints}\n" +
                 $"Skipped unsolved={skippedUnsolved}\n" +
                 $"Skipped quality={skippedQuality}\n" +
+                $"Skipped duplicate sets={skippedDuplicate}\n" +
                 $"Candidates={candidates.Count}\n" +
                 $"LayoutMode={_profile.boardLayoutMode}\n" +
                 $"MinTargetsToComplete={_profile.minTargetWordsToComplete}\n" +
@@ -554,6 +579,16 @@ namespace HexWords.EditorTools
             if (_profile.boardLayoutMode == BoardLayoutMode.Fixed16Symmetric)
             {
                 available = available.Where(w => w.Length <= HexBoardTemplate16.CellCount).ToList();
+            }
+
+            // Shuffle available candidates with a seed unique to this level so the greedy
+            // solver explores a different part of the word space each time, preventing
+            // the same optimal word set from being found on every level.
+            var shuffleRng = new System.Random(seed * 7919 + globalWordUse.Count * 1013 + available.Count * 37);
+            for (var si = available.Count - 1; si > 0; si--)
+            {
+                var sj = shuffleRng.Next(si + 1);
+                (available[si], available[sj]) = (available[sj], available[si]);
             }
 
             var minTargets = Mathf.Clamp(_profile.targetWordsMin, 1, 40);
@@ -1712,6 +1747,27 @@ namespace HexWords.EditorTools
             {
                 reason = "too-many-derivatives";
                 return false;
+            }
+
+            // ── Length band enforcement ────────────────────────────────────
+            var longMin = _profile.longWordMinLength > 0 ? _profile.longWordMinLength : 7;
+            switch (_profile.lengthBand)
+            {
+                case LengthBand.OneLongRequired:
+                    if (!normalized.Any(w => w.Length >= longMin))
+                    {
+                        reason = $"length-band:no-long(≥{longMin})";
+                        return false;
+                    }
+                    break;
+                case LengthBand.MixRequired:
+                    var distinctLengths = normalized.Select(w => w.Length).Distinct().Count();
+                    if (distinctLengths < 2)
+                    {
+                        reason = "length-band:all-same-length";
+                        return false;
+                    }
+                    break;
             }
 
             return true;

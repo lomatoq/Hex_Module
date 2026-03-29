@@ -27,6 +27,11 @@ namespace HexWords.Core
         public bool allowBonusInLevelOnly = true;
         public bool bonusRequiresEmbeddedInLevelOnly = true;
 
+        [Header("Length Distribution")]
+        public LengthBand lengthBand = LengthBand.MixRequired;
+        /// <summary>Minimum word length that counts as "long" for OneLongRequired / MixRequired.</summary>
+        public int longWordMinLength = 7;
+
         [Header("Generation V2")]
         public GenerationAlgorithm generationAlgorithm = GenerationAlgorithm.GreedyBeamV2;
         public GenerationObjective objective = GenerationObjective.MinHexForKWords;
