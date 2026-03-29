@@ -15,7 +15,7 @@ MonoBehaviour:
   language: 1
   category: general
   minLength: 3
-  maxLength: 9
+  maxLength: 8
   cellCount: 16
   targetWordsMin: 4
   targetWordsMax: 6
@@ -25,8 +25,8 @@ MonoBehaviour:
   avoidDuplicateLetters: 1
   boardLayoutMode: 0
   fixedBoardCellCount: 16
-  includeLetters:
-  excludeLetters:
+  includeLetters: 
+  excludeLetters: 
   minDifficultyBand: 0
   maxDifficultyBand: 10
   minTargetWordsToComplete: 2
@@ -34,7 +34,7 @@ MonoBehaviour:
   allowBonusInLevelOnly: 1
   bonusRequiresEmbeddedInLevelOnly: 1
   lengthBand: 1
-  longWordMinLength: 7
+  longWordMinLength: 6
   generationAlgorithm: 1
   objective: 0
   hexBudgetMin: 0
@@ -45,4 +45,4 @@ MonoBehaviour:
   overlapWeight: 65
   diversityWeight: 45
   requireAllTargetsSolvable: 1
-  useLegacyFallback: 1
+  useLegacyFallback: 0

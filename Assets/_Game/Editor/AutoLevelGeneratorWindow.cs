@@ -629,6 +629,16 @@ namespace HexWords.EditorTools
                 : new[] { false };
             var objectiveModes = BuildObjectiveModes(_profile.objective);
 
+            // Anchor injection: when a length band is active, build a pool of
+            // "long" words. Each attempt will inject a random long word at
+            // position 0 so the greedy solver always starts with it, ensuring
+            // the quality gate (MixRequired / OneLongRequired) can be met.
+            var anchorMinLen = Mathf.Max(3, _profile.longWordMinLength);
+            var longAnchorPool = _profile.lengthBand != LengthBand.Free
+                ? available.Where(w => w.Length >= anchorMinLen).ToList()
+                : null;
+            var useAnchor = longAnchorPool != null && longAnchorPool.Count > 0;
+
             for (var d = 0; d < desiredCounts.Count; d++)
             {
                 if (levelSolveTimer.ElapsedMilliseconds >= levelSolveBudgetMs)
@@ -642,6 +652,21 @@ namespace HexWords.EditorTools
                     if (levelSolveTimer.ElapsedMilliseconds >= levelSolveBudgetMs)
                     {
                         break;
+                    }
+
+                    // Build per-attempt selection pool: inject a random long anchor
+                    // word at position 0 so the greedy solver starts with it.
+                    var selectionPool = available;
+                    if (useAnchor)
+                    {
+                        var anchorRng = new System.Random(seed + attempt * 13337 + d * 999983);
+                        var anchor = longAnchorPool[anchorRng.Next(longAnchorPool.Count)];
+                        var injected = new List<string>(available.Count) { anchor };
+                        for (var ai = 0; ai < available.Count; ai++)
+                        {
+                            if (available[ai] != anchor) injected.Add(available[ai]);
+                        }
+                        selectionPool = injected;
                     }
 
                     WordSetSelectionResult selection = null;
@@ -677,7 +702,7 @@ namespace HexWords.EditorTools
                                 beamExpansionLimit = 180000
                             };
 
-                            if (!WordSetSelector.TrySelect(available, selectionOptions, out selection))
+                            if (!WordSetSelector.TrySelect(selectionPool, selectionOptions, out selection))
                             {
                                 continue;
                             }
