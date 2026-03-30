@@ -30,11 +30,14 @@ namespace HexWords.UI
         [SerializeField] private FeedbackPalette feedbackPalette;
 
         // Bubble that resizes with the word length.
-        // Assign the RectTransform of the background Image behind lastWordText.
-        // It must use a 9-sliced sprite so it stretches cleanly.
+        // wordBubble    — the RectTransform that gets resized (can be the parent of both layers)
+        // bubbleColorImage — the bottom/stroke Image whose color changes with word state
         [SerializeField] private RectTransform wordBubble;
-        [SerializeField] private float         bubblePadding        = 32f;  // horizontal padding inside bubble
+        [SerializeField] private Image         bubbleColorImage;
+        [SerializeField] private Color         bubbleNeutralColor = new Color(0.85f, 0.85f, 0.85f, 1f);
+        [SerializeField] private float         bubblePadding        = 32f;
         [SerializeField] private float         bubbleResizeDuration = 0.12f;
+        [SerializeField] private float         bubbleColorDuration  = 0.10f;
 
         // ── Streak ─────────────────────────────────────────────────────────
         // Паказваецца калі серыя >= 2. Хаваецца пры серыі 0 або 1.
@@ -102,10 +105,9 @@ namespace HexWords.UI
         {
             if (lastWordText == null) return;
             lastWordText.text  = text;
-            lastWordText.color = feedbackPalette != null
-                ? feedbackPalette.hudCurrentWordColor
-                : new Color(0.6f, 0.6f, 0.6f);
+            lastWordText.color = Color.black;
             if (scoreBadgeRoot != null) scoreBadgeRoot.SetActive(false);
+            SetBubbleColor(bubbleNeutralColor);
             ResizeBubble(text);
         }
 
@@ -114,9 +116,12 @@ namespace HexWords.UI
         {
             if (lastWordText == null) return;
             lastWordText.text  = word;
-            lastWordText.color = isValid
+            lastWordText.color = Color.black;
+
+            var bubbleCol = isValid
                 ? (feedbackPalette != null ? feedbackPalette.hudCurrentWordColor : new Color(0.2f, 0.8f, 0.2f))
-                : (feedbackPalette != null ? feedbackPalette.hudRejectedColor    : new Color(0.6f, 0.6f, 0.6f));
+                : bubbleNeutralColor;
+            SetBubbleColor(bubbleCol);
 
             bool showBadge = isValid && score > 0;
             if (scoreBadgeRoot != null) scoreBadgeRoot.SetActive(showBadge);
@@ -129,6 +134,7 @@ namespace HexWords.UI
         {
             if (scoreBadgeRoot != null) scoreBadgeRoot.SetActive(false);
             if (lastWordText   != null) lastWordText.text = string.Empty;
+            SetBubbleColor(bubbleNeutralColor);
             ResizeBubble(string.Empty);
         }
 
@@ -143,7 +149,8 @@ namespace HexWords.UI
             if (lastWordText == null) return;
             if (scoreBadgeRoot != null) scoreBadgeRoot.SetActive(false);
             lastWordText.text  = text;
-            lastWordText.color = GetHudColor(outcome);
+            lastWordText.color = Color.black;
+            SetBubbleColor(GetHudColor(outcome));
             ResizeBubble(text);
         }
 
@@ -172,7 +179,18 @@ namespace HexWords.UI
             if (hintButton   != null) hintButton.interactable = charges > 0 || rvAvailable;
         }
 
-        // ── Bubble resize ──────────────────────────────────────────────────
+        // ── Bubble colour + resize ─────────────────────────────────────────
+
+        private void SetBubbleColor(Color color)
+        {
+            if (bubbleColorImage == null) return;
+#if DOTWEEN
+            DOTween.Kill(bubbleColorImage);
+            bubbleColorImage.DOColor(color, bubbleColorDuration).SetId(bubbleColorImage);
+#else
+            bubbleColorImage.color = color;
+#endif
+        }
 
         private void ResizeBubble(string word)
         {
