@@ -34,10 +34,9 @@ namespace HexWords.Core
             DOTween.Init(recycleAllByDefault: true, useSafeMode: safeMode, logBehaviour: LogBehaviour.ErrorsOnly)
                    .SetCapacity(maxTweeners, maxSequences);
 
-            DOTween.defaultEaseType           = Ease.OutCubic;
-            DOTween.defaultAutoPlay           = AutoPlay.All;
-            DOTween.defaultRecyclable         = true;
-            DOTween.defaultAutoKillOnComplete = true;
+            DOTween.defaultEaseType   = Ease.OutCubic;
+            DOTween.defaultAutoPlay   = AutoPlay.All;
+            DOTween.defaultRecyclable = true;
         }
 #endif
     }
