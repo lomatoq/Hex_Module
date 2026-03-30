@@ -28,7 +28,8 @@ namespace HexWords.Gameplay
         public event CellEvent PointerEnterOnCell;
         public event CellEvent PointerUpOnCell;
 
-        private Color     _baseColor  = Color.white;
+        private Color     _baseColor        = Color.white;
+        private Vector2   _baseAnchoredPos;
         private Coroutine _fxRoutine;
         private Coroutine _hintRoutine;
 
@@ -42,6 +43,12 @@ namespace HexWords.Gameplay
         {
             if (inkSplatOverlay != null)
                 SetAlpha(inkSplatOverlay, 0f);
+        }
+
+        private void Start()
+        {
+            // anchoredPosition is set by GridView after Bind(), so cache it here.
+            _baseAnchoredPos = ((RectTransform)transform).anchoredPosition;
         }
 
         private void OnDisable()
@@ -63,6 +70,7 @@ namespace HexWords.Gameplay
             }
             if (background != null)
                 _baseColor = background.color;
+
         }
 
         private void EnsureLetterCentered()
@@ -138,8 +146,8 @@ namespace HexWords.Gameplay
         public void ResetFx()
         {
             KillAll();
-            transform.localScale    = Vector3.one;
-            transform.localPosition = Vector3.zero;
+            transform.localScale = Vector3.one;
+            ((RectTransform)transform).anchoredPosition = _baseAnchoredPos;
             if (background != null)      background.color = _baseColor;
             if (inkSplatOverlay != null) SetAlpha(inkSplatOverlay, 0f);
         }
