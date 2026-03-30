@@ -1,6 +1,12 @@
+// #define DOTWEEN — uncomment if DOTween is installed (already enabled if you followed setup)
+#define DOTWEEN
+
 using HexWords.Core;
 using UnityEngine;
 using UnityEngine.UI;
+#if DOTWEEN
+using DG.Tweening;
+#endif
 
 namespace HexWords.UI
 {
@@ -19,11 +25,17 @@ namespace HexWords.UI
         [SerializeField] private Slider progressBar;
 
         // ── Word display ───────────────────────────────────────────────────
-        // Адзін тэкставы поле для ўсяго: бягучае слова падчас свайпу
-        // і апошняе слова пасля сабміту. Word Preview выкарыстоўвае яго ж.
         [Header("Word Display")]
-        [SerializeField] private Text          lastWordText;
+        [SerializeField] private Text            lastWordText;
         [SerializeField] private FeedbackPalette feedbackPalette;
+
+        // Bubble that resizes with the word length.
+        // Assign the RectTransform of the background Image behind lastWordText.
+        // It must use a 9-sliced sprite so it stretches cleanly.
+        [SerializeField] private RectTransform wordBubble;
+        [SerializeField] private float         bubbleMinWidth   = 80f;   // width for 1 letter (square-ish)
+        [SerializeField] private float         bubbleLetterWidth = 28f;  // extra px per letter
+        [SerializeField] private float         bubbleResizeDuration = 0.12f;
 
         // ── Streak ─────────────────────────────────────────────────────────
         // Паказваецца калі серыя >= 2. Хаваецца пры серыі 0 або 1.
@@ -94,9 +106,8 @@ namespace HexWords.UI
             lastWordText.color = feedbackPalette != null
                 ? feedbackPalette.hudCurrentWordColor
                 : new Color(0.6f, 0.6f, 0.6f);
-
-            // Схаваць бэдж пакуль яшчэ не валідавана
             if (scoreBadgeRoot != null) scoreBadgeRoot.SetActive(false);
+            ResizeBubble(text);
         }
 
         /// <summary>Паказвае слова падчас свайпу + бал калі слова валіднае.</summary>
@@ -111,6 +122,7 @@ namespace HexWords.UI
             bool showBadge = isValid && score > 0;
             if (scoreBadgeRoot != null) scoreBadgeRoot.SetActive(showBadge);
             if (scoreBadgeText != null && showBadge) scoreBadgeText.text = $"+{score}";
+            ResizeBubble(word);
         }
 
         /// <summary>Хавае прэвью (схавае бэдж, зачышчае тэкст).</summary>
@@ -118,6 +130,7 @@ namespace HexWords.UI
         {
             if (scoreBadgeRoot != null) scoreBadgeRoot.SetActive(false);
             if (lastWordText   != null) lastWordText.text = string.Empty;
+            ResizeBubble(string.Empty);
         }
 
         /// <summary>Паказвае выніковае слова пасля сабміту.</summary>
@@ -132,6 +145,7 @@ namespace HexWords.UI
             if (scoreBadgeRoot != null) scoreBadgeRoot.SetActive(false);
             lastWordText.text  = text;
             lastWordText.color = GetHudColor(outcome);
+            ResizeBubble(text);
         }
 
         // ── Streak ─────────────────────────────────────────────────────────
@@ -157,6 +171,25 @@ namespace HexWords.UI
             if (hintRvIcon   != null) hintRvIcon.SetActive(charges == 0 && rvAvailable);
             if (hintEmptyIcon != null) hintEmptyIcon.SetActive(charges == 0 && !rvAvailable);
             if (hintButton   != null) hintButton.interactable = charges > 0 || rvAvailable;
+        }
+
+        // ── Bubble resize ──────────────────────────────────────────────────
+
+        private void ResizeBubble(string word)
+        {
+            if (wordBubble == null) return;
+            var letters      = string.IsNullOrEmpty(word) ? 0 : word.Length;
+            var targetWidth  = bubbleMinWidth + bubbleLetterWidth * letters;
+            var currentSize  = wordBubble.sizeDelta;
+
+#if DOTWEEN
+            DOTween.Kill(wordBubble);
+            wordBubble.DOSizeDelta(new Vector2(targetWidth, currentSize.y), bubbleResizeDuration)
+                      .SetEase(Ease.OutBack)
+                      .SetId(wordBubble);
+#else
+            wordBubble.sizeDelta = new Vector2(targetWidth, currentSize.y);
+#endif
         }
 
         // ── Colour helper ──────────────────────────────────────────────────
