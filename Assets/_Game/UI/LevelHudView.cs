@@ -178,17 +178,23 @@ namespace HexWords.UI
         private void ResizeBubble(string word)
         {
             if (wordBubble == null) return;
-            var letters      = string.IsNullOrEmpty(word) ? 0 : word.Length;
-            var targetWidth  = bubbleMinWidth + bubbleLetterWidth * letters;
-            var currentSize  = wordBubble.sizeDelta;
+            var letters     = string.IsNullOrEmpty(word) ? 0 : word.Length;
+            var currentSize = wordBubble.sizeDelta;
+            var height      = currentSize.y;
+
+            // 0 letters → minWidth (hidden state), 1 letter → square (width = height),
+            // each extra letter adds bubbleLetterWidth.
+            var targetWidth = letters == 0
+                ? bubbleMinWidth
+                : height + bubbleLetterWidth * (letters - 1);
 
 #if DOTWEEN
             DOTween.Kill(wordBubble);
-            wordBubble.DOSizeDelta(new Vector2(targetWidth, currentSize.y), bubbleResizeDuration)
+            wordBubble.DOSizeDelta(new Vector2(targetWidth, height), bubbleResizeDuration)
                       .SetEase(Ease.OutBack)
                       .SetId(wordBubble);
 #else
-            wordBubble.sizeDelta = new Vector2(targetWidth, currentSize.y);
+            wordBubble.sizeDelta = new Vector2(targetWidth, height);
 #endif
         }
 
