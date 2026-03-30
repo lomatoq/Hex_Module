@@ -179,10 +179,15 @@ namespace HexWords.UI
             if (wordBubble == null || lastWordText == null) return;
             var height = wordBubble.sizeDelta.y;
 
-            // Use actual rendered text width so any font/size works correctly.
-            // preferredWidth gives the natural width of the text at current font settings.
-            var textWidth   = string.IsNullOrEmpty(word) ? 0f : lastWordText.preferredWidth;
-            var targetWidth = Mathf.Max(height, textWidth + bubblePadding);
+            float targetWidth;
+            if (string.IsNullOrEmpty(word))
+            {
+                targetWidth = 0f;
+            }
+            else
+            {
+                targetWidth = Mathf.Max(height, lastWordText.preferredWidth + bubblePadding);
+            }
 
 #if DOTWEEN
             DOTween.Kill(wordBubble);
