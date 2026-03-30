@@ -33,8 +33,7 @@ namespace HexWords.UI
         // Assign the RectTransform of the background Image behind lastWordText.
         // It must use a 9-sliced sprite so it stretches cleanly.
         [SerializeField] private RectTransform wordBubble;
-        [SerializeField] private float         bubbleMinWidth   = 80f;   // width for 1 letter (square-ish)
-        [SerializeField] private float         bubbleLetterWidth = 28f;  // extra px per letter
+        [SerializeField] private float         bubblePadding        = 32f;  // horizontal padding inside bubble
         [SerializeField] private float         bubbleResizeDuration = 0.12f;
 
         // ── Streak ─────────────────────────────────────────────────────────
@@ -177,16 +176,13 @@ namespace HexWords.UI
 
         private void ResizeBubble(string word)
         {
-            if (wordBubble == null) return;
-            var letters     = string.IsNullOrEmpty(word) ? 0 : word.Length;
-            var currentSize = wordBubble.sizeDelta;
-            var height      = currentSize.y;
+            if (wordBubble == null || lastWordText == null) return;
+            var height = wordBubble.sizeDelta.y;
 
-            // 0 letters → minWidth (hidden state), 1 letter → square (width = height),
-            // each extra letter adds bubbleLetterWidth.
-            var targetWidth = letters == 0
-                ? bubbleMinWidth
-                : height + bubbleLetterWidth * (letters - 1);
+            // Use actual rendered text width so any font/size works correctly.
+            // preferredWidth gives the natural width of the text at current font settings.
+            var textWidth   = string.IsNullOrEmpty(word) ? 0f : lastWordText.preferredWidth;
+            var targetWidth = Mathf.Max(height, textWidth + bubblePadding);
 
 #if DOTWEEN
             DOTween.Kill(wordBubble);
