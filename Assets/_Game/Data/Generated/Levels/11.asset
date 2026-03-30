@@ -16,77 +16,79 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: D
+      letter: E
       q: -2
       r: 0
     - cellId: c2
-      letter: I
+      letter: W
       q: -2
       r: 1
     - cellId: c3
-      letter: P
-      q: -2
-      r: 2
+      letter: L
+      q: 1
+      r: 1
     - cellId: c4
-      letter: A
+      letter: U
       q: -1
       r: -1
     - cellId: c5
-      letter: E
+      letter: T
       q: -1
       r: 0
     - cellId: c6
-      letter: L
+      letter: R
       q: -1
       r: 1
     - cellId: c7
-      letter: L
+      letter: F
       q: 0
       r: -2
     - cellId: c8
-      letter: R
+      letter: S
       q: 0
       r: -1
     - cellId: c9
-      letter: S
+      letter: A
       q: 0
       r: 0
     - cellId: c10
-      letter: C
+      letter: T
       q: 0
       r: 1
     - cellId: c11
-      letter: A
+      letter: Q
       q: 1
       r: -2
     - cellId: c12
-      letter: I
+      letter: E
       q: 1
       r: -1
     - cellId: c13
-      letter: W
+      letter: H
       q: 1
       r: 0
     - cellId: c14
-      letter: K
+      letter: N
       q: 2
       r: -2
     - cellId: c15
-      letter: G
+      letter: T
       q: 2
       r: -1
     - cellId: c16
-      letter: F
+      letter: D
       q: 2
       r: 0
   boardLayoutMode: 0
   validationMode: 0
   targetWords:
-  - LADIES
-  - ISRAEL
-  - RAISED
-  - SERIAL
-  targetScore: 24
+  - EAT
+  - TEA
+  - HEAT
+  - EARTH
+  - HEART
+  - HEARTS
+  targetScore: 32
   minTargetWordsToComplete: 2
   allowBonusWords: 1
   allowBonusInLevelOnly: 1

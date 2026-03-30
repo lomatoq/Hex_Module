@@ -16,31 +16,31 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: R
+      letter: W
       q: -2
       r: 0
     - cellId: c2
-      letter: E
+      letter: H
       q: -2
       r: 1
     - cellId: c3
-      letter: P
-      q: -2
-      r: 2
+      letter: X
+      q: 1
+      r: 1
     - cellId: c4
-      letter: C
+      letter: A
       q: -1
       r: -1
     - cellId: c5
-      letter: A
+      letter: K
       q: -1
       r: 0
     - cellId: c6
-      letter: D
+      letter: O
       q: -1
       r: 1
     - cellId: c7
-      letter: O
+      letter: T
       q: 0
       r: -2
     - cellId: c8
@@ -48,45 +48,47 @@ MonoBehaviour:
       q: 0
       r: -1
     - cellId: c9
-      letter: H
+      letter: E
       q: 0
       r: 0
     - cellId: c10
-      letter: C
+      letter: L
       q: 0
       r: 1
     - cellId: c11
-      letter: L
+      letter: C
       q: 1
       r: -2
     - cellId: c12
-      letter: E
+      letter: T
       q: 1
       r: -1
     - cellId: c13
-      letter: D
+      letter: A
       q: 1
       r: 0
     - cellId: c14
-      letter: T
+      letter: M
       q: 2
       r: -2
     - cellId: c15
-      letter: F
+      letter: S
       q: 2
       r: -1
     - cellId: c16
-      letter: G
+      letter: R
       q: 2
       r: 0
   boardLayoutMode: 0
   validationMode: 0
   targetWords:
-  - SHARED
-  - SACRED
-  - SCARED
-  - CHASED
-  targetScore: 24
+  - ASK
+  - SAKE
+  - TAKES
+  - SEAT
+  - LEAST
+  - LATEST
+  targetScore: 34
   minTargetWordsToComplete: 2
   allowBonusWords: 1
   allowBonusInLevelOnly: 1

@@ -1,5 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using HexWords.Core;
 using UnityEngine;
 
@@ -7,16 +7,20 @@ namespace HexWords.Gameplay
 {
     public class GridView : MonoBehaviour
     {
-        [SerializeField] private HexCellView cellPrefab;
-        [SerializeField] private RectTransform gridRoot;
-        [SerializeField] private float cellSize = 90f;
+        [SerializeField] private HexCellView      cellPrefab;
+        [SerializeField] private RectTransform    gridRoot;
+        [SerializeField] private float            cellSize = 90f;
         [SerializeField] private HintAnimationConfig hintConfig;
 
-        private readonly Dictionary<string, HexCellView> _cellViews = new Dictionary<string, HexCellView>();
-        private Coroutine _hintSequenceRoutine;
+        private readonly Dictionary<string, HexCellView> _cellViews
+            = new Dictionary<string, HexCellView>();
+
+        private int TweenId => GetInstanceID();
 
         public IReadOnlyDictionary<string, HexCellView> CellViews => _cellViews;
         public int HintRevealCount => hintConfig != null ? hintConfig.revealCount : 2;
+
+        // ── Build ──────────────────────────────────────────────────────────
 
         public void Build(LevelDefinition level)
         {
@@ -32,77 +36,70 @@ namespace HexWords.Gameplay
                 HexBoardTemplate16.ApplyCanonicalLayout(cells);
             }
 
-            for (var i = 0; i < cells.Count; i++)
+            foreach (var cell in cells)
             {
-                var cell = cells[i];
                 var view = Instantiate(cellPrefab, gridRoot);
                 view.Bind(cell);
-                view.GetComponent<RectTransform>().anchoredPosition = AxialToPixel(cell.q, cell.r, cellSize);
+                view.GetComponent<RectTransform>().anchoredPosition =
+                    AxialToPixel(cell.q, cell.r, cellSize);
                 _cellViews.Add(cell.cellId, view);
             }
         }
 
+        // ── FX ────────────────────────────────────────────────────────────
+
         public void ResetFx()
         {
-            if (_hintSequenceRoutine != null)
-            {
-                StopCoroutine(_hintSequenceRoutine);
-                _hintSequenceRoutine = null;
-            }
+            DOTween.Kill(TweenId);
             foreach (var pair in _cellViews)
-            {
                 pair.Value.ResetFx();
-            }
         }
 
         /// <summary>
-        /// Запускае пульс-анімацыю на кожнай клетцы з спісу па чарзе,
-        /// паўтараючы ўсю серыю згодна з <see cref="HintAnimationConfig"/>.
+        /// Plays a staggered hint pulse across the listed cells using DOTween.
+        /// Each cell lights up with a delay, the full sequence repeats per
+        /// <see cref="HintAnimationConfig.repetitionCount"/>.
         /// </summary>
         public void PlayHintAnimation(IReadOnlyList<string> cellIds)
         {
-            if (_hintSequenceRoutine != null)
-                StopCoroutine(_hintSequenceRoutine);
-            _hintSequenceRoutine = StartCoroutine(HintSequenceRoutine(cellIds));
-        }
+            DOTween.Kill(TweenId);
 
-        private IEnumerator HintSequenceRoutine(IReadOnlyList<string> cellIds)
-        {
-            int   reps          = hintConfig != null ? hintConfig.repetitionCount        : 1;
-            float stepDelay     = hintConfig != null ? hintConfig.delayBetweenCells      : 0.18f;
-            float repDelay      = hintConfig != null ? hintConfig.delayBetweenRepetitions : 0.6f;
-            float pulseDuration = hintConfig != null
+            int   reps      = hintConfig != null ? hintConfig.repetitionCount        : 1;
+            float stepDelay = hintConfig != null ? hintConfig.delayBetweenCells      : 0.18f;
+            float repDelay  = hintConfig != null ? hintConfig.delayBetweenRepetitions : 0.6f;
+            float pulseDur  = hintConfig != null
                 ? (hintConfig.pulseFadeIn + hintConfig.pulseFadeOut) * hintConfig.pulseCount
                   + hintConfig.pauseBetweenPulses * (hintConfig.pulseCount - 1)
                 : 1.1f;
 
-            // Час, пакуль ідзе адна поўная серыя (усе клеткі скончылі свае пульсы)
-            float seriesDuration = (cellIds.Count - 1) * stepDelay + pulseDuration;
+            float seriesDuration = (cellIds.Count - 1) * stepDelay + pulseDur;
 
-            for (int rep = 0; rep < reps; rep++)
+            var seq = DOTween.Sequence().SetId(TweenId);
+
+            for (var rep = 0; rep < reps; rep++)
             {
-                float delay = 0f;
-                for (int i = 0; i < cellIds.Count; i++)
+                var repCapture = rep;
+                seq.AppendCallback(() =>
                 {
-                    if (_cellViews.TryGetValue(cellIds[i], out var view))
-                        view.PlayHintPulse(delay, hintConfig);
-                    delay += stepDelay;
-                }
+                    for (var i = 0; i < cellIds.Count; i++)
+                    {
+                        if (_cellViews.TryGetValue(cellIds[i], out var view))
+                            view.PlayHintPulse(i * stepDelay, hintConfig);
+                    }
+                });
 
-                if (rep < reps - 1)
-                    yield return new WaitForSeconds(seriesDuration + repDelay);
+                if (repCapture < reps - 1)
+                    seq.AppendInterval(seriesDuration + repDelay);
             }
-
-            _hintSequenceRoutine = null;
         }
+
+        // ── Helpers ────────────────────────────────────────────────────────
 
         private void Clear()
         {
+            DOTween.Kill(TweenId);
             for (var i = gridRoot.childCount - 1; i >= 0; i--)
-            {
                 Destroy(gridRoot.GetChild(i).gameObject);
-            }
-
             _cellViews.Clear();
         }
 

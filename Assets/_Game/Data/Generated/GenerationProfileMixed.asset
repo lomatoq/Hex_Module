@@ -17,7 +17,7 @@ MonoBehaviour:
   minLength: 3
   maxLength: 8
   cellCount: 16
-  targetWordsMin: 4
+  targetWordsMin: 6
   targetWordsMax: 6
   maxLetterRepeats: 2
   allowSingleRepeatFallback: 1

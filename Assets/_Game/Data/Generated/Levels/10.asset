@@ -16,77 +16,79 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: Y
+      letter: B
       q: -2
       r: 0
     - cellId: c2
-      letter: W
+      letter: M
       q: -2
       r: 1
     - cellId: c3
-      letter: G
-      q: -2
-      r: 2
+      letter: L
+      q: 1
+      r: 1
     - cellId: c4
-      letter: Q
+      letter: R
       q: -1
       r: -1
     - cellId: c5
-      letter: E
+      letter: K
       q: -1
       r: 0
     - cellId: c6
-      letter: R
+      letter: T
       q: -1
       r: 1
     - cellId: c7
-      letter: L
+      letter: O
       q: 0
       r: -2
     - cellId: c8
-      letter: N
+      letter: A
       q: 0
       r: -1
     - cellId: c9
-      letter: I
+      letter: E
       q: 0
       r: 0
     - cellId: c10
-      letter: A
+      letter: S
       q: 0
       r: 1
     - cellId: c11
-      letter: A
+      letter: G
       q: 1
       r: -2
     - cellId: c12
-      letter: D
+      letter: T
       q: 1
       r: -1
     - cellId: c13
-      letter: M
+      letter: B
       q: 1
       r: 0
     - cellId: c14
-      letter: J
+      letter: E
       q: 2
       r: -2
     - cellId: c15
-      letter: E
+      letter: W
       q: 2
       r: -1
     - cellId: c16
-      letter: R
+      letter: Z
       q: 2
       r: 0
   boardLayoutMode: 0
   validationMode: 0
   targetWords:
-  - ADMIRE
-  - MARINE
-  - REMAIN
-  - REMIND
-  targetScore: 24
+  - SET
+  - BEST
+  - BET
+  - BEAT
+  - TAKES
+  - BRAKES
+  targetScore: 28
   minTargetWordsToComplete: 2
   allowBonusWords: 1
   allowBonusInLevelOnly: 1

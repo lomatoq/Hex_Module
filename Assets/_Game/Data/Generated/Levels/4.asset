@@ -16,19 +16,19 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: W
+      letter: Y
       q: -2
       r: 0
     - cellId: c2
-      letter: S
+      letter: H
       q: -2
       r: 1
     - cellId: c3
       letter: K
-      q: -2
-      r: 2
+      q: 1
+      r: 1
     - cellId: c4
-      letter: T
+      letter: A
       q: -1
       r: -1
     - cellId: c5
@@ -36,15 +36,15 @@ MonoBehaviour:
       q: -1
       r: 0
     - cellId: c6
-      letter: N
+      letter: G
       q: -1
       r: 1
     - cellId: c7
-      letter: R
+      letter: T
       q: 0
       r: -2
     - cellId: c8
-      letter: G
+      letter: B
       q: 0
       r: -1
     - cellId: c9
@@ -52,41 +52,43 @@ MonoBehaviour:
       q: 0
       r: 0
     - cellId: c10
-      letter: Y
+      letter: S
       q: 0
       r: 1
     - cellId: c11
-      letter: N
+      letter: A
       q: 1
       r: -2
     - cellId: c12
-      letter: I
+      letter: A
       q: 1
       r: -1
     - cellId: c13
-      letter: S
+      letter: T
       q: 1
       r: 0
     - cellId: c14
-      letter: A
+      letter: M
       q: 2
       r: -2
     - cellId: c15
-      letter: L
+      letter: J
       q: 2
       r: -1
     - cellId: c16
-      letter: D
+      letter: C
       q: 2
       r: 0
   boardLayoutMode: 0
   validationMode: 0
   targetWords:
-  - ANGELS
-  - SIGNAL
-  - ALIENS
-  - SINGLE
-  targetScore: 24
+  - LEG
+  - LEGS
+  - GETS
+  - TALES
+  - TABLES
+  - BEATS
+  targetScore: 34
   minTargetWordsToComplete: 2
   allowBonusWords: 1
   allowBonusInLevelOnly: 1

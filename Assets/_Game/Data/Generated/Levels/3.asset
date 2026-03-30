@@ -16,35 +16,35 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: A
+      letter: I
       q: -2
       r: 0
     - cellId: c2
-      letter: I
+      letter: B
       q: -2
       r: 1
     - cellId: c3
-      letter: C
-      q: -2
-      r: 2
+      letter: S
+      q: 1
+      r: 1
     - cellId: c4
-      letter: E
+      letter: Q
       q: -1
       r: -1
     - cellId: c5
-      letter: N
+      letter: D
       q: -1
       r: 0
     - cellId: c6
-      letter: S
+      letter: N
       q: -1
       r: 1
     - cellId: c7
-      letter: H
+      letter: M
       q: 0
       r: -2
     - cellId: c8
-      letter: D
+      letter: E
       q: 0
       r: -1
     - cellId: c9
@@ -52,41 +52,43 @@ MonoBehaviour:
       q: 0
       r: 0
     - cellId: c10
-      letter: W
+      letter: T
       q: 0
       r: 1
     - cellId: c11
-      letter: G
+      letter: A
       q: 1
       r: -2
     - cellId: c12
-      letter: A
+      letter: H
       q: 1
       r: -1
     - cellId: c13
-      letter: E
+      letter: A
       q: 1
       r: 0
     - cellId: c14
-      letter: K
+      letter: T
       q: 2
       r: -2
     - cellId: c15
-      letter: W
+      letter: E
       q: 2
       r: -1
     - cellId: c16
-      letter: P
+      letter: C
       q: 2
       r: 0
   boardLayoutMode: 0
   validationMode: 0
   targetWords:
-  - ANDREW
-  - WARDEN
-  - WARNED
-  - ANSWER
-  targetScore: 24
+  - TEA
+  - EAT
+  - HATE
+  - DEATH
+  - HATRED
+  - HEARTS
+  targetScore: 38
   minTargetWordsToComplete: 2
   allowBonusWords: 1
   allowBonusInLevelOnly: 1

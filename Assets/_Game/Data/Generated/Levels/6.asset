@@ -16,77 +16,79 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: X
+      letter: P
       q: -2
       r: 0
     - cellId: c2
-      letter: L
+      letter: N
       q: -2
       r: 1
     - cellId: c3
-      letter: Y
-      q: -2
-      r: 2
+      letter: B
+      q: 1
+      r: 1
     - cellId: c4
-      letter: T
+      letter: O
       q: -1
       r: -1
     - cellId: c5
-      letter: R
+      letter: U
       q: -1
       r: 0
     - cellId: c6
-      letter: O
+      letter: D
       q: -1
       r: 1
     - cellId: c7
-      letter: Z
+      letter: P
       q: 0
       r: -2
     - cellId: c8
-      letter: S
+      letter: R
       q: 0
       r: -1
     - cellId: c9
-      letter: C
+      letter: N
       q: 0
       r: 0
     - cellId: c10
-      letter: T
+      letter: S
       q: 0
       r: 1
     - cellId: c11
-      letter: G
+      letter: M
       q: 1
       r: -2
     - cellId: c12
-      letter: E
+      letter: W
       q: 1
       r: -1
     - cellId: c13
-      letter: A
+      letter: D
       q: 1
       r: 0
     - cellId: c14
-      letter: B
+      letter: V
       q: 2
       r: -2
     - cellId: c15
-      letter: R
+      letter: Y
       q: 2
       r: -1
     - cellId: c16
-      letter: T
+      letter: C
       q: 2
       r: 0
   boardLayoutMode: 0
   validationMode: 0
   targetWords:
-  - ACTORS
-  - ESCORT
-  - SECTOR
-  - TRACES
-  targetScore: 24
+  - RUN
+  - RUNS
+  - ROUNDS
+  - ROUND
+  - POUNDS
+  - PROUD
+  targetScore: 44
   minTargetWordsToComplete: 2
   allowBonusWords: 1
   allowBonusInLevelOnly: 1

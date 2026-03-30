@@ -16,7 +16,7 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: N
+      letter: E
       q: -2
       r: 0
     - cellId: c2
@@ -24,69 +24,71 @@ MonoBehaviour:
       q: -2
       r: 1
     - cellId: c3
-      letter: F
-      q: -2
-      r: 2
+      letter: B
+      q: 1
+      r: 1
     - cellId: c4
-      letter: A
+      letter: O
       q: -1
       r: -1
     - cellId: c5
-      letter: D
+      letter: L
       q: -1
       r: 0
     - cellId: c6
-      letter: V
+      letter: C
       q: -1
       r: 1
     - cellId: c7
-      letter: W
+      letter: N
       q: 0
       r: -2
     - cellId: c8
-      letter: R
+      letter: U
       q: 0
       r: -1
     - cellId: c9
-      letter: E
+      letter: D
       q: 0
       r: 0
     - cellId: c10
-      letter: G
+      letter: N
       q: 0
       r: 1
     - cellId: c11
-      letter: A
+      letter: W
       q: 1
       r: -2
     - cellId: c12
-      letter: N
+      letter: O
       q: 1
       r: -1
     - cellId: c13
-      letter: W
+      letter: C
       q: 1
       r: 0
     - cellId: c14
-      letter: J
+      letter: I
       q: 2
       r: -2
     - cellId: c15
-      letter: S
+      letter: R
       q: 2
       r: -1
     - cellId: c16
-      letter: P
+      letter: V
       q: 2
       r: 0
   boardLayoutMode: 0
   validationMode: 0
   targetWords:
-  - ANDREW
-  - WARDEN
-  - WARNED
-  - ANSWER
-  targetScore: 24
+  - OLD
+  - LOUD
+  - CLOUD
+  - COULD
+  - WOULDN
+  - CROWN
+  targetScore: 38
   minTargetWordsToComplete: 2
   allowBonusWords: 1
   allowBonusInLevelOnly: 1

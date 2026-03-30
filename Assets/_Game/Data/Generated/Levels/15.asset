@@ -16,77 +16,79 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: S
+      letter: O
       q: -2
       r: 0
     - cellId: c2
-      letter: R
+      letter: Q
       q: -2
       r: 1
     - cellId: c3
       letter: P
-      q: -2
-      r: 2
+      q: 1
+      r: 1
     - cellId: c4
-      letter: F
+      letter: T
       q: -1
       r: -1
     - cellId: c5
-      letter: U
+      letter: I
       q: -1
       r: 0
     - cellId: c6
-      letter: F
+      letter: L
       q: -1
       r: 1
     - cellId: c7
-      letter: C
+      letter: R
       q: 0
       r: -2
     - cellId: c8
-      letter: C
+      letter: F
       q: 0
       r: -1
     - cellId: c9
-      letter: K
+      letter: E
       q: 0
       r: 0
     - cellId: c10
-      letter: D
+      letter: L
       q: 0
       r: 1
     - cellId: c11
-      letter: J
+      letter: B
       q: 1
       r: -2
     - cellId: c12
-      letter: I
+      letter: N
       q: 1
       r: -1
     - cellId: c13
-      letter: E
+      letter: T
       q: 1
       r: 0
     - cellId: c14
-      letter: O
+      letter: I
       q: 2
       r: -2
     - cellId: c15
-      letter: L
+      letter: W
       q: 2
       r: -1
     - cellId: c16
-      letter: R
+      letter: M
       q: 2
       r: 0
   boardLayoutMode: 0
   validationMode: 0
   targetWords:
-  - FUCKED
-  - FUCKER
-  - SUCKED
-  - SUCKER
-  targetScore: 24
+  - LET
+  - FELT
+  - LEFT
+  - FILE
+  - LIFT
+  - INTEL
+  targetScore: 20
   minTargetWordsToComplete: 2
   allowBonusWords: 1
   allowBonusInLevelOnly: 1

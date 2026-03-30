@@ -16,23 +16,23 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: Q
+      letter: P
       q: -2
       r: 0
     - cellId: c2
-      letter: D
+      letter: G
       q: -2
       r: 1
     - cellId: c3
-      letter: O
-      q: -2
-      r: 2
+      letter: J
+      q: 1
+      r: 1
     - cellId: c4
-      letter: K
+      letter: B
       q: -1
       r: -1
     - cellId: c5
-      letter: E
+      letter: R
       q: -1
       r: 0
     - cellId: c6
@@ -40,53 +40,55 @@ MonoBehaviour:
       q: -1
       r: 1
     - cellId: c7
-      letter: B
+      letter: E
       q: 0
       r: -2
     - cellId: c8
-      letter: R
+      letter: A
       q: 0
       r: -1
     - cellId: c9
-      letter: I
+      letter: L
       q: 0
       r: 0
     - cellId: c10
-      letter: R
+      letter: E
       q: 0
       r: 1
     - cellId: c11
-      letter: E
+      letter: N
       q: 1
       r: -2
     - cellId: c12
-      letter: M
+      letter: D
       q: 1
       r: -1
     - cellId: c13
-      letter: A
+      letter: Y
       q: 1
       r: 0
     - cellId: c14
-      letter: S
+      letter: W
       q: 2
       r: -2
     - cellId: c15
-      letter: D
+      letter: A
       q: 2
       r: -1
     - cellId: c16
-      letter: T
+      letter: O
       q: 2
       r: 0
   boardLayoutMode: 0
   validationMode: 0
   targetWords:
-  - ADMIRE
-  - MARINE
-  - REMAIN
-  - REMIND
-  targetScore: 24
+  - DAY
+  - DYLAN
+  - BADLY
+  - RANDY
+  - BARNEY
+  - NEARLY
+  targetScore: 48
   minTargetWordsToComplete: 2
   allowBonusWords: 1
   allowBonusInLevelOnly: 1

@@ -16,77 +16,79 @@ MonoBehaviour:
   shape:
     cells:
     - cellId: c1
-      letter: L
+      letter: S
       q: -2
       r: 0
     - cellId: c2
-      letter: O
+      letter: G
       q: -2
       r: 1
     - cellId: c3
-      letter: U
-      q: -2
-      r: 2
+      letter: G
+      q: 1
+      r: 1
     - cellId: c4
-      letter: R
+      letter: A
       q: -1
       r: -1
     - cellId: c5
-      letter: A
+      letter: Y
       q: -1
       r: 0
     - cellId: c6
-      letter: K
+      letter: S
       q: -1
       r: 1
     - cellId: c7
-      letter: A
+      letter: I
       q: 0
       r: -2
     - cellId: c8
-      letter: T
+      letter: D
       q: 0
       r: -1
     - cellId: c9
-      letter: G
+      letter: N
       q: 0
       r: 0
     - cellId: c10
-      letter: I
+      letter: J
       q: 0
       r: 1
     - cellId: c11
-      letter: C
+      letter: Z
       q: 1
       r: -2
     - cellId: c12
-      letter: I
+      letter: P
       q: 1
       r: -1
     - cellId: c13
-      letter: N
+      letter: A
       q: 1
       r: 0
     - cellId: c14
-      letter: A
+      letter: K
       q: 2
       r: -2
     - cellId: c15
-      letter: F
+      letter: C
       q: 2
       r: -1
     - cellId: c16
-      letter: Y
+      letter: L
       q: 2
       r: 0
   boardLayoutMode: 0
   validationMode: 0
   targetWords:
-  - TRAGIC
-  - ACTING
-  - RACING
-  - TAKING
-  targetScore: 24
+  - SAD
+  - DAYS
+  - SAY
+  - DAY
+  - ANDY
+  - CANDY
+  targetScore: 16
   minTargetWordsToComplete: 2
   allowBonusWords: 1
   allowBonusInLevelOnly: 1
