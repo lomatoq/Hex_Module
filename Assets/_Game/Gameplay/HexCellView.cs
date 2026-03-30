@@ -1,5 +1,5 @@
-// Uncomment the line below after installing DOTween (Asset Store or unitypackage)
-//#define DOTWEEN
+// Remove this comment after installing DOTween via Asset Store
+#define DOTWEEN
 
 using System.Collections;
 using HexWords.Core;

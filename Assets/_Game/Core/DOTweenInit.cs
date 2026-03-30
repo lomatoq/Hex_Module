@@ -1,5 +1,5 @@
-// Uncomment the line below after installing DOTween
-//#define DOTWEEN
+// Remove this comment after installing DOTween via Asset Store
+#define DOTWEEN
 
 using UnityEngine;
 #if DOTWEEN
