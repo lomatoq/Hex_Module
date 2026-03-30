@@ -1,35 +1,44 @@
-using DG.Tweening;
+// Uncomment the line below after installing DOTween
+//#define DOTWEEN
+
 using UnityEngine;
+#if DOTWEEN
+using DG.Tweening;
+#endif
 
 namespace HexWords.Core
 {
     /// <summary>
     /// Initializes DOTween once at app start.
-    /// Attach to any persistent GameObject in the first scene (e.g. GameBootstrap).
     ///
-    /// After first run, DOTween creates a DOTweenSettings asset — open it via
-    /// Tools → Demigiant → DOTween Utility Panel to fine-tune capacity/safety checks.
+    /// HOW TO ACTIVATE:
+    /// 1. Download DOTween from Asset Store (free) or https://dotween.demigiant.com
+    /// 2. Import the .unitypackage into the project
+    /// 3. Run Tools → Demigiant → DOTween Utility Panel → Setup DOTween
+    /// 4. Uncomment #define DOTWEEN at the top of:
+    ///      - DOTweenInit.cs
+    ///      - HexCellView.cs
+    ///      - SwipeTrailView.cs
+    ///      - GridView.cs
     /// </summary>
     [DefaultExecutionOrder(-100)]
     public class DOTweenInit : MonoBehaviour
     {
-        [Tooltip("Max concurrent tweens (increase if you see 'max tweens exceeded')")]
-        [SerializeField] private int maxTweeners = 200;
-        [SerializeField] private int maxSequences = 50;
-        [SerializeField] private bool safeMode    = true;
-        [SerializeField] private LogBehaviour logBehaviour = LogBehaviour.ErrorsOnly;
+#if DOTWEEN
+        [SerializeField] private int          maxTweeners  = 200;
+        [SerializeField] private int          maxSequences = 50;
+        [SerializeField] private bool         safeMode     = true;
 
         private void Awake()
         {
-            DOTween.Init(recycleAllByDefault: true,
-                         useSafeMode: safeMode,
-                         logBehaviour: logBehaviour)
+            DOTween.Init(recycleAllByDefault: true, useSafeMode: safeMode, logBehaviour: LogBehaviour.ErrorsOnly)
                    .SetCapacity(maxTweeners, maxSequences);
 
-            DOTween.defaultEaseType         = Ease.OutCubic;
-            DOTween.defaultAutoPlay         = AutoPlay.All;
-            DOTween.defaultRecyclable       = true;
+            DOTween.defaultEaseType           = Ease.OutCubic;
+            DOTween.defaultAutoPlay           = AutoPlay.All;
+            DOTween.defaultRecyclable         = true;
             DOTween.defaultAutoKillOnComplete = true;
         }
+#endif
     }
 }
