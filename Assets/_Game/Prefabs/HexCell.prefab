@@ -37,7 +37,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -218, y: -328.5}
-  m_SizeDelta: {x: 50, y: 50}
+  m_SizeDelta: {x: 60, y: 67}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5095718625171023829
 CanvasRenderer:
@@ -60,14 +60,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.6226415, g: 0.42906883, b: 0.14978638, a: 1}
+  m_Color: {r: 1, g: 0.80031055, b: 0.21226418, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 1ec84ac14d601460d8d6e0433e0721fa, type: 3}
+  m_Sprite: {fileID: 21300000, guid: d880c9e450a9840148783ca4e4e339da, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -92,6 +92,7 @@ MonoBehaviour:
   letterText: {fileID: 3635426803225041046}
   background: {fileID: 2693527370506300974}
   feedbackPalette: {fileID: 0}
+  inkSplatOverlay: {fileID: 0}
 --- !u!1 &2504904935602331436
 GameObject:
   m_ObjectHideFlags: 0
@@ -159,7 +160,7 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 15
+    m_FontSize: 24
     m_FontStyle: 1
     m_BestFit: 0
     m_MinSize: 1

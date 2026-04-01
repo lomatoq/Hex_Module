@@ -147,7 +147,14 @@ namespace HexWords.Gameplay
 
             _pathBuilder.Reset();
             trailView?.FadeOutAndClear(0.2f);
-            hudView?.HideWordPreview();
+
+            bool accepted = outcome == WordSubmitOutcome.TargetAccepted
+                         || outcome == WordSubmitOutcome.BonusAccepted
+                         || outcome == WordSubmitOutcome.AlreadyAccepted;
+            if (accepted)
+                hudView?.PlayBubbleAccepted();
+            else
+                hudView?.HideWordPreview();
         }
     }
 }
