@@ -18,6 +18,17 @@ namespace HexWords.Gameplay
         [SerializeField] private float                cellSize = 90f;
         [SerializeField] private HintAnimationConfig  hintConfig;
 
+        [Header("Auto-Scale")]
+        [Tooltip("If true, cellSize is computed from gridRoot rect so the grid fills the available space.")]
+        [SerializeField] private bool  autoScale        = true;
+        [Tooltip("Fraction of available space the grid occupies (0.88 = 12% padding).")]
+        [SerializeField] private float autoScalePadding = 0.88f;
+
+        [Header("Spacing")]
+        [Tooltip("Multiplier for the distance between cell centres.\n1.0 = cells touch, >1 = gaps, <1 = overlap.")]
+        [Range(0.5f, 2f)]
+        [SerializeField] private float cellSpacing = 1.0f;
+
         private readonly Dictionary<string, HexCellView> _cellViews = new Dictionary<string, HexCellView>();
         private Coroutine _hintRoutine;
 
@@ -43,11 +54,18 @@ namespace HexWords.Gameplay
                 HexBoardTemplate16.ApplyCanonicalLayout(cells);
             }
 
+            float effective = autoScale ? ComputeCellSize(cells) : cellSize;
+
             foreach (var cell in cells)
             {
                 var view = Instantiate(cellPrefab, gridRoot);
                 view.Bind(cell);
-                view.GetComponent<RectTransform>().anchoredPosition = AxialToPixel(cell.q, cell.r, cellSize);
+                var rt = view.GetComponent<RectTransform>();
+                // cellSpacing moves centres apart; visual size stays at 'effective'
+                rt.anchoredPosition = AxialToPixel(cell.q, cell.r, effective * cellSpacing);
+                float hexW = Mathf.Sqrt(3f) * effective;
+                float hexH = 2f * effective;
+                rt.sizeDelta = new Vector2(hexW, hexH);
                 _cellViews.Add(cell.cellId, view);
             }
         }
@@ -134,6 +152,36 @@ namespace HexWords.Gameplay
             for (var i = gridRoot.childCount - 1; i >= 0; i--)
                 Destroy(gridRoot.GetChild(i).gameObject);
             _cellViews.Clear();
+        }
+
+        private float ComputeCellSize(IReadOnlyList<CellDefinition> cells)
+        {
+            if (gridRoot == null || cells == null || cells.Count == 0) return cellSize;
+
+            // Force layout rebuild so rect is up to date before reading it
+            Canvas.ForceUpdateCanvases();
+            var available = gridRoot.rect;
+            if (available.width < 1f || available.height < 1f) return cellSize;
+
+            // Bounding box of cell centres at size = 1
+            float minX = float.MaxValue, maxX = float.MinValue;
+            float minY = float.MaxValue, maxY = float.MinValue;
+            foreach (var c in cells)
+            {
+                var p = AxialToPixel(c.q, c.r, 1f);
+                if (p.x < minX) minX = p.x;
+                if (p.x > maxX) maxX = p.x;
+                if (p.y < minY) minY = p.y;
+                if (p.y > maxY) maxY = p.y;
+            }
+
+            // Add one full hex diameter (pointy-top: w = sqrt(3), h = 2)
+            float spanX = (maxX - minX) + Mathf.Sqrt(3f);
+            float spanY = (maxY - minY) + 2f;
+
+            float scaleX = available.width  / spanX;
+            float scaleY = available.height / spanY;
+            return Mathf.Min(scaleX, scaleY) * autoScalePadding;
         }
 
         private static Vector2 AxialToPixel(int q, int r, float size)
