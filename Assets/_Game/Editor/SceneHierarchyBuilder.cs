@@ -5,6 +5,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 namespace HexWords.Editor
 {
@@ -49,11 +50,11 @@ namespace HexWords.Editor
 
             // Level text
             Wire(so, "levelText",
-                GetOrCreateText(hudGO, "LevelText", "Level 1", 20, Color.white).GetComponent<Text>());
+                GetOrCreateText(hudGO, "LevelText", "Level 1", 20, Color.white).GetComponent<TextMeshProUGUI>());
 
             // Coin text
             Wire(so, "coinText",
-                GetOrCreateText(hudGO, "CoinText", "250", 22, Color.white).GetComponent<Text>());
+                GetOrCreateText(hudGO, "CoinText", "250", 22, Color.white).GetComponent<TextMeshProUGUI>());
 
             // Buttons
             Wire(so, "settingsButton",   GetOrCreateButton(hudGO, "SettingsButton",   "⚙",  18));
@@ -61,7 +62,7 @@ namespace HexWords.Editor
 
             // Score text
             Wire(so, "scoreText",
-                GetOrCreateText(hudGO, "ScoreText", "0/10", 18, Color.white).GetComponent<Text>());
+                GetOrCreateText(hudGO, "ScoreText", "0/10", 18, Color.white).GetComponent<TextMeshProUGUI>());
 
             // Progress bar — search for existing Slider first
             var pbT = hudGO.transform.Find("ProgressBar");
@@ -94,7 +95,7 @@ namespace HexWords.Editor
                 bool btCreated;
                 var badgeTextGO = GetOrCreateText(badgeRoot, "BadgeText", "+7", 16, Color.white, out btCreated);
                 Wire(so, "scoreBadgeRoot", badgeRoot);
-                Wire(so, "scoreBadgeText", badgeTextGO.GetComponent<Text>());
+                Wire(so, "scoreBadgeText", badgeTextGO.GetComponent<TextMeshProUGUI>());
             }
 
             // Hint button + children
@@ -112,7 +113,7 @@ namespace HexWords.Editor
             if (emCreated) { AddRect(emIcon, new Vector2(24, 24)); AddImage(emIcon, new Color(0.4f, 0.4f, 0.4f)); emIcon.SetActive(false); }
 
             Wire(so, "hintButton",     hintGO.GetComponent<Button>());
-            Wire(so, "hintChargeText", chargeT.GetComponent<Text>());
+            Wire(so, "hintChargeText", chargeT.GetComponent<TextMeshProUGUI>());
             Wire(so, "hintRvIcon",     rvIcon);
             Wire(so, "hintEmptyIcon",  emIcon);
 
@@ -137,7 +138,7 @@ namespace HexWords.Editor
             GameObject coinCountGO = coinCountT != null
                 ? coinCountT.gameObject
                 : GetOrCreateText(homeGO, "CoinsCount", "250", 20, Color.white);
-            Wire(so, "coinText", coinCountGO.GetComponent<Text>());
+            Wire(so, "coinText", coinCountGO.GetComponent<TextMeshProUGUI>());
 
             // Settings Button (можа ўжо быць)
             var settT = homeGO.transform.Find("Settings Button");
@@ -153,14 +154,14 @@ namespace HexWords.Editor
                 Wire(so, "playButton", playT.GetComponent<Button>());
                 var playTxt = playT.Find("Play Text");
                 if (playTxt != null)
-                    Wire(so, "playButtonText", playTxt.GetComponent<Text>());
+                    Wire(so, "playButtonText", playTxt.GetComponent<TextMeshProUGUI>());
             }
             else
             {
                 var pb = GetOrCreateButton(homeGO, "Play Button", "▶ Play", 20);
                 Wire(so, "playButton", pb);
                 Wire(so, "playButtonText",
-                    GetOrCreateText(pb.gameObject, "Play Text", "Play (Level 1)", 18, Color.white).GetComponent<Text>());
+                    GetOrCreateText(pb.gameObject, "Play Text", "Play (Level 1)", 18, Color.white).GetComponent<TextMeshProUGUI>());
             }
 
             // Daily Challenge Button
@@ -190,14 +191,14 @@ namespace HexWords.Editor
             var headerParent = headerT != null ? headerT.gameObject : lcGO;
             Wire(so, "levelCompleteText",
                 GetOrCreateText(headerParent, "HeaderText", "Level 1 completed!", 24,
-                    new Color(0.2f, 0.6f, 0.2f)).GetComponent<Text>());
+                    new Color(0.2f, 0.6f, 0.2f)).GetComponent<TextMeshProUGUI>());
 
             // Coin reward button
             bool coinBtnCreated;
             var coinBtn = GetOrCreateButton(lcGO, "CoinRewardButton", "🪙", 30, out coinBtnCreated);
             Wire(so, "coinRewardButton", coinBtn);
             Wire(so, "coinRewardText",
-                GetOrCreateText(coinBtn.gameObject, "CoinAmountText", "+25", 18, Color.yellow).GetComponent<Text>());
+                GetOrCreateText(coinBtn.gameObject, "CoinAmountText", "+25", 18, Color.yellow).GetComponent<TextMeshProUGUI>());
 
             bool coinIconCreated;
             var coinIcon = GetOrCreateGO("CoinIcon", coinBtn.gameObject.transform, out coinIconCreated);
@@ -210,14 +211,14 @@ namespace HexWords.Editor
             {
                 Wire(so, "nextLevelButton", nextT.GetComponent<Button>());
                 var child = nextT.Find("Label") ?? (nextT.childCount > 0 ? nextT.GetChild(0) : null);
-                if (child != null) Wire(so, "nextLevelButtonText", child.GetComponent<Text>());
+                if (child != null) Wire(so, "nextLevelButtonText", child.GetComponent<TextMeshProUGUI>());
             }
             else
             {
                 var nb = GetOrCreateButton(lcGO, "Next Level Button", "Next →", 20);
                 Wire(so, "nextLevelButton", nb);
                 Wire(so, "nextLevelButtonText",
-                    GetOrCreateText(nb.gameObject, "Label", "Next Level 2", 18, Color.white).GetComponent<Text>());
+                    GetOrCreateText(nb.gameObject, "Label", "Next Level 2", 18, Color.white).GetComponent<TextMeshProUGUI>());
             }
 
             // Main Menu Button
@@ -254,10 +255,10 @@ namespace HexWords.Editor
 
             var stT = splashGO.transform.Find("Splash Text");
             if (stT != null)
-                Wire(so, "loadingText", stT.GetComponent<Text>());
+                Wire(so, "loadingText", stT.GetComponent<TextMeshProUGUI>());
             else
                 Wire(so, "loadingText",
-                    GetOrCreateText(splashGO, "Splash Text", "Loading...", 18, Color.white).GetComponent<Text>());
+                    GetOrCreateText(splashGO, "Splash Text", "Loading...", 18, Color.white).GetComponent<TextMeshProUGUI>());
 
             var homeView = Object.FindFirstObjectByType<HomeScreenView>();
             if (homeView != null) Wire(so, "homeScreenView", homeView);
@@ -297,10 +298,10 @@ namespace HexWords.Editor
             if (weCreated)
             {
                 AddRect(wordEntryGO, new Vector2(280, 32));
-                var txt = wordEntryGO.AddComponent<Text>();
+                var txt = wordEntryGO.AddComponent<TextMeshProUGUI>();
                 txt.text      = "WORD";
                 txt.fontSize  = 18;
-                txt.alignment = TextAnchor.MiddleLeft;
+                txt.alignment = TextAlignmentOptions.Left;
                 txt.color     = Color.white;
                 wordEntryGO.SetActive(false);
             }
@@ -430,7 +431,7 @@ namespace HexWords.Editor
             bool instrCreated;
             var instrGO = GetOrCreateText(tcGO, "InstructionText",
                 "Swipe the highlighted tiles!", 22, Color.white, out instrCreated);
-            Wire(so, "instructionText", instrGO.GetComponent<Text>());
+            Wire(so, "instructionText", instrGO.GetComponent<TextMeshProUGUI>());
 
             // Tap to continue prompt
             bool tapCreated;
@@ -533,10 +534,10 @@ namespace HexWords.Editor
             lrt.anchorMin = Vector2.zero;
             lrt.anchorMax = Vector2.one;
             lrt.sizeDelta = Vector2.zero;
-            var txt = labelGO.AddComponent<Text>();
+            var txt = labelGO.AddComponent<TextMeshProUGUI>();
             txt.text      = label;
             txt.fontSize  = fontSize;
-            txt.alignment = TextAnchor.MiddleCenter;
+            txt.alignment = TextAlignmentOptions.Center;
             txt.color     = Color.white;
 
             return btn;
@@ -585,11 +586,11 @@ namespace HexWords.Editor
             lblRT.anchorMax = new Vector2(1, 1);
             lblRT.offsetMin = new Vector2(48, 0);
             lblRT.offsetMax = Vector2.zero;
-            var lblTxt = lblGO.AddComponent<Text>();
+            var lblTxt = lblGO.AddComponent<TextMeshProUGUI>();
             lblTxt.text      = label;
             lblTxt.fontSize  = 18;
             lblTxt.color     = Color.white;
-            lblTxt.alignment = TextAnchor.MiddleLeft;
+            lblTxt.alignment = TextAlignmentOptions.Left;
 
             // Wire toggle
             var toggle = go.AddComponent<Toggle>();
@@ -617,11 +618,11 @@ namespace HexWords.Editor
             go.transform.SetParent(parent.transform, false);
             var rt  = go.AddComponent<RectTransform>();
             rt.sizeDelta = new Vector2(160, 30);
-            var txt = go.AddComponent<Text>();
+            var txt = go.AddComponent<TextMeshProUGUI>();
             txt.text      = content;
             txt.fontSize  = fontSize;
             txt.color     = color;
-            txt.alignment = TextAnchor.MiddleCenter;
+            txt.alignment = TextAlignmentOptions.Center;
             return go;
         }
 

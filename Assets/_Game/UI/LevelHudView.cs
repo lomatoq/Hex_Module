@@ -4,6 +4,7 @@
 using HexWords.Core;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 #if DOTWEEN
 using DG.Tweening;
 #endif

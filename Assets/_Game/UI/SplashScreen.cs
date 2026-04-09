@@ -1,6 +1,7 @@
 using HexWords.Core;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 namespace HexWords.UI
 {

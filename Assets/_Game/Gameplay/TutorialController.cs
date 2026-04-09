@@ -3,6 +3,7 @@ using HexWords.Core;
 using HexWords.UI;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 namespace HexWords.Gameplay
 {

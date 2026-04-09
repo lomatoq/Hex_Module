@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using HexWords.Core;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 namespace HexWords.UI
 {
@@ -93,7 +94,7 @@ namespace HexWords.UI
         private void AddEntry(string word, Color color)
         {
             var go   = Instantiate(wordEntryPrefab, wordListContainer);
-            var text = go.GetComponentInChildren<Text>();
+            var text = go.GetComponentInChildren<TMP_Text>();
             if (text != null)
             {
                 text.text  = word;

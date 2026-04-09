@@ -2,6 +2,7 @@ using HexWords.UI;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 namespace HexWords.Editor
 {
@@ -58,24 +59,24 @@ namespace HexWords.Editor
             titleRT.pivot     = new Vector2(0.5f, 1);
             titleRT.anchoredPosition = new Vector2(0, -10);
             titleRT.sizeDelta = new Vector2(0, 30);
-            var titleText = EnsureComponent<Text>(titleGO);
+            var titleText = EnsureComponent<TextMeshProUGUI>(titleGO);
             titleText.text      = "DEV — Select Level";
             titleText.color     = Color.yellow;
             titleText.fontSize  = 16;
-            titleText.fontStyle = FontStyle.Bold;
-            titleText.alignment = TextAnchor.MiddleCenter;
+            titleText.fontStyle = FontStyles.Bold;
+            titleText.alignment = TextAlignmentOptions.Center;
 
             // ── 4. Level text (center) ─────────────────────────────────────
             var levelGO = GetOrCreate("LevelText", panelGO.transform);
             var levelRT = EnsureRect(levelGO);
             levelRT.anchoredPosition = new Vector2(0, 20);
             levelRT.sizeDelta        = new Vector2(160, 40);
-            var levelText = EnsureComponent<Text>(levelGO);
+            var levelText = EnsureComponent<TextMeshProUGUI>(levelGO);
             levelText.text      = "Level 1";
             levelText.color     = Color.white;
             levelText.fontSize  = 24;
-            levelText.fontStyle = FontStyle.Bold;
-            levelText.alignment = TextAnchor.MiddleCenter;
+            levelText.fontStyle = FontStyles.Bold;
+            levelText.alignment = TextAlignmentOptions.Center;
 
             // ── 5. Prev button (←) ─────────────────────────────────────────
             var prevGO  = CreateLabelledButton("PrevBtn", panelGO.transform, "←", new Vector2(-100, 20));
@@ -176,12 +177,12 @@ namespace HexWords.Editor
             labelRT.anchorMin = Vector2.zero;
             labelRT.anchorMax = Vector2.one;
             labelRT.sizeDelta = Vector2.zero;
-            var txt = EnsureComponent<Text>(labelGO);
+            var txt = EnsureComponent<TextMeshProUGUI>(labelGO);
             txt.text      = label;
             txt.color     = Color.white;
             txt.fontSize  = 18;
-            txt.fontStyle = FontStyle.Bold;
-            txt.alignment = TextAnchor.MiddleCenter;
+            txt.fontStyle = FontStyles.Bold;
+            txt.alignment = TextAlignmentOptions.Center;
 
             return go;
         }

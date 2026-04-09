@@ -6,6 +6,7 @@ using HexWords.Core;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using TMPro;
 #if DOTWEEN
 using DG.Tweening;
 #endif
@@ -75,7 +76,7 @@ namespace HexWords.Gameplay
 
         private void EnsureLetterCentered()
         {
-            letterText.alignment      = TextAnchor.MiddleCenter;
+            letterText.alignment      = TextAlignmentOptions.Center;
             var r                     = letterText.rectTransform;
             r.anchorMin               = new Vector2(0.5f, 0.5f);
             r.anchorMax               = new Vector2(0.5f, 0.5f);
