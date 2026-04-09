@@ -19,7 +19,7 @@ namespace HexWords.UI
         [SerializeField] private Button     closeButton;
 
         [Header("Level selector")]
-        [SerializeField] private Text   currentLevelText;
+        [SerializeField] private TMP_Text   currentLevelText;
         [SerializeField] private Button prevButton;
         [SerializeField] private Button nextButton;
         [SerializeField] private Button goButton;

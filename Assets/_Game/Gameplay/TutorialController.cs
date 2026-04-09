@@ -23,7 +23,7 @@ namespace HexWords.Gameplay
     {
         [Header("Overlay")]
         [SerializeField] private GameObject dimOverlay;          // semi-transparent dark panel
-        [SerializeField] private Text instructionText;           // floating instruction label
+        [SerializeField] private TMP_Text instructionText;           // floating instruction label
         [SerializeField] private GameObject tapToContinuePrompt; // "Tap to continue"
 
         [Header("Swipe hint animation")]

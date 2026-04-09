@@ -13,7 +13,7 @@ namespace HexWords.UI
     {
         [Header("UI")]
         [SerializeField] private Slider loadingBar;
-        [SerializeField] private Text   loadingText;
+        [SerializeField] private TMP_Text   loadingText;
 
         [Header("Transition")]
         [SerializeField] private float minDisplaySeconds = 1.5f;

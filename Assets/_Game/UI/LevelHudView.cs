@@ -15,19 +15,19 @@ namespace HexWords.UI
     {
         // ── Header ─────────────────────────────────────────────────────────
         [Header("Header")]
-        [SerializeField] private Text   levelText;
-        [SerializeField] private Text   coinText;
+        [SerializeField] private TMP_Text   levelText;
+        [SerializeField] private TMP_Text   coinText;
         [SerializeField] private Button settingsButton;
         [SerializeField] private Button foundWordsButton;
 
         // ── Progress ───────────────────────────────────────────────────────
         [Header("Progress")]
-        [SerializeField] private Text   scoreText;
+        [SerializeField] private TMP_Text   scoreText;
         [SerializeField] private Slider progressBar;
 
         // ── Word display ───────────────────────────────────────────────────
         [Header("Word Display")]
-        [SerializeField] private Text            lastWordText;
+        [SerializeField] private TMP_Text            lastWordText;
         [SerializeField] private FeedbackPalette feedbackPalette;
 
         // Bubble that resizes with the word length.
@@ -46,18 +46,18 @@ namespace HexWords.UI
         // Паказваецца калі серыя >= 2. Хаваецца пры серыі 0 або 1.
         [Header("Streak (optional)")]
         [SerializeField] private GameObject streakRoot;
-        [SerializeField] private Text       streakText;
+        [SerializeField] private TMP_Text       streakText;
 
         // Апцыянальны бэдж з балімі ("+7") — з'яўляецца над словам калі слова валіднае.
         // Калі не прысвоены — проста не паказваецца.
         [Header("Score Badge (optional)")]
         [SerializeField] private GameObject scoreBadgeRoot;
-        [SerializeField] private Text       scoreBadgeText;
+        [SerializeField] private TMP_Text       scoreBadgeText;
 
         // ── Booster – Hint ─────────────────────────────────────────────────
         [Header("Booster – Hint")]
         [SerializeField] private Button     hintButton;
-        [SerializeField] private Text       hintChargeText;
+        [SerializeField] private TMP_Text       hintChargeText;
         [SerializeField] private GameObject hintRvIcon;
         [SerializeField] private GameObject hintEmptyIcon;
 

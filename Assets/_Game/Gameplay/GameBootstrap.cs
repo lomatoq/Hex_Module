@@ -99,6 +99,9 @@ namespace HexWords.Gameplay
 
         private void ShowHomeScreen()
         {
+            if (hudView != null) hudView.gameObject.SetActive(false);
+            if (gridView != null) gridView.gameObject.SetActive(false);
+
             if (homeScreenView != null)
             {
                 homeScreenView.SetCurrentLevel(_currentLevelIndex + 1);
@@ -199,6 +202,9 @@ namespace HexWords.Gameplay
             {
                 HexBoardTemplate16.ApplyCanonicalLayout(_currentLevel.shape.cells);
             }
+
+            if (hudView != null) hudView.gameObject.SetActive(true);
+            if (gridView != null) gridView.gameObject.SetActive(true);
 
             gridView.Build(_currentLevel);
             inputController.Initialize(_currentLevel, _session, adjacency);

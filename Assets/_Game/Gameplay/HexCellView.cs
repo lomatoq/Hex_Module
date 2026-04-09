@@ -15,7 +15,7 @@ namespace HexWords.Gameplay
 {
     public class HexCellView : MonoBehaviour, IPointerDownHandler, IPointerEnterHandler, IPointerUpHandler, ICellFxPlayer
     {
-        [SerializeField] private Text            letterText;
+        [SerializeField] private TMP_Text         letterText;
         [SerializeField] private Image           background;
         [SerializeField] private FeedbackPalette feedbackPalette;
 

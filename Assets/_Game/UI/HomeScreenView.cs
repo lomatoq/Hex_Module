@@ -11,12 +11,12 @@ namespace HexWords.UI
     public class HomeScreenView : MonoBehaviour
     {
         [Header("Header")]
-        [SerializeField] private Text coinText;
+        [SerializeField] private TMP_Text coinText;
         [SerializeField] private Button settingsButton;
 
         [Header("Play")]
         [SerializeField] private Button playButton;
-        [SerializeField] private Text playButtonText; // "Play (Level X)"
+        [SerializeField] private TMP_Text playButtonText; // "Play (Level X)"
 
         [Header("Daily Challenge")]
         [SerializeField] private Button dailyChallengeButton; // calendar icon

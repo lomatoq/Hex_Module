@@ -17,16 +17,16 @@ namespace HexWords.UI
         [SerializeField] private GameObject root;
 
         [Header("Status")]
-        [SerializeField] private Text levelCompleteText; // "Level X completed!"
+        [SerializeField] private TMP_Text levelCompleteText; // "Level X completed!"
 
         [Header("Coin Reward")]
         [SerializeField] private Button coinRewardButton; // tap to collect
-        [SerializeField] private Text coinRewardText;     // coin amount label
+        [SerializeField] private TMP_Text coinRewardText;     // coin amount label
         [SerializeField] private RectTransform coinIcon;  // animated to header balance
 
         [Header("Actions")]
         [SerializeField] private Button nextLevelButton;
-        [SerializeField] private Text nextLevelButtonText; // "Next Level X"
+        [SerializeField] private TMP_Text nextLevelButtonText; // "Next Level X"
         [SerializeField] private Button mainMenuButton;
 
         [Header("Ad Banner")]
