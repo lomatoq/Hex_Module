@@ -41,8 +41,19 @@ namespace HexWords.UI
         private int _pendingCoinReward;
         private bool _rewardCollected;
 
+        private void EnsureOverlayCanvas()
+        {
+            var c = GetComponent<Canvas>();
+            if (c == null) c = gameObject.AddComponent<Canvas>();
+            c.overrideSorting = true;
+            c.sortingOrder    = 100;
+            if (GetComponent<UnityEngine.UI.GraphicRaycaster>() == null)
+                gameObject.AddComponent<UnityEngine.UI.GraphicRaycaster>();
+        }
+
         private void Awake()
         {
+            EnsureOverlayCanvas();
             if (coinRewardButton != null)
                 coinRewardButton.onClick.AddListener(OnCoinIconTapped);
 

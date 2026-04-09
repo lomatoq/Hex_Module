@@ -31,10 +31,21 @@ namespace HexWords.UI
 
         private void Awake()
         {
+            EnsureOverlayCanvas();
             // Only hide the root child panel; never deactivate own GO here.
             // (Deactivating own GO in Awake() prevents OnEnable from firing at scene start.)
             if (root != null)
                 root.SetActive(false);
+        }
+
+        private void EnsureOverlayCanvas()
+        {
+            var c = GetComponent<Canvas>();
+            if (c == null) c = gameObject.AddComponent<Canvas>();
+            c.overrideSorting = true;
+            c.sortingOrder    = 100;
+            if (GetComponent<UnityEngine.UI.GraphicRaycaster>() == null)
+                gameObject.AddComponent<UnityEngine.UI.GraphicRaycaster>();
         }
 
         private void OnEnable()

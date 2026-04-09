@@ -32,8 +32,19 @@ namespace HexWords.UI
 
         public event Action OnMainMenuClicked;
 
+        private void EnsureOverlayCanvas()
+        {
+            var c = GetComponent<Canvas>();
+            if (c == null) c = gameObject.AddComponent<Canvas>();
+            c.overrideSorting = true;
+            c.sortingOrder    = 100;
+            if (GetComponent<UnityEngine.UI.GraphicRaycaster>() == null)
+                gameObject.AddComponent<UnityEngine.UI.GraphicRaycaster>();
+        }
+
         private void Awake()
         {
+            EnsureOverlayCanvas();
             // Toggles — suppress listener during init
             if (sfxToggle != null)
                 sfxToggle.onValueChanged.AddListener(OnSfxToggled);
