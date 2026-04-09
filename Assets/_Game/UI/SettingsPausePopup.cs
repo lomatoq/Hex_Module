@@ -99,6 +99,7 @@ namespace HexWords.UI
                 vibrationToggle.onValueChanged.AddListener(OnVibrationToggled);
             }
 
+            transform.SetAsLastSibling();
             SetRootVisible(true);
         }
 

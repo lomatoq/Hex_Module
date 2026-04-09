@@ -58,6 +58,7 @@ namespace HexWords.UI
         /// <summary>Shows the win screen for the completed level with a coin reward.</summary>
         public void Show(int levelNumber, int coinReward)
         {
+            transform.SetAsLastSibling();
             _pendingCoinReward = coinReward;
             _rewardCollected   = false;
 

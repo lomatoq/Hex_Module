@@ -56,6 +56,7 @@ namespace HexWords.UI
 
         public void Show(LevelSessionState state)
         {
+            transform.SetAsLastSibling();
             SetRootVisible(true);
             PopulateList(state);
         }
