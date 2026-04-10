@@ -24,7 +24,6 @@ namespace HexWords.UI
         [Header("Progress")]
         [SerializeField] private TMP_Text   scoreText;
         [SerializeField] private Slider     progressBar;
-        [SerializeField] private TMP_Text   foundWordsCountText; // shows N without "+"
 
         [Header("Progress Animation")]
         [SerializeField] private float          scoreFillDuration  = 0.5f;
@@ -159,11 +158,6 @@ namespace HexWords.UI
 #endif
         }
 
-        public void SetFoundWordsCount(int count)
-        {
-            if (foundWordsCountText != null)
-                foundWordsCountText.text = count.ToString();
-        }
 
         // ── Word display ───────────────────────────────────────────────────
 
@@ -192,7 +186,7 @@ namespace HexWords.UI
 
             bool showBadge = isValid && score > 0;
             if (scoreBadgeRoot != null) scoreBadgeRoot.SetActive(showBadge);
-            if (scoreBadgeText != null && showBadge) scoreBadgeText.text = $"+{score}";
+            if (scoreBadgeText != null && showBadge) scoreBadgeText.text = $"{score}";
             ShowBubble(word);
         }
 

@@ -231,7 +231,6 @@ namespace HexWords.Gameplay
             // HUD
             hudView.SetLevel(_currentLevel.levelId);
             hudView.SetScore(0, _currentLevel.targetScore);
-            hudView.SetFoundWordsCount(0);
             hudView.SetCurrentWord(string.Empty);
             hudView.SetCoins(_wallet?.Balance ?? 0);
             hudView.SetStreak(0);
@@ -332,15 +331,6 @@ namespace HexWords.Gameplay
         private void OnWordSubmittedDetailed(string word, WordSubmitOutcome outcome, ValidationReason reason)
         {
             hudView.SetLastWord(word, outcome);
-
-            if (outcome == WordSubmitOutcome.TargetAccepted ||
-                outcome == WordSubmitOutcome.BonusAccepted  ||
-                outcome == WordSubmitOutcome.AlreadyAccepted)
-            {
-                int found = (_session?.State.acceptedTargetWords.Count ?? 0)
-                          + (_session?.State.acceptedBonusWords.Count  ?? 0);
-                hudView.SetFoundWordsCount(found);
-            }
 
             // Interstitial — game interrupt (mid-game, after collecting a category)
             if (outcome == WordSubmitOutcome.TargetAccepted)
