@@ -20,8 +20,8 @@ namespace HexWords.UI
         [SerializeField] private float minDisplaySeconds = 1.5f;
 
         [Header("Bar Animation")]
-        [SerializeField] private float         barEaseDuration = 0.3f;
-        [SerializeField] private AnimationCurve barCurve       = AnimationCurve.EaseInOut(0, 0, 1, 1);
+        [SerializeField] private float          barEaseDuration = 0.3f;
+        [SerializeField] private AnimationCurve barCurve        = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
         [Header("References")]
         [SerializeField] private HomeScreenView homeScreenView;
@@ -45,7 +45,6 @@ namespace HexWords.UI
             RemoteConfigService.Instance.FetchAsync(OnConfigReady);
 
 #if DOTWEEN
-            // Animate bar to 90 % over minDisplaySeconds * 0.9
             if (loadingBar != null)
                 DOTween.To(() => loadingBar.value,
                            v  => loadingBar.value = v,
@@ -83,20 +82,10 @@ namespace HexWords.UI
                            1f,
                            barEaseDuration)
                        .SetEase(barCurve)
-                       .SetId(loadingBar)
-                       .OnComplete(() =>
-                       {
-                           if (loadingText != null)
-                               loadingText.text = "Ready!";
-                       });
-            }
-            else if (loadingText != null)
-            {
-                loadingText.text = "Ready!";
+                       .SetId(loadingBar);
             }
 #else
-            if (loadingBar  != null) loadingBar.value = 1f;
-            if (loadingText != null) loadingText.text  = "Ready!";
+            if (loadingBar != null) loadingBar.value = 1f;
 #endif
 
             if (_elapsed >= minDisplaySeconds && !_transitioned)
