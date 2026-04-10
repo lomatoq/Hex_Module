@@ -23,7 +23,14 @@ namespace HexWords.UI
         // ── Progress ───────────────────────────────────────────────────────
         [Header("Progress")]
         [SerializeField] private TMP_Text   scoreText;
-        [SerializeField] private Slider progressBar;
+        [SerializeField] private Slider     progressBar;
+        [SerializeField] private TMP_Text   foundWordsCountText; // shows N without "+"
+
+        [Header("Progress Animation")]
+        [SerializeField] private float          scoreFillDuration  = 0.5f;
+        [SerializeField] private AnimationCurve scoreFillCurve     = AnimationCurve.EaseInOut(0, 0, 1, 1);
+        [SerializeField] private float          scoreBarBounceScale = 1.06f;
+        [SerializeField] private float          scoreBarBounceDuration = 0.18f;
 
         // ── Word display ───────────────────────────────────────────────────
         [Header("Word Display")]
@@ -114,15 +121,48 @@ namespace HexWords.UI
 
         // ── Progress ───────────────────────────────────────────────────────
 
-        public void SetScore(int current, int target)
+        public void SetScore(int current, int target, bool animate = false)
         {
             if (scoreText != null) scoreText.text = $"{current}/{target}";
 
-            if (progressBar != null)
+            if (progressBar == null) return;
+            progressBar.maxValue = target;
+
+#if DOTWEEN
+            if (animate && current > progressBar.value)
             {
-                progressBar.maxValue = target;
-                progressBar.value    = current;
+                DOTween.Kill(progressBar);
+                var barRT = progressBar.GetComponent<RectTransform>();
+                DOTween.To(() => progressBar.value,
+                           v  => progressBar.value = v,
+                           current,
+                           scoreFillDuration)
+                       .SetEase(scoreFillCurve)
+                       .SetId(progressBar);
+
+                // Bounce scale on the bar while it fills
+                if (barRT != null)
+                {
+                    DOTween.Kill(barRT);
+                    DOTween.Sequence().SetId(barRT)
+                        .Append(barRT.DOScale(scoreBarBounceScale, scoreBarBounceDuration * 0.5f).SetEase(Ease.OutQuad))
+                        .Append(barRT.DOScale(1f, scoreBarBounceDuration * 0.5f).SetEase(Ease.InOutQuad));
+                }
             }
+            else
+            {
+                DOTween.Kill(progressBar);
+                progressBar.value = current;
+            }
+#else
+            progressBar.value = current;
+#endif
+        }
+
+        public void SetFoundWordsCount(int count)
+        {
+            if (foundWordsCountText != null)
+                foundWordsCountText.text = count.ToString();
         }
 
         // ── Word display ───────────────────────────────────────────────────

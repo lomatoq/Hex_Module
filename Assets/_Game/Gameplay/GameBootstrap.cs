@@ -97,6 +97,8 @@ namespace HexWords.Gameplay
 
         // ── Home screen ────────────────────────────────────────────────────
 
+        private bool _animateHomeProgress = false;
+
         private void ShowHomeScreen()
         {
             if (hudView != null) hudView.gameObject.SetActive(false);
@@ -104,8 +106,11 @@ namespace HexWords.Gameplay
 
             if (homeScreenView != null)
             {
+                int total = levelCatalog != null ? levelCatalog.Count : 0;
                 homeScreenView.SetCurrentLevel(_currentLevelIndex + 1);
                 homeScreenView.SetCoins(_wallet?.Balance ?? 0);
+                homeScreenView.SetProgress(_currentLevelIndex, total, animate: _animateHomeProgress);
+                _animateHomeProgress = false;
                 homeScreenView.Show();
                 homeScreenView.OnPlayClicked           -= StartGame;
                 homeScreenView.OnSettingsClicked       -= ShowSettings;
@@ -154,6 +159,7 @@ namespace HexWords.Gameplay
 
         public void GoToHomeScreen()
         {
+            _animateHomeProgress = true;
             TearDownSession();
 
             adsManager?.TryShowInterstitial(AdPlacement.HomeExit);
@@ -225,6 +231,7 @@ namespace HexWords.Gameplay
             // HUD
             hudView.SetLevel(_currentLevel.levelId);
             hudView.SetScore(0, _currentLevel.targetScore);
+            hudView.SetFoundWordsCount(0);
             hudView.SetCurrentWord(string.Empty);
             hudView.SetCoins(_wallet?.Balance ?? 0);
             hudView.SetStreak(0);
@@ -314,7 +321,7 @@ namespace HexWords.Gameplay
 
         private void OnScoreChanged(int current, int target)
         {
-            hudView.SetScore(current, target);
+            hudView.SetScore(current, target, animate: true);
         }
 
         private void OnStreakChanged(int streak)
@@ -325,6 +332,15 @@ namespace HexWords.Gameplay
         private void OnWordSubmittedDetailed(string word, WordSubmitOutcome outcome, ValidationReason reason)
         {
             hudView.SetLastWord(word, outcome);
+
+            if (outcome == WordSubmitOutcome.TargetAccepted ||
+                outcome == WordSubmitOutcome.BonusAccepted  ||
+                outcome == WordSubmitOutcome.AlreadyAccepted)
+            {
+                int found = (_session?.State.acceptedTargetWords.Count ?? 0)
+                          + (_session?.State.acceptedBonusWords.Count  ?? 0);
+                hudView.SetFoundWordsCount(found);
+            }
 
             // Interstitial — game interrupt (mid-game, after collecting a category)
             if (outcome == WordSubmitOutcome.TargetAccepted)
