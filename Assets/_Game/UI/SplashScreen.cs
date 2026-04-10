@@ -40,7 +40,7 @@ namespace HexWords.UI
             }
 
             if (loadingText != null)
-                loadingText.text = "Loading...";
+                loadingText.text = "LOADING...";
 
             RemoteConfigService.Instance.FetchAsync(OnConfigReady);
 
