@@ -10,20 +10,21 @@ namespace HexWords.UI
     {
         [Header("Activation")]
         [Tooltip("Invisible button in a corner — tap 5× quickly to open dev panel")]
-        [SerializeField] private Button triggerZone;
-        [SerializeField] private int    tapsRequired  = 5;
-        [SerializeField] private float  tapResetTime  = 2f;
+        [SerializeField] private Button  triggerZone;
+        [SerializeField] private int     tapsRequired = 5;
+        [SerializeField] private float   tapResetTime = 2f;
 
         [Header("Panel")]
         [SerializeField] private GameObject panelRoot;
         [SerializeField] private Button     closeButton;
 
         [Header("Level selector")]
-        [SerializeField] private TMP_Text   currentLevelText;
-        [SerializeField] private Button prevButton;
-        [SerializeField] private Button nextButton;
-        [SerializeField] private Button goButton;
-        [SerializeField] private Button restartButton;   // ← новая кнопка
+        [SerializeField] private TMP_Text currentLevelText;
+        [SerializeField] private Button   prevButton;
+        [SerializeField] private Button   nextButton;
+        [SerializeField] private Button   goButton;
+        [SerializeField] private Button   restartButton;
+        [SerializeField] private Button   winButton;      // simulate win screen
 
         [Header("References")]
         [SerializeField] private GameBootstrap gameBootstrap;
@@ -36,12 +37,13 @@ namespace HexWords.UI
 
         private void Awake()
         {
-            if (triggerZone  != null) triggerZone.onClick.AddListener(OnTriggerTapped);
-            if (closeButton  != null) closeButton.onClick.AddListener(ClosePanel);
-            if (prevButton   != null) prevButton.onClick.AddListener(() => ChangeLevel(-1));
-            if (nextButton   != null) nextButton.onClick.AddListener(() => ChangeLevel(+1));
-            if (goButton     != null) goButton.onClick.AddListener(OnGoClicked);
+            if (triggerZone   != null) triggerZone.onClick.AddListener(OnTriggerTapped);
+            if (closeButton   != null) closeButton.onClick.AddListener(ClosePanel);
+            if (prevButton    != null) prevButton.onClick.AddListener(() => ChangeLevel(-1));
+            if (nextButton    != null) nextButton.onClick.AddListener(() => ChangeLevel(+1));
+            if (goButton      != null) goButton.onClick.AddListener(OnGoClicked);
             if (restartButton != null) restartButton.onClick.AddListener(OnRestartClicked);
+            if (winButton     != null) winButton.onClick.AddListener(OnWinClicked);
 
             if (panelRoot != null) panelRoot.SetActive(false);
         }
@@ -82,12 +84,21 @@ namespace HexWords.UI
             RefreshLabel();
         }
 
+        private void RefreshLabel()
+        {
+            // Try the serialised reference first; fall back to searching panel hierarchy
+            if (currentLevelText == null && panelRoot != null)
+                currentLevelText = panelRoot.GetComponentInChildren<TMP_Text>();
+
+            if (currentLevelText != null)
+                currentLevelText.text = $"Level {_selectedLevel + 1}";
+        }
+
         // ── Actions ────────────────────────────────────────────────────────
 
         private void OnGoClicked()
         {
             ClosePanel();
-
             if (gameBootstrap != null)
             {
                 gameBootstrap.JumpToLevel(_selectedLevel);
@@ -99,41 +110,36 @@ namespace HexWords.UI
                 var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
                 UnityEngine.SceneManagement.SceneManager.LoadScene(scene.name);
             }
-
             Debug.Log($"[DevLevelSelector] Jump → level index {_selectedLevel} (Level {_selectedLevel + 1})");
         }
 
         private void OnRestartClicked()
         {
             ClosePanel();
-
-            // Restart = JumpToLevel з бягучым індэксам
             int current = PlayerPrefs.GetInt(PrefKey, 0);
-
             if (gameBootstrap != null)
-            {
                 gameBootstrap.JumpToLevel(current);
-            }
             else
             {
                 var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
                 UnityEngine.SceneManagement.SceneManager.LoadScene(scene.name);
             }
-
-            Debug.Log($"[DevLevelSelector] Restart → level index {current} (Level {current + 1})");
+            Debug.Log($"[DevLevelSelector] Restart → level index {current}");
         }
 
-        private void RefreshLabel()
+        private void OnWinClicked()
         {
-            if (currentLevelText != null)
-                currentLevelText.text = $"Level {_selectedLevel + 1}";
+            ClosePanel();
+            if (gameBootstrap != null)
+                gameBootstrap.SimulateWin();
+            else
+                Debug.LogWarning("[DevLevelSelector] GameBootstrap not assigned — cannot simulate win.");
         }
 
 #if UNITY_EDITOR
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.L))
-                OpenPanel();
+            if (Input.GetKeyDown(KeyCode.L)) OpenPanel();
         }
 #endif
     }

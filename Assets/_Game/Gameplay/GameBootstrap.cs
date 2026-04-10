@@ -337,6 +337,9 @@ namespace HexWords.Gameplay
                 adsManager?.TryShowInterstitial(AdPlacement.GameInterrupt);
         }
 
+        /// <summary>Dev-only: immediately triggers the win screen for the current level.</summary>
+        public void SimulateWin() => OnLevelCompleted();
+
         private void OnLevelCompleted()
         {
             // Interstitial — game end (before win screen)
