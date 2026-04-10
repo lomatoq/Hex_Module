@@ -82,11 +82,8 @@ namespace HexWords.UI
             if (nextLevelButtonText != null)
                 nextLevelButtonText.text = $"Next Level {levelNumber + 1}";
 
-            // If no coin button assigned — unlock immediately; otherwise wait for tap
-            bool hasCoinButton = coinRewardButton != null;
-            SetActionButtonsInteractable(!hasCoinButton);
-
-            if (hasCoinButton)
+            SetActionButtonsInteractable(true);
+            if (coinRewardButton != null)
                 coinRewardButton.interactable = true;
 
             SetRootVisible(true);
