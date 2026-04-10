@@ -57,7 +57,7 @@ namespace HexWords.UI
         public void SetCurrentLevel(int levelNumber)
         {
             if (playButtonText != null)
-                playButtonText.text = $"Play (Level {levelNumber})";
+                playButtonText.text = $"Level {levelNumber}";
         }
 
         public void SetCoins(int amount)

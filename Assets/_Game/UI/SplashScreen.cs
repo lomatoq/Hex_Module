@@ -74,9 +74,6 @@ namespace HexWords.UI
         {
             _configReady = true;
 
-            if (loadingText != null)
-                loadingText.text = "Ready!";
-
 #if DOTWEEN
             if (loadingBar != null)
             {
@@ -86,10 +83,20 @@ namespace HexWords.UI
                            1f,
                            barEaseDuration)
                        .SetEase(barCurve)
-                       .SetId(loadingBar);
+                       .SetId(loadingBar)
+                       .OnComplete(() =>
+                       {
+                           if (loadingText != null)
+                               loadingText.text = "Ready!";
+                       });
+            }
+            else if (loadingText != null)
+            {
+                loadingText.text = "Ready!";
             }
 #else
-            if (loadingBar != null) loadingBar.value = 1f;
+            if (loadingBar  != null) loadingBar.value = 1f;
+            if (loadingText != null) loadingText.text  = "Ready!";
 #endif
 
             if (_elapsed >= minDisplaySeconds && !_transitioned)

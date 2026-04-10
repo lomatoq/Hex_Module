@@ -29,7 +29,7 @@ namespace HexWords.UI
         [SerializeField] private float          scoreFillDuration  = 0.5f;
         [SerializeField] private AnimationCurve scoreFillCurve     = AnimationCurve.EaseInOut(0, 0, 1, 1);
         [SerializeField] private float          scoreBarBounceScale = 1.06f;
-        [SerializeField] private float          scoreBarBounceDuration = 0.18f;
+        [SerializeField] private float          scoreBarBounceDuration = 0.45f;
 
         // ── Word display ───────────────────────────────────────────────────
         [Header("Word Display")]
