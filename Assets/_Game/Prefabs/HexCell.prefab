@@ -91,7 +91,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HexWords.Gameplay.HexCellView
   letterText: {fileID: 8957414648412286271}
   background: {fileID: 2693527370506300974}
-  feedbackPalette: {fileID: 0}
+  feedbackPalette: {fileID: 11400000, guid: 1a4740a9a832f4175a99dc459efbe257, type: 2}
   inkSplatOverlay: {fileID: 0}
 --- !u!1 &2504904935602331436
 GameObject:
