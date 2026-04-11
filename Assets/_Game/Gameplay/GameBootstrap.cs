@@ -320,7 +320,8 @@ namespace HexWords.Gameplay
 
         private void OnScoreChanged(int current, int target)
         {
-            hudView.SetScore(current, target, animate: true);
+            // Delay fill/bounce so they sync with the score-drop arrival
+            hudView.SetScore(current, target, animate: true, delay: hudView.ScoreDropDuration);
         }
 
         private void OnStreakChanged(int streak)

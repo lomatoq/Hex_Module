@@ -60,6 +60,17 @@ namespace HexWords.UI
         [SerializeField] private GameObject scoreBadgeRoot;
         [SerializeField] private TMP_Text       scoreBadgeText;
 
+        // ── Score Drop ─────────────────────────────────────────────────────
+        [Header("Score Drop")]
+        [SerializeField] private RectTransform  scoreDropTemplate;              // inactive child of canvas — drag your drop image here
+        [SerializeField] private RectTransform  scoreDropTarget;                // where the drop flies to (e.g. progressBar RectTransform)
+        [SerializeField] private Vector2        scoreDropControlOffset = new Vector2(0f, 180f);  // bezier control point relative to midpoint
+        [SerializeField] private float          scoreDropDuration      = 0.45f;
+        [SerializeField] private AnimationCurve scoreDropCurve         = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
+        /// <summary>How long the drop travels — use as delay for SetScore so bounce syncs with arrival.</summary>
+        public float ScoreDropDuration => (scoreDropTemplate != null && scoreDropTarget != null) ? scoreDropDuration : 0f;
+
         // ── Booster – Hint ─────────────────────────────────────────────────
         [Header("Booster – Hint")]
         [SerializeField] private Button     hintButton;
@@ -120,10 +131,8 @@ namespace HexWords.UI
 
         // ── Progress ───────────────────────────────────────────────────────
 
-        public void SetScore(int current, int target, bool animate = false)
+        public void SetScore(int current, int target, bool animate = false, float delay = 0f)
         {
-            if (scoreText != null) scoreText.text = $"{current}/{target}";
-
             if (progressBar == null) return;
             progressBar.maxValue = target;
 
@@ -131,30 +140,46 @@ namespace HexWords.UI
             if (animate && current > progressBar.value)
             {
                 DOTween.Kill(progressBar);
-                var barRT = progressBar.GetComponent<RectTransform>();
+                var barRT    = progressBar.GetComponent<RectTransform>();
+                var scoreTRT = scoreText != null ? scoreText.GetComponent<RectTransform>() : null;
+
+                // Fill bar (delayed so it starts when drop arrives)
                 DOTween.To(() => progressBar.value,
                            v  => progressBar.value = v,
                            current,
                            scoreFillDuration)
                        .SetEase(scoreFillCurve)
+                       .SetDelay(delay)
                        .SetId(progressBar);
 
-                // Bounce scale on the bar while it fills
+                // Update text + bounce bar + bounce score label — all after delay
+                var seq = DOTween.Sequence();
+                if (delay > 0f) seq.AppendInterval(delay);
+                seq.AppendCallback(() =>
+                {
+                    if (scoreText != null) scoreText.text = $"{current}/{target}";
+                });
                 if (barRT != null)
                 {
                     DOTween.Kill(barRT);
-                    DOTween.Sequence().SetId(barRT)
-                        .Append(barRT.DOScale(scoreBarBounceScale, scoreBarBounceDuration * 0.5f).SetEase(Ease.OutQuad))
-                        .Append(barRT.DOScale(1f, scoreBarBounceDuration * 0.5f).SetEase(Ease.InOutQuad));
+                    seq.Append(barRT.DOScale(scoreBarBounceScale, scoreBarBounceDuration * 0.4f).SetEase(Ease.OutQuad))
+                       .Append(barRT.DOScale(1f, scoreBarBounceDuration * 0.6f).SetEase(Ease.InOutQuad));
+                }
+                if (scoreTRT != null)
+                {
+                    seq.Join(scoreTRT.DOScale(scoreBarBounceScale, scoreBarBounceDuration * 0.4f).SetEase(Ease.OutQuad))
+                       .Join(scoreTRT.DOScale(1f, scoreBarBounceDuration * 0.6f).SetEase(Ease.InOutQuad));
                 }
             }
             else
             {
                 DOTween.Kill(progressBar);
                 progressBar.value = current;
+                if (scoreText != null) scoreText.text = $"{current}/{target}";
             }
 #else
             progressBar.value = current;
+            if (scoreText != null) scoreText.text = $"{current}/{target}";
 #endif
         }
 
@@ -215,9 +240,11 @@ namespace HexWords.UI
 
         // ── Bubble animations ──────────────────────────────────────────────
 
-        /// <summary>Bounces the bubble container, then flies it up after a delay.</summary>
+        /// <summary>Bounces the bubble container, fires score drop, then flies it up after a delay.</summary>
         public void PlayBubbleAccepted()
         {
+            PlayScoreDrop();     // starts immediately — SetScore delay syncs arrival with bounce
+
             if (wordBubble == null) return;
 #if DOTWEEN
             int id = wordBubble.GetInstanceID() + 1;
@@ -234,6 +261,46 @@ namespace HexWords.UI
                 .AppendInterval(bubbleAcceptedDismissDelay)
                 .AppendCallback(PlayBubbleDismiss);
 #endif
+        }
+
+        /// <summary>Animates a copy of scoreDropTemplate from the score badge to scoreDropTarget along a bezier arc.</summary>
+        public void PlayScoreDrop()
+        {
+#if DOTWEEN
+            if (scoreDropTemplate == null || scoreBadgeRoot == null || scoreDropTarget == null) return;
+
+            var drop = Instantiate(scoreDropTemplate.gameObject, scoreDropTemplate.parent)
+                           .GetComponent<RectTransform>();
+            drop.gameObject.SetActive(true);
+
+            var parentRT = drop.parent as RectTransform;
+            var cam      = GetComponentInParent<Canvas>()?.worldCamera; // null → screen-space overlay
+
+            Vector2 startPos = ToCanvasLocal(parentRT, scoreBadgeRoot.transform.position, cam);
+            Vector2 endPos   = ToCanvasLocal(parentRT, scoreDropTarget.position, cam);
+            Vector2 ctrl     = (startPos + endPos) * 0.5f + scoreDropControlOffset;
+
+            drop.anchoredPosition = startPos;
+
+            float t = 0f;
+            DOTween.To(() => t, v =>
+            {
+                t = v;
+                float mt = 1f - t;
+                drop.anchoredPosition = mt * mt * startPos
+                                      + 2f * mt * t * ctrl
+                                      + t * t * endPos;
+            }, 1f, scoreDropDuration)
+            .SetEase(scoreDropCurve)
+            .OnComplete(() => Destroy(drop.gameObject));
+#endif
+        }
+
+        private static Vector2 ToCanvasLocal(RectTransform parent, Vector3 worldPos, Camera cam)
+        {
+            Vector2 screen = RectTransformUtility.WorldToScreenPoint(cam, worldPos);
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(parent, screen, cam, out var local);
+            return local;
         }
 
         /// <summary>Flies the bubble upward and fades it out — call when swipe released with no valid word.</summary>
