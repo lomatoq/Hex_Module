@@ -263,7 +263,11 @@ namespace HexWords.UI
 #endif
         }
 
-        /// <summary>Animates a copy of scoreDropTemplate from the score badge to scoreDropTarget along a bezier arc.</summary>
+        /// <summary>
+        /// Animates a copy of scoreDropTemplate along a quadratic bezier arc.
+        /// The image is rotated each frame to face the direction of travel,
+        /// so a tall capsule sprite naturally looks like a comet/teardrop.
+        /// </summary>
         public void PlayScoreDrop()
         {
 #if DOTWEEN
@@ -274,22 +278,32 @@ namespace HexWords.UI
             drop.gameObject.SetActive(true);
 
             var parentRT = drop.parent as RectTransform;
-            var cam      = GetComponentInParent<Canvas>()?.worldCamera; // null → screen-space overlay
+            var cam      = GetComponentInParent<Canvas>()?.worldCamera; // null for screen-space overlay
 
-            Vector2 startPos = ToCanvasLocal(parentRT, scoreBadgeRoot.transform.position, cam);
-            Vector2 endPos   = ToCanvasLocal(parentRT, scoreDropTarget.position, cam);
-            Vector2 ctrl     = (startPos + endPos) * 0.5f + scoreDropControlOffset;
+            Vector2 p0 = ToCanvasLocal(parentRT, scoreBadgeRoot.transform.position, cam);
+            Vector2 p2 = ToCanvasLocal(parentRT, scoreDropTarget.position, cam);
+            Vector2 p1 = (p0 + p2) * 0.5f + scoreDropControlOffset; // control point
 
-            drop.anchoredPosition = startPos;
+            drop.anchoredPosition = p0;
 
             float t = 0f;
             DOTween.To(() => t, v =>
             {
                 t = v;
                 float mt = 1f - t;
-                drop.anchoredPosition = mt * mt * startPos
-                                      + 2f * mt * t * ctrl
-                                      + t * t * endPos;
+
+                // Quadratic bezier position
+                drop.anchoredPosition = mt * mt * p0
+                                      + 2f * mt * t * p1
+                                      + t * t * p2;
+
+                // Bezier tangent — rotate drop to face direction of travel
+                Vector2 tangent = 2f * mt * (p1 - p0) + 2f * t * (p2 - p1);
+                if (tangent.sqrMagnitude > 0.01f)
+                {
+                    float angle = Mathf.Atan2(tangent.y, tangent.x) * Mathf.Rad2Deg;
+                    drop.rotation = Quaternion.Euler(0f, 0f, angle - 90f); // -90° because sprite points up
+                }
             }, 1f, scoreDropDuration)
             .SetEase(scoreDropCurve)
             .OnComplete(() => Destroy(drop.gameObject));
