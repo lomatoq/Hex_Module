@@ -73,6 +73,13 @@ namespace HexWords.Editor
             selectorRT.offsetMin        = Vector2.zero;
             selectorRT.offsetMax        = Vector2.zero;
 
+            // ── Clean up any leftover children from previous partial runs ──
+            var toDelete = new System.Collections.Generic.List<GameObject>();
+            foreach (Transform child in selectorGO.transform)
+                toDelete.Add(child.gameObject);
+            foreach (var child in toDelete)
+                Object.DestroyImmediate(child);
+
             // ── 1. DevTrigger (invisible button in top-left) ───────────────
             var triggerGO = GetOrCreate("DevTrigger", selectorGO.transform);
             var triggerRT = EnsureRect(triggerGO);
@@ -208,7 +215,8 @@ namespace HexWords.Editor
         private static T EnsureComponent<T>(GameObject go) where T : Component
         {
             var c = go.GetComponent<T>();
-            return c != null ? c : go.AddComponent<T>();
+            if (c != null) return c;
+            return ObjectFactory.AddComponent<T>(go);
         }
 
         private static GameObject CreateLabelledButton(string name, Transform parent,
