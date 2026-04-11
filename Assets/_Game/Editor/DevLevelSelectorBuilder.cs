@@ -24,11 +24,54 @@ namespace HexWords.Editor
                 return;
             }
 
-            var selectorGO  = selector.gameObject;
+            var selectorGO = selector.gameObject;
 
-            // Ensure selectorGO has a RectTransform (needed if placed on a non-UI object)
+            // ── Find a Canvas to parent UI elements ────────────────────────
+            // Walk up the hierarchy to find an existing Canvas
+            Transform canvasTransform = null;
+            var t = selectorGO.transform;
+            while (t != null)
+            {
+                if (t.GetComponent<Canvas>() != null) { canvasTransform = t; break; }
+                t = t.parent;
+            }
+
+            // If not found in parents, search the whole scene
+            if (canvasTransform == null)
+            {
+                var canvas = Object.FindFirstObjectByType<Canvas>();
+                if (canvas != null) canvasTransform = canvas.transform;
+            }
+
+            // Last resort: create a Canvas
+            if (canvasTransform == null)
+            {
+                var canvasGO = new GameObject("Canvas");
+                var c = canvasGO.AddComponent<Canvas>();
+                c.renderMode = RenderMode.ScreenSpaceOverlay;
+                canvasGO.AddComponent<CanvasScaler>();
+                canvasGO.AddComponent<GraphicRaycaster>();
+                canvasTransform = canvasGO.transform;
+                Debug.Log("[DevLevelSelectorBuilder] Created new Canvas.");
+            }
+
+            // Move selectorGO under Canvas if it's not already there
+            if (selectorGO.transform.parent != canvasTransform)
+            {
+                selectorGO.transform.SetParent(canvasTransform, false);
+                Debug.Log("[DevLevelSelectorBuilder] Moved DevLevelSelector under Canvas.");
+            }
+
+            // Ensure selectorGO has a RectTransform
             if (selectorGO.GetComponent<RectTransform>() == null)
                 selectorGO.AddComponent<RectTransform>();
+
+            // Stretch selectorGO to fill the canvas
+            var selectorRT = selectorGO.GetComponent<RectTransform>();
+            selectorRT.anchorMin        = Vector2.zero;
+            selectorRT.anchorMax        = Vector2.one;
+            selectorRT.offsetMin        = Vector2.zero;
+            selectorRT.offsetMax        = Vector2.zero;
 
             // ── 1. DevTrigger (invisible button in top-left) ───────────────
             var triggerGO = GetOrCreate("DevTrigger", selectorGO.transform);
@@ -49,7 +92,7 @@ namespace HexWords.Editor
             panelRT.anchorMax = new Vector2(0.5f, 0.5f);
             panelRT.pivot     = new Vector2(0.5f, 0.5f);
             panelRT.anchoredPosition = Vector2.zero;
-            panelRT.sizeDelta = new Vector2(300, 220);
+            panelRT.sizeDelta = new Vector2(300, 240);
             var panelImg = EnsureComponent<Image>(panelGO);
             panelImg.color = new Color(0.1f, 0.1f, 0.1f, 0.95f);
             panelGO.SetActive(false); // hidden by default
@@ -72,7 +115,7 @@ namespace HexWords.Editor
             // ── 4. Level text (center) ─────────────────────────────────────
             var levelGO = GetOrCreate("LevelText", panelGO.transform);
             var levelRT = EnsureRect(levelGO);
-            levelRT.anchoredPosition = new Vector2(0, 20);
+            levelRT.anchoredPosition = new Vector2(0, 30);
             levelRT.sizeDelta        = new Vector2(160, 40);
             var levelText = EnsureComponent<TextMeshProUGUI>(levelGO);
             levelText.text      = "Level 1";
@@ -82,34 +125,34 @@ namespace HexWords.Editor
             levelText.alignment = TextAlignmentOptions.Center;
 
             // ── 5. Prev button (←) ─────────────────────────────────────────
-            var prevGO  = CreateLabelledButton("PrevBtn", panelGO.transform, "←", new Vector2(-100, 20));
+            var prevGO  = CreateLabelledButton("PrevBtn", panelGO.transform, "←", new Vector2(-100, 30));
             var prevBtn = prevGO.GetComponent<Button>();
 
             // ── 6. Next button (→) ─────────────────────────────────────────
-            var nextGO  = CreateLabelledButton("NextBtn", panelGO.transform, "→", new Vector2(100, 20));
+            var nextGO  = CreateLabelledButton("NextBtn", panelGO.transform, "→", new Vector2(100, 30));
             var nextBtn = nextGO.GetComponent<Button>();
 
             // ── 7. GO button ───────────────────────────────────────────────
-            var goGO  = CreateLabelledButton("GoBtn", panelGO.transform, "▶  PLAY", new Vector2(0, -50), new Vector2(180, 50));
+            var goGO  = CreateLabelledButton("GoBtn", panelGO.transform, "▶  PLAY", new Vector2(0, -35), new Vector2(180, 50));
             StyleButton(goGO, new Color(0.1f, 0.7f, 0.1f));
             var goBtn = goGO.GetComponent<Button>();
 
             // ── 8. Restart button ──────────────────────────────────────────
-            var restartGO  = CreateLabelledButton("RestartBtn", panelGO.transform, "↺  RESTART", new Vector2(0, -100), new Vector2(180, 38));
+            var restartGO  = CreateLabelledButton("RestartBtn", panelGO.transform, "↺  RESTART", new Vector2(0, -85), new Vector2(180, 38));
             StyleButton(restartGO, new Color(0.15f, 0.45f, 0.75f));
             var restartBtn = restartGO.GetComponent<Button>();
 
             // ── 9. Win button ──────────────────────────────────────────────
-            var winGO  = CreateLabelledButton("WinBtn", panelGO.transform, "🏆  WIN", new Vector2(0, -145), new Vector2(180, 38));
+            var winGO  = CreateLabelledButton("WinBtn", panelGO.transform, "WIN", new Vector2(0, -130), new Vector2(180, 38));
             StyleButton(winGO, new Color(0.65f, 0.45f, 0.1f));
             var winBtn = winGO.GetComponent<Button>();
 
             // ── 10. Close button (✕) ───────────────────────────────────────
-            var closeGO = CreateLabelledButton("CloseBtn", panelGO.transform, "✕", new Vector2(130, 90), new Vector2(40, 40));
+            var closeGO = CreateLabelledButton("CloseBtn", panelGO.transform, "✕", new Vector2(130, 100), new Vector2(40, 40));
             StyleButton(closeGO, new Color(0.7f, 0.1f, 0.1f));
             var closeBtn = closeGO.GetComponent<Button>();
 
-            // ── 10. Wire references via SerializedObject ───────────────────
+            // ── Wire references via SerializedObject ───────────────────────
             var so = new SerializedObject(selector);
 
             so.FindProperty("triggerZone").objectReferenceValue      = triggerBtn;
