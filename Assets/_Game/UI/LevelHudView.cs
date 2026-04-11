@@ -62,13 +62,16 @@ namespace HexWords.UI
 
         // ── Score Drop ─────────────────────────────────────────────────────
         [Header("Score Drop")]
-        [SerializeField] private RectTransform  scoreDropTemplate;              // inactive child of canvas — drag your drop image here
-        [SerializeField] private RectTransform  scoreDropTarget;                // where the drop flies to (e.g. progressBar RectTransform)
-        [SerializeField] private Vector2        scoreDropControlOffset = new Vector2(0f, 180f);  // bezier control point relative to midpoint
-        [SerializeField] private float          scoreDropDuration      = 0.45f;
+        [SerializeField] private RectTransform  scoreDropTemplate;                                // inactive circle Image on HUD canvas
+        [SerializeField] private RectTransform  scoreDropTarget;                                  // destination (progressBar RT)
+        [SerializeField] private Vector2        scoreDropControlOffset = new Vector2(0f, 180f);   // bezier arc control offset from midpoint
+        [SerializeField] private float          scoreDropDuration      = 0.45f;                   // travel time for the head circle
         [SerializeField] private AnimationCurve scoreDropCurve         = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+        [SerializeField] private int            scoreDropCount         = 9;                        // total circles in chain
+        [SerializeField] private float          scoreDropSpacing       = 0.035f;                  // launch delay between each circle
+        [SerializeField] private float          scoreDropTailScale     = 0.18f;                   // size of last circle relative to head
 
-        /// <summary>How long the drop travels — use as delay for SetScore so bounce syncs with arrival.</summary>
+        /// <summary>Total animation duration — head arrives at scoreDropDuration, used to sync SetScore bounce.</summary>
         public float ScoreDropDuration => (scoreDropTemplate != null && scoreDropTarget != null) ? scoreDropDuration : 0f;
 
         // ── Booster – Hint ─────────────────────────────────────────────────
@@ -264,49 +267,49 @@ namespace HexWords.UI
         }
 
         /// <summary>
-        /// Animates a copy of scoreDropTemplate along a quadratic bezier arc.
-        /// The image is rotated each frame to face the direction of travel,
-        /// so a tall capsule sprite naturally looks like a comet/teardrop.
+        /// Launches a chain of circles along a quadratic bezier arc.
+        /// Head (index 0) is full-size; each subsequent circle is smaller and launches
+        /// slightly later — together they look like a liquid drop with a fluid tail.
         /// </summary>
         public void PlayScoreDrop()
         {
 #if DOTWEEN
             if (scoreDropTemplate == null || scoreBadgeRoot == null || scoreDropTarget == null) return;
 
-            var drop = Instantiate(scoreDropTemplate.gameObject, scoreDropTemplate.parent)
-                           .GetComponent<RectTransform>();
-            drop.gameObject.SetActive(true);
-
-            var parentRT = drop.parent as RectTransform;
-            var cam      = GetComponentInParent<Canvas>()?.worldCamera; // null for screen-space overlay
+            var parentRT = scoreDropTemplate.parent as RectTransform;
+            var cam      = GetComponentInParent<Canvas>()?.worldCamera;
 
             Vector2 p0 = ToCanvasLocal(parentRT, scoreBadgeRoot.transform.position, cam);
             Vector2 p2 = ToCanvasLocal(parentRT, scoreDropTarget.position, cam);
-            Vector2 p1 = (p0 + p2) * 0.5f + scoreDropControlOffset; // control point
+            Vector2 p1 = (p0 + p2) * 0.5f + scoreDropControlOffset;
 
-            drop.anchoredPosition = p0;
-
-            float t = 0f;
-            DOTween.To(() => t, v =>
+            int count = Mathf.Max(1, scoreDropCount);
+            for (int i = 0; i < count; i++)
             {
-                t = v;
-                float mt = 1f - t;
+                int   idx     = i;
+                float delay   = i * scoreDropSpacing;
+                // Head = 1.0, tail = scoreDropTailScale, linear interpolation
+                float scale   = Mathf.Lerp(1f, scoreDropTailScale, count > 1 ? (float)i / (count - 1) : 0f);
 
-                // Quadratic bezier position
-                drop.anchoredPosition = mt * mt * p0
-                                      + 2f * mt * t * p1
-                                      + t * t * p2;
+                var drop = Instantiate(scoreDropTemplate.gameObject, scoreDropTemplate.parent)
+                               .GetComponent<RectTransform>();
+                drop.gameObject.SetActive(true);
+                drop.anchoredPosition = p0;
+                drop.localScale       = Vector3.one * scale;
 
-                // Bezier tangent — rotate drop to face direction of travel
-                Vector2 tangent = 2f * mt * (p1 - p0) + 2f * t * (p2 - p1);
-                if (tangent.sqrMagnitude > 0.01f)
+                float t = 0f;
+                DOTween.To(() => t, v =>
                 {
-                    float angle = Mathf.Atan2(tangent.y, tangent.x) * Mathf.Rad2Deg;
-                    drop.rotation = Quaternion.Euler(0f, 0f, angle - 90f); // -90° because sprite points up
-                }
-            }, 1f, scoreDropDuration)
-            .SetEase(scoreDropCurve)
-            .OnComplete(() => Destroy(drop.gameObject));
+                    t = v;
+                    float mt = 1f - t;
+                    drop.anchoredPosition = mt * mt * p0
+                                          + 2f * mt * t * p1
+                                          + t * t * p2;
+                }, 1f, scoreDropDuration)
+                .SetEase(scoreDropCurve)
+                .SetDelay(delay)
+                .OnComplete(() => Destroy(drop.gameObject));
+            }
 #endif
         }
 
