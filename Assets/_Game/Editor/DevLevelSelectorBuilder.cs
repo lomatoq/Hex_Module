@@ -25,7 +25,10 @@ namespace HexWords.Editor
             }
 
             var selectorGO  = selector.gameObject;
-            var selectorRect = selectorGO.GetComponent<RectTransform>();
+
+            // Ensure selectorGO has a RectTransform (needed if placed on a non-UI object)
+            if (selectorGO.GetComponent<RectTransform>() == null)
+                selectorGO.AddComponent<RectTransform>();
 
             // ── 1. DevTrigger (invisible button in top-left) ───────────────
             var triggerGO = GetOrCreate("DevTrigger", selectorGO.transform);
