@@ -279,10 +279,7 @@ namespace HexWords.Gameplay
                                 ?? letterText.gameObject.AddComponent<Canvas>();
                 _letterCanvas.overrideSorting = true;
                 _letterCanvas.sortingOrder    = order;
-
-                // GraphicRaycaster not needed for text-only, but required by Unity for Canvas to work
-                if (letterText.gameObject.GetComponent<UnityEngine.UI.GraphicRaycaster>() == null)
-                    letterText.gameObject.AddComponent<UnityEngine.UI.GraphicRaycaster>();
+                // No GraphicRaycaster needed — nested Canvas used for sorting only
             }
             else if (_letterCanvas != null)
             {
