@@ -10,7 +10,7 @@ Players drag a path across neighbouring hex cells to form words, earning points 
 | Thing | Detail |
 |---|---|
 | Engine | Unity 6000.3.8f1 |
-| UI | Unity UI (uGUI) |
+| UI | Unity UI (uGUI) + TextMeshPro |
 | Animations | DOTween (Asset Store) — all code guarded by `#define DOTWEEN` |
 | Language | C# 9, no external runtime dependencies |
 | Platforms | iOS / Android (portrait) |
@@ -23,12 +23,15 @@ Players drag a path across neighbouring hex cells to form words, earning points 
 Assets/_Game/
   Core/          — domain types, interfaces, services (ScoreService, AdjacencyService…)
   Gameplay/      — runtime session, swipe input, grid view, trail view, cell view
-  UI/            — HUD, home screen, popups, safe area panel
-  Editor/        — CSV importer, level editor, auto-generator, responsive UI setup
+  UI/            — HUD, home screen, popups, safe area panel, ButtonFeedback
+  Editor/        — CSV importer, level editor, auto-generator, responsive UI setup, DevPanel builder
   Data/
     Source/      — CSV source files (dictionary, levels, cells)
     Generated/   — ScriptableObject assets produced by importers
-  Graphics/UI/   — sprites and textures
+    FeedbackPalette.asset — centralised color config for all UI feedback
+  Graphics/
+    UI/          — sprites and textures
+    Segments/    — swipe trail segment graphics
   Prefabs/       — HexCell prefab
   Scenes/        — Main.unity
 Assets/Tests/    — EditMode + PlayMode tests
@@ -42,7 +45,8 @@ Assets/Tests/    — EditMode + PlayMode tests
 2. Install **DOTween** from the Asset Store, run its setup wizard.
 3. `Tools → HexWords → Import CSV` — imports dictionary + levels from `Data/Source/`.
 4. `Tools → HexWords → Level Editor` — create / validate / preview individual levels.
-5. Hit **Play** — the `DevLevelSelector` panel lets you pick a level without leaving Play mode.
+5. `Tools → HexWords → Build Dev Panel` — builds the in-game developer panel (run once after scene setup).
+6. Hit **Play** — press **L** or tap the top-left corner 5× to open the DevPanel: pick any level, restart, or trigger the win screen.
 
 ---
 
@@ -67,16 +71,37 @@ Assets/Tests/    — EditMode + PlayMode tests
 
 ---
 
+## UI & Feedback system
+
+### FeedbackPalette (ScriptableObject)
+
+All game feedback colors live in a single `FeedbackPalette` asset (`Data/FeedbackPalette.asset`).
+Change colors here — they propagate everywhere automatically.
+
+| Group | Fields |
+|---|---|
+| Hex Cell backgrounds | `selectedCellColor`, `targetAcceptedCellColor`, `bonusAcceptedCellColor`, `alreadyAcceptedCellColor`, `rejectedCellColor` |
+| Hex Cell letters | `cellLetterDefault`, `cellLetterSelected` |
+| HUD bubble | `hudTargetAcceptedColor`, `hudBonusAcceptedColor`, `hudAlreadyAcceptedColor`, `hudRejectedColor`, `hudCurrentWordColor` |
+| Bubble text | `hudBubbleTextDefault`, `hudBubbleTextAlreadyFound` |
+
+### ButtonFeedback
+
+Drop the `ButtonFeedback` component on any Button for a press-bounce effect.
+Built-in presets: `Default`, `Small`, `Soft`, `Strong`, `Custom`.
+
+---
+
 ## Animations (DOTween)
 
 All animation code is wrapped in `#if DOTWEEN` — the project compiles cleanly without the package.
 
 ### HexCellView
-- **OnSelected** — `DOPunchScale` spring pop.
-- **OnPathRejected** — color flash + horizontal `DOShakePosition`.
-- **OnPathAccepted / OnPathBonusAccepted** — color flash + ink splat overlay (scale up + fade out).
-- **PlayHintPulse** — DOTween Sequence of pulses with configurable fade-in/out and repetition (via `HintAnimationConfig`).
-- **ResetFx** — kills all tweens, restores `localScale`, `anchoredPosition` (cached in `Start()`), and base color.
+- **OnSelected** — `DOPunchScale` spring pop + letter color switches to `cellLetterSelected`.
+- **OnPathRejected** — color flash + horizontal `DOShakePosition` + letter color reset.
+- **OnPathAccepted / OnPathBonusAccepted** — color flash + `DOPunchScale` + ink splat overlay.
+- **PlayHintPulse** — DOTween Sequence of pulses with configurable fade-in/out and repetition (`HintAnimationConfig`).
+- **ResetFx** — kills all tweens, restores `localScale`, `anchoredPosition`, base background color, and base letter color.
 
 ### SwipeTrailView
 - Spawns ink **dot** at each selected cell (`DOScale` pop, `Ease.OutBack`).
@@ -88,12 +113,23 @@ All animation code is wrapped in `#if DOTWEEN` — the project compiles cleanly 
 
 ### Word preview bubble (LevelHudView)
 - **Dynamic width** — `RectTransform.sizeDelta.x` animated via `DOSizeDelta` from `lastWordText.preferredWidth + padding`.
-- **Color** — `BubbleStroke` image `DOColor` to neutral grey / valid green / outcome color.
-- **CanvasGroup alpha** — bubble is fully invisible (`alpha = 0`) when no letters are selected.
-- **PlayBubbleAccepted** — `DOScale` bounce using a configurable `AnimationCurve`, then after `bubbleAcceptedDismissDelay` → dismiss.
-- **PlayBubbleDismiss** — `DOAnchorPosY` fly-up + `DOFade` to 0, both driven by configurable `AnimationCurve` fields. Called on rejection and after accepted-word delay.
+- **Accent color sync** — bubble background, score badge image, and flying drops all share `_currentAccentColor` set at preview time.
+- **CanvasGroup alpha** — the entire bubble (text + badge + background) fades as one unit; text and badge are cleared only after `alpha = 0`.
+- **PlayBubbleAccepted** (new word) — `DOScale` bounce, then after delay → dismiss.
+- **PlayBubbleAccepted** (already found) — horizontal `DOShakeAnchorPos` left-right instead of bounce.
+- **PlayBubbleDismiss** — `DOAnchorPosY` fly-up + `DOFade` to 0 via CanvasGroup. Text and badge hidden in `OnComplete`.
+- **Score drop** — on accepted new word, a chain of N circles (head = full size, tail = `scoreDropTailScale`) launches along a configurable quadratic bezier arc from the score badge to the progress bar. Each circle tinted to the current accent color. Drops only fire when the word actually awards points.
 
-All timing and curves are exposed as `[SerializeField]` fields in the Inspector under clearly labelled headers.
+### Progress bar (LevelHudView)
+- **Fill** — `DOTween.To` with `AnimationCurve` (`scoreFillCurve`), delayed by `scoreDropDuration` so it starts on drop arrival.
+- **Bounce** — `DOPunchScale` on bar + score label, with `scoreBarAnticipation` offset so it begins just before the drop lands.
+- Progress bars (both HUD and Home) are `interactable = false` — display only, not draggable.
+
+### Splash screen (SplashScreen)
+- Animated progress bar: `0 → 90 %` over `minDisplaySeconds × 0.9` with `barCurve`, then `90 → 100 %` when config is ready.
+- Shows **LOADING…** throughout; no "Ready!" text.
+
+All timing, curves, and scales are exposed as `[SerializeField]` fields in the Inspector under clearly labelled headers.
 
 ---
 
@@ -107,6 +143,13 @@ Bubble requires two GameObject layers inside `WordPreview`:
 | BubbleFill | Image | White fill on top |
 
 `WordPreview` also needs a **CanvasGroup** component → wire to `Word Bubble Canvas Group` on `LevelHudView`.
+
+Score badge must be a **child of `WordPreview`** so it fades with the CanvasGroup.
+
+### Score drop setup
+1. Create a small circle Image inside the HUD Canvas, ~24×24 px, set inactive → wire to `Score Drop Template`.
+2. Drag the progress bar `RectTransform` → `Score Drop Target`.
+3. Tune `Score Drop Control Offset` to shape the arc (`(0, 180)` = arc upward).
 
 ---
 
@@ -190,11 +233,16 @@ levelId,cellId,letter,q,r
 | `GameBootstrap` | Wires all services, starts session, handles events |
 | `LevelSessionController` | Word submit logic, score tracking, completion check |
 | `GridView` | Builds hex cell views, auto-scales to screen |
-| `HexCellView` | Per-cell visuals + DOTween FX |
+| `HexCellView` | Per-cell visuals + DOTween FX + letter color feedback |
 | `SwipeInputController` | Touch input → path builder → session |
 | `SwipeTrailView` | Ink trail DOTween effects |
-| `LevelHudView` | HUD + word preview bubble animations |
+| `LevelHudView` | HUD + word bubble + score drop animation |
+| `HomeScreenView` | Home screen with animated progress bar |
+| `SplashScreen` | Animated loading bar with DOTween bezier fill |
+| `ButtonFeedback` | Reusable press-bounce component for any Button |
 | `SafeAreaPanel` | Runtime safe area inset adjustment |
+| `DevLevelSelector` | In-game dev panel: level picker, restart, win trigger |
+| `DevLevelSelectorBuilder` | Editor tool that auto-builds and wires the DevPanel |
 | `DOTweenInit` | Initialises DOTween pool at startup (ExecutionOrder -100) |
 | `AutoLevelGeneratorWindow` | Editor window for batch level generation |
 | `ResponsiveUISetup` | Editor menu one-click anchor + Canvas Scaler fix |
@@ -207,3 +255,4 @@ levelId,cellId,letter,q,r
 - `Fixed16Symmetric` layout uses a canonical 16-cell topology (`3-3-4-3-3`) shared across all generated levels via `HexBoardTemplate16`.
 - `RuntimePreviewConfig` (under `Resources`) stores the level selected in the Editor for in-Play preview.
 - `GameBootstrap` defensively recalculates `targetScore` via `ScoreService.ScoreWord()` before session start to guard against stale generated values.
+- All `Slider` components used as progress displays have `interactable = false` set in `Awake()` — they cannot be dragged by the user.
