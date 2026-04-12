@@ -138,6 +138,7 @@ namespace HexWords.Gameplay
         public void OnPathRejected()
         {
             KillAll();
+            if (letterText != null) letterText.color = _baseLetterColor;
             var color = feedbackPalette != null ? feedbackPalette.rejectedCellColor : new Color(1f, 0.8f, 0.8f);
 #if DOTWEEN
             if (background != null)
@@ -192,12 +193,12 @@ namespace HexWords.Gameplay
         private void FlashAndReturn(Color flashColor, float duration)
         {
             KillAll();
+            // Restore letter color immediately — don't animate it so it never gets stuck
+            if (letterText != null) letterText.color = _baseLetterColor;
 #if DOTWEEN
             transform.localScale = Vector3.one;
             if (background != null)
                 background.DOColor(_baseColor, duration).From(flashColor).SetEase(Ease.OutCubic).SetId(TweenId);
-            if (letterText != null)
-                letterText.DOColor(_baseLetterColor, duration).SetEase(Ease.OutCubic).SetId(TweenId);
             transform.DOPunchScale(Vector3.one * 0.08f, duration * 0.7f, 3, 0.5f).SetId(TweenId);
 #else
             PlayFlashAndReturn(flashColor, duration);

@@ -29,12 +29,9 @@ namespace HexWords.UI
         [Header("Progress Animation")]
         [SerializeField] private float          scoreFillDuration      = 0.5f;
         [SerializeField] private AnimationCurve scoreFillCurve         = AnimationCurve.EaseInOut(0, 0, 1, 1);
-        [SerializeField] private float          scoreBarBounceScale    = 1.06f;
-        [SerializeField] private float          scoreBarBounceDuration = 0.5f;
-        // Curve shape: 0→0 at t=0, peak at ~t=0.25, back to 0 at t=1
-        // Inspector default set in Reset() below
-        [SerializeField] private AnimationCurve scoreBarBounceCurve    = AnimationCurve.EaseInOut(0, 0, 1, 0);
-        [SerializeField] private float          scoreBarAnticipation   = 0.07f; // sec before drop arrives
+        [SerializeField] private float          scoreBarBounceScale    = 1.06f;  // peak scale (1.06 = +6%)
+        [SerializeField] private float          scoreBarBounceDuration = 0.45f;
+        [SerializeField] private float          scoreBarAnticipation   = 0.07f;  // sec before drop arrives
 
         // ── Word display ───────────────────────────────────────────────────
         [Header("Word Display")]
@@ -186,39 +183,22 @@ namespace HexWords.UI
 
                 // Bar + score label bounce: starts slightly before drop arrives (anticipation)
                 float bounceDelay = Mathf.Max(0f, delay - scoreBarAnticipation);
+                float punch       = scoreBarBounceScale - 1f; // e.g. 0.06 for 6% overshoot
                 if (barRT != null)
                 {
                     DOTween.Kill(barRT);
-                    float bScale = scoreBarBounceScale;
-                    float bDur   = scoreBarBounceDuration;
-                    var   bCurve = scoreBarBounceCurve;
-                    float bT     = 0f;
-                    DOTween.To(() => bT, v =>
-                    {
-                        bT = v;
-                        float factor = bCurve.Evaluate(bT); // curve: 0→peak→0
-                        barRT.localScale = Vector3.one * Mathf.LerpUnclamped(1f, bScale, factor);
-                    }, 1f, bDur)
-                    .SetDelay(bounceDelay)
-                    .SetId(barRT)
-                    .OnComplete(() => barRT.localScale = Vector3.one);
+                    barRT.localScale = Vector3.one;
+                    barRT.DOPunchScale(Vector3.one * punch, scoreBarBounceDuration, 1, 0.3f)
+                         .SetDelay(bounceDelay)
+                         .SetId(barRT);
                 }
                 if (scoreTRT != null)
                 {
                     DOTween.Kill(scoreTRT);
-                    float bScale = scoreBarBounceScale;
-                    float bDur   = scoreBarBounceDuration;
-                    var   bCurve = scoreBarBounceCurve;
-                    float bT     = 0f;
-                    DOTween.To(() => bT, v =>
-                    {
-                        bT = v;
-                        float factor = bCurve.Evaluate(bT);
-                        scoreTRT.localScale = Vector3.one * Mathf.LerpUnclamped(1f, bScale, factor);
-                    }, 1f, bDur)
-                    .SetDelay(bounceDelay)
-                    .SetId(scoreTRT)
-                    .OnComplete(() => scoreTRT.localScale = Vector3.one);
+                    scoreTRT.localScale = Vector3.one;
+                    scoreTRT.DOPunchScale(Vector3.one * punch, scoreBarBounceDuration, 1, 0.3f)
+                            .SetDelay(bounceDelay)
+                            .SetId(scoreTRT);
                 }
             }
             else
