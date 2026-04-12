@@ -53,9 +53,15 @@ namespace HexWords.Gameplay
             if (inkSplatOverlay != null)
                 SetAlpha(inkSplatOverlay, 0f);
 
-            // Reset circle fill to invisible
+            // Stretch circle fill to cover parent mask, then hide via scale
             if (circleFill != null)
-                circleFill.localScale = Vector3.zero;
+            {
+                circleFill.anchorMin        = new Vector2(0f, 0f);
+                circleFill.anchorMax        = new Vector2(1f, 1f);
+                circleFill.offsetMin        = Vector2.zero;
+                circleFill.offsetMax        = Vector2.zero;
+                circleFill.localScale       = Vector3.zero;
+            }
 
         }
 
