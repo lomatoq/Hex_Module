@@ -174,13 +174,6 @@ namespace HexWords.UI
                     if (scoreText != null) scoreText.text = $"{current}/{target}";
                 });
 
-                // Tint bar fill to accent color on arrival
-                if (progressBarFill != null)
-                {
-                    DOTween.Kill(progressBarFill);
-                    seq.Join(progressBarFill.DOColor(_currentAccentColor, accentColorDuration).SetId(progressBarFill));
-                }
-
                 if (barRT != null)
                 {
                     DOTween.Kill(barRT);
@@ -211,7 +204,8 @@ namespace HexWords.UI
         public void SetCurrentWord(string text)
         {
             if (lastWordText == null) return;
-            lastWordText.text = text;
+            lastWordText.text  = text;
+            lastWordText.color = Color.black;
             if (scoreBadgeRoot != null) scoreBadgeRoot.SetActive(false);
             ApplyAccentColor(bubbleNeutralColor);
             ShowBubble(text);
@@ -221,7 +215,8 @@ namespace HexWords.UI
         public void ShowWordPreview(string word, int score, bool isValid)
         {
             if (lastWordText == null) return;
-            lastWordText.text = word;
+            lastWordText.text  = word;
+            lastWordText.color = Color.black;
 
             var col = isValid
                 ? (feedbackPalette != null ? feedbackPalette.hudCurrentWordColor : new Color(0.2f, 0.8f, 0.2f))
@@ -252,7 +247,8 @@ namespace HexWords.UI
         {
             if (lastWordText == null) return;
             if (scoreBadgeRoot != null) scoreBadgeRoot.SetActive(false);
-            lastWordText.text = text;
+            lastWordText.text  = text;
+            lastWordText.color = Color.black;
             ApplyAccentColor(GetHudColor(outcome));
             ShowBubble(text);
         }
