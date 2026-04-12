@@ -255,10 +255,10 @@ namespace HexWords.UI
 
         // ── Bubble animations ──────────────────────────────────────────────
 
-        /// <summary>Bounces the bubble, fires score drop, then dismisses after delay.</summary>
-        public void PlayBubbleAccepted()
+        /// <summary>Bounces the bubble, optionally fires score drop, then dismisses after delay.</summary>
+        public void PlayBubbleAccepted(bool withDrop = true)
         {
-            PlayScoreDrop(); // starts immediately — SetScore delay syncs arrival
+            if (withDrop) PlayScoreDrop(); // only for new words, not already-found
 
             if (wordBubble == null) return;
 #if DOTWEEN
