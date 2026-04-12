@@ -53,13 +53,13 @@ namespace HexWords.Gameplay
             if (inkSplatOverlay != null)
                 SetAlpha(inkSplatOverlay, 0f);
 
-            // Stretch circle fill to cover parent mask, then hide via scale
+            // Circle fill: anchored at center, scaled to 0 (hidden)
             if (circleFill != null)
             {
-                circleFill.anchorMin        = new Vector2(0f, 0f);
-                circleFill.anchorMax        = new Vector2(1f, 1f);
-                circleFill.offsetMin        = Vector2.zero;
-                circleFill.offsetMax        = Vector2.zero;
+                circleFill.anchorMin        = new Vector2(0.5f, 0.5f);
+                circleFill.anchorMax        = new Vector2(0.5f, 0.5f);
+                circleFill.pivot            = new Vector2(0.5f, 0.5f);
+                circleFill.anchoredPosition = Vector2.zero;
                 circleFill.localScale       = Vector3.zero;
             }
 
@@ -126,8 +126,8 @@ namespace HexWords.Gameplay
             var selColor = feedbackPalette != null ? feedbackPalette.selectedCellColor : new Color(0.85f, 0.95f, 1f);
             var letColor = feedbackPalette != null ? feedbackPalette.cellLetterSelected : Color.white;
 
-            if (background != null) background.color = selColor;
-            if (letterText != null) letterText.color  = letColor;
+            // Background stays at base color — circle fill provides the visual selection
+            if (letterText != null) letterText.color = letColor;
 
 #if DOTWEEN
             // Punch scale
@@ -238,6 +238,14 @@ namespace HexWords.Gameplay
             float dur        = animConfig != null ? animConfig.fillDuration   : 0.14f;
             float finalScale = animConfig != null ? animConfig.fillFinalScale : 1.0f;
             var   curve      = animConfig != null ? animConfig.fillCurve      : AnimationCurve.EaseInOut(0, 0, 1, 1);
+
+            // Size the circle to fully cover the cell background (diagonal = max dimension)
+            if (background != null)
+            {
+                var sd   = background.rectTransform.sizeDelta;
+                float dim = Mathf.Max(sd.x, sd.y);
+                circleFill.sizeDelta = Vector2.one * dim;
+            }
 
             var img = circleFill.GetComponent<Image>();
             if (img != null) img.color = color;
