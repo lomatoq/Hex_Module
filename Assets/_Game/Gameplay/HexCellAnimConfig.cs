@@ -42,11 +42,5 @@ namespace HexWords.Gameplay
         public float shakeDuration         = 0.25f;
         public int   shakeVibrato          = 18;
 
-        // ── Letter Sorting Order ───────────────────────────────────────────
-        [Header("Letter Sorting")]
-        [Tooltip("Enable overrideSorting on the letter Canvas so letters render above the swipe trail")]
-        public bool  letterAboveTrail      = true;
-        [Tooltip("Sorting order for the letter Canvas when letterAboveTrail is enabled")]
-        public int   letterSortingOrder    = 10;
     }
 }

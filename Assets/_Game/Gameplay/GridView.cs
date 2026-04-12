@@ -29,6 +29,10 @@ namespace HexWords.Gameplay
         [Range(0.5f, 2f)]
         [SerializeField] private float cellSpacing = 1.0f;
 
+        [Header("Render Order")]
+        [Tooltip("Move gridRoot to be the last sibling in the Canvas so cells render above the trail.\nToggle at runtime to switch.")]
+        [SerializeField] private bool cellsAboveTrail = true;
+
         private readonly Dictionary<string, HexCellView> _cellViews = new Dictionary<string, HexCellView>();
         private Coroutine _hintRoutine;
 
@@ -68,6 +72,18 @@ namespace HexWords.Gameplay
                 rt.sizeDelta = new Vector2(hexW, hexH);
                 _cellViews.Add(cell.cellId, view);
             }
+
+            ApplyCellsAboveTrail();
+        }
+
+        // ── Render order ───────────────────────────────────────────────────
+
+        /// <summary>Call after changing cellsAboveTrail at runtime to apply immediately.</summary>
+        public void ApplyCellsAboveTrail()
+        {
+            if (gridRoot == null) return;
+            if (cellsAboveTrail)
+                gridRoot.SetAsLastSibling();
         }
 
         // ── FX ────────────────────────────────────────────────────────────
