@@ -30,7 +30,11 @@ namespace HexWords.UI
         [SerializeField] private float          scoreFillDuration      = 0.5f;
         [SerializeField] private AnimationCurve scoreFillCurve         = AnimationCurve.EaseInOut(0, 0, 1, 1);
         [SerializeField] private float          scoreBarBounceScale    = 1.06f;
-        [SerializeField] private float          scoreBarBounceDuration = 0.45f;
+        [SerializeField] private float          scoreBarBounceDuration = 0.5f;
+        // Curve shape: 0→0 at t=0, peak at ~t=0.25, back to 0 at t=1
+        // Inspector default set in Reset() below
+        [SerializeField] private AnimationCurve scoreBarBounceCurve    = AnimationCurve.EaseInOut(0, 0, 1, 0);
+        [SerializeField] private float          scoreBarAnticipation   = 0.07f; // sec before drop arrives
 
         // ── Word display ───────────────────────────────────────────────────
         [Header("Word Display")]
@@ -99,6 +103,7 @@ namespace HexWords.UI
         [SerializeField] private float accentColorDuration = 0.15f;
 
         private Color _currentAccentColor;
+        private int   _lastWordScore;
 
         // ── Events ─────────────────────────────────────────────────────────
         public event System.Action OnHintClicked;
@@ -166,7 +171,7 @@ namespace HexWords.UI
                        .SetDelay(delay)
                        .SetId(progressBar);
 
-                // Text update + bar bounce + score label bounce — all after delay
+                // Text update at drop arrival
                 var seq = DOTween.Sequence();
                 if (delay > 0f) seq.AppendInterval(delay);
                 seq.AppendCallback(() =>
@@ -174,16 +179,41 @@ namespace HexWords.UI
                     if (scoreText != null) scoreText.text = $"{current}/{target}";
                 });
 
+                // Bar + score label bounce: starts slightly before drop arrives (anticipation)
+                float bounceDelay = Mathf.Max(0f, delay - scoreBarAnticipation);
                 if (barRT != null)
                 {
                     DOTween.Kill(barRT);
-                    seq.Append(barRT.DOScale(scoreBarBounceScale, scoreBarBounceDuration * 0.4f).SetEase(Ease.OutQuad))
-                       .Append(barRT.DOScale(1f, scoreBarBounceDuration * 0.6f).SetEase(Ease.InOutQuad));
+                    float bScale = scoreBarBounceScale;
+                    float bDur   = scoreBarBounceDuration;
+                    var   bCurve = scoreBarBounceCurve;
+                    float bT     = 0f;
+                    DOTween.To(() => bT, v =>
+                    {
+                        bT = v;
+                        float factor = bCurve.Evaluate(bT); // curve: 0→peak→0
+                        barRT.localScale = Vector3.one * Mathf.LerpUnclamped(1f, bScale, factor);
+                    }, 1f, bDur)
+                    .SetDelay(bounceDelay)
+                    .SetId(barRT)
+                    .OnComplete(() => barRT.localScale = Vector3.one);
                 }
                 if (scoreTRT != null)
                 {
-                    seq.Join(scoreTRT.DOScale(scoreBarBounceScale, scoreBarBounceDuration * 0.4f).SetEase(Ease.OutQuad))
-                       .Join(scoreTRT.DOScale(1f, scoreBarBounceDuration * 0.6f).SetEase(Ease.InOutQuad));
+                    DOTween.Kill(scoreTRT);
+                    float bScale = scoreBarBounceScale;
+                    float bDur   = scoreBarBounceDuration;
+                    var   bCurve = scoreBarBounceCurve;
+                    float bT     = 0f;
+                    DOTween.To(() => bT, v =>
+                    {
+                        bT = v;
+                        float factor = bCurve.Evaluate(bT);
+                        scoreTRT.localScale = Vector3.one * Mathf.LerpUnclamped(1f, bScale, factor);
+                    }, 1f, bDur)
+                    .SetDelay(bounceDelay)
+                    .SetId(scoreTRT)
+                    .OnComplete(() => scoreTRT.localScale = Vector3.one);
                 }
             }
             else
@@ -205,7 +235,7 @@ namespace HexWords.UI
         {
             if (lastWordText == null) return;
             lastWordText.text  = text;
-            lastWordText.color = Color.black;
+            lastWordText.color = BubbleTextColor();
             if (scoreBadgeRoot != null) scoreBadgeRoot.SetActive(false);
             ApplyAccentColor(bubbleNeutralColor);
             ShowBubble(text);
@@ -216,7 +246,8 @@ namespace HexWords.UI
         {
             if (lastWordText == null) return;
             lastWordText.text  = word;
-            lastWordText.color = Color.black;
+            lastWordText.color = BubbleTextColor();
+            _lastWordScore     = isValid ? score : 0;
 
             var col = isValid
                 ? (feedbackPalette != null ? feedbackPalette.hudCurrentWordColor : new Color(0.2f, 0.8f, 0.2f))
@@ -248,7 +279,9 @@ namespace HexWords.UI
             if (lastWordText == null) return;
             if (scoreBadgeRoot != null) scoreBadgeRoot.SetActive(false);
             lastWordText.text  = text;
-            lastWordText.color = Color.black;
+            lastWordText.color = outcome == WordSubmitOutcome.AlreadyAccepted
+                ? BubbleTextColorAlreadyFound()
+                : BubbleTextColor();
             ApplyAccentColor(GetHudColor(outcome));
             ShowBubble(text);
         }
@@ -258,7 +291,7 @@ namespace HexWords.UI
         /// <summary>Bounces the bubble, optionally fires score drop, then dismisses after delay.</summary>
         public void PlayBubbleAccepted(bool withDrop = true)
         {
-            if (withDrop) PlayScoreDrop(); // only for new words, not already-found
+            if (withDrop && _lastWordScore > 0) PlayScoreDrop(); // only when word actually gives points
 
             if (wordBubble == null) return;
 #if DOTWEEN
@@ -481,7 +514,13 @@ namespace HexWords.UI
 #endif
         }
 
-        // ── Colour helper ──────────────────────────────────────────────────
+        // ── Colour helpers ─────────────────────────────────────────────────
+
+        private Color BubbleTextColor()
+            => feedbackPalette != null ? feedbackPalette.hudBubbleTextDefault : Color.black;
+
+        private Color BubbleTextColorAlreadyFound()
+            => feedbackPalette != null ? feedbackPalette.hudBubbleTextAlreadyFound : new Color(0.2f, 0.35f, 0.8f);
 
         private Color GetHudColor(WordSubmitOutcome outcome)
         {

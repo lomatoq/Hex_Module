@@ -16,5 +16,9 @@ namespace HexWords.Core
         public Color hudAlreadyAcceptedColor = new Color(0.2f, 0.35f, 0.8f);
         public Color hudRejectedColor = new Color(0.7f, 0.2f, 0.2f);
         public Color hudCurrentWordColor = new Color(0.2f, 0.2f, 0.2f);
+
+        [Header("Bubble Text Colors")]
+        public Color hudBubbleTextDefault      = Color.black;
+        public Color hudBubbleTextAlreadyFound = new Color(0.2f, 0.35f, 0.8f); // matches hudAlreadyAcceptedColor
     }
 }
