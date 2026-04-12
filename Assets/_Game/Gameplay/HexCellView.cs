@@ -30,6 +30,7 @@ namespace HexWords.Gameplay
         public event CellEvent PointerUpOnCell;
 
         private Color     _baseColor        = Color.white;
+        private Color     _baseLetterColor  = Color.black;
         private Vector2   _baseAnchoredPos;
         private Coroutine _fxRoutine;
         private Coroutine _hintRoutine;
@@ -68,10 +69,13 @@ namespace HexWords.Gameplay
             {
                 EnsureLetterCentered();
                 letterText.text = WordNormalizer.Normalize(cellDefinition.letter);
+                _baseLetterColor = feedbackPalette != null
+                    ? feedbackPalette.cellLetterDefault
+                    : letterText.color;
+                letterText.color = _baseLetterColor;
             }
             if (background != null)
                 _baseColor = background.color;
-
         }
 
         private void EnsureLetterCentered()
@@ -98,17 +102,17 @@ namespace HexWords.Gameplay
         public void OnSelected()
         {
             KillAll();
-#if DOTWEEN
             var selColor = feedbackPalette != null ? feedbackPalette.selectedCellColor : new Color(0.85f, 0.95f, 1f);
-            if (background != null) background.color = selColor;
+            var letColor = feedbackPalette != null ? feedbackPalette.cellLetterSelected : Color.white;
+#if DOTWEEN
+            if (background  != null) background.color  = selColor;
+            if (letterText  != null) letterText.color  = letColor;
             transform.localScale = Vector3.one;
             transform.DOPunchScale(Vector3.one * 0.13f, 0.18f, 5, 0.5f).SetId(TweenId);
             PlayInkSplat(selColor);
 #else
-            if (background != null)
-                background.color = feedbackPalette != null
-                    ? feedbackPalette.selectedCellColor
-                    : new Color(0.85f, 0.95f, 1f, 1f);
+            if (background != null) background.color = selColor;
+            if (letterText != null) letterText.color = letColor;
             transform.localScale = Vector3.one * 1.05f;
 #endif
         }
@@ -149,7 +153,8 @@ namespace HexWords.Gameplay
             KillAll();
             transform.localScale = Vector3.one;
             ((RectTransform)transform).anchoredPosition = _baseAnchoredPos;
-            if (background != null)      background.color = _baseColor;
+            if (background  != null) background.color = _baseColor;
+            if (letterText  != null) letterText.color = _baseLetterColor;
             if (inkSplatOverlay != null) SetAlpha(inkSplatOverlay, 0f);
         }
 
@@ -191,6 +196,8 @@ namespace HexWords.Gameplay
             transform.localScale = Vector3.one;
             if (background != null)
                 background.DOColor(_baseColor, duration).From(flashColor).SetEase(Ease.OutCubic).SetId(TweenId);
+            if (letterText != null)
+                letterText.DOColor(_baseLetterColor, duration).SetEase(Ease.OutCubic).SetId(TweenId);
             transform.DOPunchScale(Vector3.one * 0.08f, duration * 0.7f, 3, 0.5f).SetId(TweenId);
 #else
             PlayFlashAndReturn(flashColor, duration);

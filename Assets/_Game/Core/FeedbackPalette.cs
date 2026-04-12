@@ -19,6 +19,10 @@ namespace HexWords.Core
 
         [Header("Bubble Text Colors")]
         public Color hudBubbleTextDefault      = Color.black;
-        public Color hudBubbleTextAlreadyFound = new Color(0.2f, 0.35f, 0.8f); // matches hudAlreadyAcceptedColor
+        public Color hudBubbleTextAlreadyFound = new Color(0.2f, 0.35f, 0.8f);
+
+        [Header("Hex Cell Letter Colors")]
+        public Color cellLetterDefault  = Color.black;
+        public Color cellLetterSelected = Color.white; // letter color when cell is part of active swipe
     }
 }

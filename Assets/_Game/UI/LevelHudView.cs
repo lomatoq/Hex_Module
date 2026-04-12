@@ -92,6 +92,11 @@ namespace HexWords.UI
         [SerializeField] private AnimationCurve bubbleBounceScaleCurve     = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
         [SerializeField] private float          bubbleAcceptedDismissDelay = 0.35f;
 
+        [Header("Bubble Animation – Shake (already found)")]
+        [SerializeField] private float bubbleShakeDuration  = 0.4f;
+        [SerializeField] private float bubbleShakeStrength  = 14f;
+        [SerializeField] private int   bubbleShakeVibrato   = 18;
+
         [Header("Bubble Animation – Dismiss (fly up)")]
         [SerializeField] private float          bubbleDismissRise       = 60f;
         [SerializeField] private float          bubbleDismissDuration   = 0.25f;
@@ -288,10 +293,13 @@ namespace HexWords.UI
 
         // ── Bubble animations ──────────────────────────────────────────────
 
-        /// <summary>Bounces the bubble, optionally fires score drop, then dismisses after delay.</summary>
-        public void PlayBubbleAccepted(bool withDrop = true)
+        /// <summary>
+        /// Bounces or shakes the bubble depending on outcome, optionally fires score drop.
+        /// withDrop=true for new words, shake=true for already-found words.
+        /// </summary>
+        public void PlayBubbleAccepted(bool withDrop = true, bool shake = false)
         {
-            if (withDrop && _lastWordScore > 0) PlayScoreDrop(); // only when word actually gives points
+            if (withDrop && _lastWordScore > 0) PlayScoreDrop();
 
             if (wordBubble == null) return;
 #if DOTWEEN
@@ -299,15 +307,31 @@ namespace HexWords.UI
             DOTween.Kill(id);
             wordBubble.transform.localScale = Vector3.one;
 
-            DOTween.Sequence().SetId(id)
-                .Append(wordBubble.transform
-                    .DOScale(1f + bubbleBounceScale, bubbleBounceDuration * 0.45f)
-                    .SetEase(bubbleBounceScaleCurve))
-                .Append(wordBubble.transform
-                    .DOScale(1f, bubbleBounceDuration * 0.55f)
-                    .SetEase(bubbleBounceScaleCurve))
-                .AppendInterval(bubbleAcceptedDismissDelay)
-                .AppendCallback(PlayBubbleDismiss);
+            if (shake)
+            {
+                // Shake left-right, then dismiss
+                DOTween.Sequence().SetId(id)
+                    .Append(wordBubble.DOShakeAnchorPos(
+                        bubbleShakeDuration,
+                        new Vector2(bubbleShakeStrength, 0f),
+                        bubbleShakeVibrato, 0f, false, true))
+                    .AppendCallback(() => wordBubble.anchoredPosition = _bubbleBasePos)
+                    .AppendInterval(bubbleAcceptedDismissDelay)
+                    .AppendCallback(PlayBubbleDismiss);
+            }
+            else
+            {
+                // Bounce scale, then dismiss
+                DOTween.Sequence().SetId(id)
+                    .Append(wordBubble.transform
+                        .DOScale(1f + bubbleBounceScale, bubbleBounceDuration * 0.45f)
+                        .SetEase(bubbleBounceScaleCurve))
+                    .Append(wordBubble.transform
+                        .DOScale(1f, bubbleBounceDuration * 0.55f)
+                        .SetEase(bubbleBounceScaleCurve))
+                    .AppendInterval(bubbleAcceptedDismissDelay)
+                    .AppendCallback(PlayBubbleDismiss);
+            }
 #endif
         }
 

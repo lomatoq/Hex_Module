@@ -151,10 +151,11 @@ namespace HexWords.Gameplay
             bool accepted = outcome == WordSubmitOutcome.TargetAccepted
                          || outcome == WordSubmitOutcome.BonusAccepted
                          || outcome == WordSubmitOutcome.AlreadyAccepted;
-            bool isNewWord = outcome == WordSubmitOutcome.TargetAccepted
-                          || outcome == WordSubmitOutcome.BonusAccepted;
+            bool isNewWord        = outcome == WordSubmitOutcome.TargetAccepted
+                               || outcome == WordSubmitOutcome.BonusAccepted;
+            bool isAlreadyFound   = outcome == WordSubmitOutcome.AlreadyAccepted;
             if (accepted)
-                hudView?.PlayBubbleAccepted(withDrop: isNewWord);
+                hudView?.PlayBubbleAccepted(withDrop: isNewWord, shake: isAlreadyFound);
             else
                 hudView?.HideWordPreview();
         }
