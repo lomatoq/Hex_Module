@@ -37,7 +37,7 @@ namespace HexWords.Gameplay
         private Color   _baseColor       = Color.white;
         private Color   _baseLetterColor = Color.black;
         private Vector2 _baseAnchoredPos;
-        private Canvas  _letterCanvas;          // overrideSorting canvas on letterText GO
+        private Canvas  _cellCanvas;             // overrideSorting canvas on HexCell root GO
 
         private Coroutine _fxRoutine;
         private Coroutine _hintRoutine;
@@ -267,23 +267,20 @@ namespace HexWords.Gameplay
 
         private void ApplyLetterSorting()
         {
-            if (letterText == null) return;
-
-            bool  above = animConfig == null || animConfig.letterAboveTrail;
-            int   order = animConfig != null  ? animConfig.letterSortingOrder : 10;
+            bool above = animConfig == null || animConfig.letterAboveTrail;
+            int  order = animConfig != null  ? animConfig.letterSortingOrder : 10;
 
             if (above)
             {
-                if (_letterCanvas == null)
-                    _letterCanvas = letterText.gameObject.GetComponent<Canvas>()
-                                ?? letterText.gameObject.AddComponent<Canvas>();
-                _letterCanvas.overrideSorting = true;
-                _letterCanvas.sortingOrder    = order;
-                // No GraphicRaycaster needed — nested Canvas used for sorting only
+                if (_cellCanvas == null)
+                    _cellCanvas = gameObject.GetComponent<Canvas>()
+                               ?? gameObject.AddComponent<Canvas>();
+                _cellCanvas.overrideSorting = true;
+                _cellCanvas.sortingOrder    = order;
             }
-            else if (_letterCanvas != null)
+            else if (_cellCanvas != null)
             {
-                _letterCanvas.overrideSorting = false;
+                _cellCanvas.overrideSorting = false;
             }
         }
 
