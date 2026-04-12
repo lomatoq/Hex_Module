@@ -15,31 +15,31 @@ namespace HexWords.UI
     {
         // ── Header ─────────────────────────────────────────────────────────
         [Header("Header")]
-        [SerializeField] private TMP_Text   levelText;
-        [SerializeField] private TMP_Text   coinText;
-        [SerializeField] private Button settingsButton;
-        [SerializeField] private Button foundWordsButton;
+        [SerializeField] private TMP_Text levelText;
+        [SerializeField] private TMP_Text coinText;
+        [SerializeField] private Button   settingsButton;
+        [SerializeField] private Button   foundWordsButton;
 
         // ── Progress ───────────────────────────────────────────────────────
         [Header("Progress")]
-        [SerializeField] private TMP_Text   scoreText;
-        [SerializeField] private Slider     progressBar;
+        [SerializeField] private TMP_Text scoreText;
+        [SerializeField] private Slider   progressBar;
+        [SerializeField] private Image    progressBarFill; // Fill image inside the Slider — for color sync
 
         [Header("Progress Animation")]
-        [SerializeField] private float          scoreFillDuration  = 0.5f;
-        [SerializeField] private AnimationCurve scoreFillCurve     = AnimationCurve.EaseInOut(0, 0, 1, 1);
-        [SerializeField] private float          scoreBarBounceScale = 1.06f;
+        [SerializeField] private float          scoreFillDuration      = 0.5f;
+        [SerializeField] private AnimationCurve scoreFillCurve         = AnimationCurve.EaseInOut(0, 0, 1, 1);
+        [SerializeField] private float          scoreBarBounceScale    = 1.06f;
         [SerializeField] private float          scoreBarBounceDuration = 0.45f;
 
         // ── Word display ───────────────────────────────────────────────────
         [Header("Word Display")]
-        [SerializeField] private TMP_Text            lastWordText;
+        [SerializeField] private TMP_Text      lastWordText;
         [SerializeField] private FeedbackPalette feedbackPalette;
 
-        // Bubble that resizes with the word length.
-        // wordBubble       — the RectTransform that gets resized (parent of both layers)
-        // bubbleCanvasGroup — controls alpha (invisible when no word selected)
-        // bubbleColorImage  — the bottom/stroke Image whose color changes with word state
+        // wordBubble       — the RectTransform that gets resized (parent of all bubble layers)
+        // wordBubbleCanvasGroup — controls alpha for the WHOLE bubble (must be on wordBubble or a parent that covers everything)
+        // bubbleColorImage  — background Image whose color changes with word state
         [SerializeField] private RectTransform wordBubble;
         [SerializeField] private CanvasGroup   wordBubbleCanvasGroup;
         [SerializeField] private Image         bubbleColorImage;
@@ -49,43 +49,43 @@ namespace HexWords.UI
         [SerializeField] private float         bubbleColorDuration  = 0.10f;
 
         // ── Streak ─────────────────────────────────────────────────────────
-        // Паказваецца калі серыя >= 2. Хаваецца пры серыі 0 або 1.
         [Header("Streak (optional)")]
         [SerializeField] private GameObject streakRoot;
-        [SerializeField] private TMP_Text       streakText;
+        [SerializeField] private TMP_Text   streakText;
 
-        // Апцыянальны бэдж з балімі ("+7") — з'яўляецца над словам калі слова валіднае.
-        // Калі не прысвоены — проста не паказваецца.
+        // ── Score Badge ────────────────────────────────────────────────────
+        // Must be a child of wordBubble so it fades with the bubble CanvasGroup.
         [Header("Score Badge (optional)")]
         [SerializeField] private GameObject scoreBadgeRoot;
-        [SerializeField] private TMP_Text       scoreBadgeText;
+        [SerializeField] private TMP_Text   scoreBadgeText;
+        [SerializeField] private Image      scoreBadgeImage; // background Image — receives accent color
 
         // ── Score Drop ─────────────────────────────────────────────────────
         [Header("Score Drop")]
-        [SerializeField] private RectTransform  scoreDropTemplate;                                // inactive circle Image on HUD canvas
-        [SerializeField] private RectTransform  scoreDropTarget;                                  // destination (progressBar RT)
-        [SerializeField] private Vector2        scoreDropControlOffset = new Vector2(0f, 180f);   // bezier arc control offset from midpoint
-        [SerializeField] private float          scoreDropDuration      = 0.45f;                   // travel time for the head circle
+        [SerializeField] private RectTransform  scoreDropTemplate;                              // inactive circle Image on HUD canvas
+        [SerializeField] private RectTransform  scoreDropTarget;                                // destination RT (progressBar area)
+        [SerializeField] private Vector2        scoreDropControlOffset = new Vector2(0f, 180f); // bezier arc control offset from midpoint
+        [SerializeField] private float          scoreDropDuration      = 0.45f;
         [SerializeField] private AnimationCurve scoreDropCurve         = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
-        [SerializeField] private int            scoreDropCount         = 9;                        // total circles in chain
-        [SerializeField] private float          scoreDropSpacing       = 0.035f;                  // launch delay between each circle
-        [SerializeField] private float          scoreDropTailScale     = 0.18f;                   // size of last circle relative to head
+        [SerializeField] private int            scoreDropCount         = 9;
+        [SerializeField] private float          scoreDropSpacing       = 0.035f;
+        [SerializeField] private float          scoreDropTailScale     = 0.18f;
 
-        /// <summary>Total animation duration — head arrives at scoreDropDuration, used to sync SetScore bounce.</summary>
+        /// <summary>Head arrival time — used as delay for SetScore so bounce syncs with drop.</summary>
         public float ScoreDropDuration => (scoreDropTemplate != null && scoreDropTarget != null) ? scoreDropDuration : 0f;
 
         // ── Booster – Hint ─────────────────────────────────────────────────
         [Header("Booster – Hint")]
         [SerializeField] private Button     hintButton;
-        [SerializeField] private TMP_Text       hintChargeText;
+        [SerializeField] private TMP_Text   hintChargeText;
         [SerializeField] private GameObject hintRvIcon;
         [SerializeField] private GameObject hintEmptyIcon;
 
         // ── Bubble animation ───────────────────────────────────────────────
         [Header("Bubble Animation – Bounce (accepted)")]
-        [SerializeField] private float          bubbleBounceScale       = 0.15f;
-        [SerializeField] private float          bubbleBounceDuration    = 0.28f;
-        [SerializeField] private AnimationCurve bubbleBounceScaleCurve  = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+        [SerializeField] private float          bubbleBounceScale          = 0.15f;
+        [SerializeField] private float          bubbleBounceDuration       = 0.28f;
+        [SerializeField] private AnimationCurve bubbleBounceScaleCurve     = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
         [SerializeField] private float          bubbleAcceptedDismissDelay = 0.35f;
 
         [Header("Bubble Animation – Dismiss (fly up)")]
@@ -93,6 +93,12 @@ namespace HexWords.UI
         [SerializeField] private float          bubbleDismissDuration   = 0.25f;
         [SerializeField] private AnimationCurve bubbleDismissMoveCurve  = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
         [SerializeField] private AnimationCurve bubbleDismissAlphaCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
+        // ── Accent color (shared across badge, drops, bar fill) ────────────
+        [Header("Accent Color")]
+        [SerializeField] private float accentColorDuration = 0.15f;
+
+        private Color _currentAccentColor;
 
         // ── Events ─────────────────────────────────────────────────────────
         public event System.Action OnHintClicked;
@@ -107,12 +113,17 @@ namespace HexWords.UI
             if (settingsButton   != null) settingsButton.onClick.AddListener(() => OnSettingsClicked?.Invoke());
             if (foundWordsButton != null) foundWordsButton.onClick.AddListener(() => OnFoundWordsClicked?.Invoke());
 
+            // Progress bar is display-only — block user interaction
+            if (progressBar != null) progressBar.interactable = false;
+
             if (scoreBadgeRoot != null) scoreBadgeRoot.SetActive(false);
             if (streakRoot     != null) streakRoot.SetActive(false);
 
+            _currentAccentColor = bubbleNeutralColor;
+
             // Start fully invisible — becomes visible when first letter is selected
             if (wordBubbleCanvasGroup != null) wordBubbleCanvasGroup.alpha = 0f;
-            if (wordBubble            != null)
+            if (wordBubble != null)
             {
                 var sd = wordBubble.sizeDelta;
                 wordBubble.sizeDelta = new Vector2(0f, sd.y);
@@ -155,13 +166,21 @@ namespace HexWords.UI
                        .SetDelay(delay)
                        .SetId(progressBar);
 
-                // Update text + bounce bar + bounce score label — all after delay
+                // Text update + bar bounce + score label bounce — all after delay
                 var seq = DOTween.Sequence();
                 if (delay > 0f) seq.AppendInterval(delay);
                 seq.AppendCallback(() =>
                 {
                     if (scoreText != null) scoreText.text = $"{current}/{target}";
                 });
+
+                // Tint bar fill to accent color on arrival
+                if (progressBarFill != null)
+                {
+                    DOTween.Kill(progressBarFill);
+                    seq.Join(progressBarFill.DOColor(_currentAccentColor, accentColorDuration).SetId(progressBarFill));
+                }
+
                 if (barRT != null)
                 {
                     DOTween.Kill(barRT);
@@ -186,31 +205,28 @@ namespace HexWords.UI
 #endif
         }
 
-
         // ── Word display ───────────────────────────────────────────────────
 
-        /// <summary>Паказвае слова падчас свайпу (бягучае).</summary>
+        /// <summary>Паказвае слова падчас свайпу (нейтральны стан).</summary>
         public void SetCurrentWord(string text)
         {
             if (lastWordText == null) return;
-            lastWordText.text  = text;
-            lastWordText.color = Color.black;
+            lastWordText.text = text;
             if (scoreBadgeRoot != null) scoreBadgeRoot.SetActive(false);
-            SetBubbleColor(bubbleNeutralColor);
+            ApplyAccentColor(bubbleNeutralColor);
             ShowBubble(text);
         }
 
-        /// <summary>Паказвае слова падчас свайпу + бал калі слова валіднае.</summary>
+        /// <summary>Паказвае слова падчас свайпу + бал калі валіднае.</summary>
         public void ShowWordPreview(string word, int score, bool isValid)
         {
             if (lastWordText == null) return;
-            lastWordText.text  = word;
-            lastWordText.color = Color.black;
+            lastWordText.text = word;
 
-            var bubbleCol = isValid
+            var col = isValid
                 ? (feedbackPalette != null ? feedbackPalette.hudCurrentWordColor : new Color(0.2f, 0.8f, 0.2f))
                 : bubbleNeutralColor;
-            SetBubbleColor(bubbleCol);
+            ApplyAccentColor(col);
 
             bool showBadge = isValid && score > 0;
             if (scoreBadgeRoot != null) scoreBadgeRoot.SetActive(showBadge);
@@ -218,10 +234,11 @@ namespace HexWords.UI
             ShowBubble(word);
         }
 
-        /// <summary>Хавае прэвью анімацыяй вылету ўверх.</summary>
+        /// <summary>Хавае прэвью — усё фэйдзіцца разам праз CanvasGroup.</summary>
         public void HideWordPreview()
         {
-            if (scoreBadgeRoot != null) scoreBadgeRoot.SetActive(false);
+            // Don't SetActive(false) badge here — PlayBubbleDismiss fades everything
+            // together via CanvasGroup and cleans up in OnComplete.
             PlayBubbleDismiss();
         }
 
@@ -235,18 +252,17 @@ namespace HexWords.UI
         {
             if (lastWordText == null) return;
             if (scoreBadgeRoot != null) scoreBadgeRoot.SetActive(false);
-            lastWordText.text  = text;
-            lastWordText.color = Color.black;
-            SetBubbleColor(GetHudColor(outcome));
+            lastWordText.text = text;
+            ApplyAccentColor(GetHudColor(outcome));
             ShowBubble(text);
         }
 
         // ── Bubble animations ──────────────────────────────────────────────
 
-        /// <summary>Bounces the bubble container, fires score drop, then flies it up after a delay.</summary>
+        /// <summary>Bounces the bubble, fires score drop, then dismisses after delay.</summary>
         public void PlayBubbleAccepted()
         {
-            PlayScoreDrop();     // starts immediately — SetScore delay syncs arrival with bounce
+            PlayScoreDrop(); // starts immediately — SetScore delay syncs arrival
 
             if (wordBubble == null) return;
 #if DOTWEEN
@@ -267,9 +283,62 @@ namespace HexWords.UI
         }
 
         /// <summary>
-        /// Launches a chain of circles along a quadratic bezier arc.
-        /// Head (index 0) is full-size; each subsequent circle is smaller and launches
-        /// slightly later — together they look like a liquid drop with a fluid tail.
+        /// Flies the bubble upward and fades ALL its contents (text, badge, background)
+        /// together via CanvasGroup. Text and badge are cleaned up only after the animation.
+        /// </summary>
+        public void PlayBubbleDismiss()
+        {
+#if DOTWEEN
+            if (wordBubble == null) return;
+            int tweenId = wordBubble.GetInstanceID() + 2;
+
+            // Kill all competing bubble tweens
+            DOTween.Kill(wordBubble.GetInstanceID() + 1);
+            DOTween.Kill(tweenId);
+            DOTween.Kill(wordBubble);
+            DOTween.Kill(bubbleColorImage);
+
+            // Snap scale only — don't touch color or text yet
+            wordBubble.transform.localScale = Vector3.one;
+
+            var cg      = wordBubbleCanvasGroup;
+            var rt      = wordBubble;
+            var basePos = _bubbleBasePos;
+
+            var seq = DOTween.Sequence().SetId(tweenId);
+            seq.Append(rt.DOAnchorPosY(basePos.y + bubbleDismissRise, bubbleDismissDuration)
+                         .SetEase(bubbleDismissMoveCurve));
+            if (cg != null)
+                seq.Join(cg.DOFade(0f, bubbleDismissDuration)
+                           .SetEase(bubbleDismissAlphaCurve));
+
+            // After fade: reset position, clear text, hide badge
+            seq.AppendCallback(() =>
+            {
+                rt.anchoredPosition = basePos;
+                var sd = rt.sizeDelta;
+                rt.sizeDelta = new Vector2(0f, sd.y);
+                if (cg != null) cg.alpha = 0f;
+                if (lastWordText  != null) lastWordText.text = string.Empty;
+                if (scoreBadgeRoot != null) scoreBadgeRoot.SetActive(false);
+            });
+#else
+            if (bubbleColorImage    != null) bubbleColorImage.color = bubbleNeutralColor;
+            if (wordBubbleCanvasGroup != null) wordBubbleCanvasGroup.alpha = 0f;
+            if (lastWordText        != null) lastWordText.text = string.Empty;
+            if (scoreBadgeRoot      != null) scoreBadgeRoot.SetActive(false);
+            if (wordBubble != null)
+            {
+                wordBubble.anchoredPosition = _bubbleBasePos;
+                var sd = wordBubble.sizeDelta;
+                wordBubble.sizeDelta = new Vector2(0f, sd.y);
+            }
+#endif
+        }
+
+        /// <summary>
+        /// Launches a chain of circles along a quadratic bezier arc, each tinted
+        /// in the current accent color. Head = full size, tail = scoreDropTailScale.
         /// </summary>
         public void PlayScoreDrop()
         {
@@ -283,19 +352,23 @@ namespace HexWords.UI
             Vector2 p2 = ToCanvasLocal(parentRT, scoreDropTarget.position, cam);
             Vector2 p1 = (p0 + p2) * 0.5f + scoreDropControlOffset;
 
-            int count = Mathf.Max(1, scoreDropCount);
+            int   count       = Mathf.Max(1, scoreDropCount);
+            Color accentColor = _currentAccentColor;
+
             for (int i = 0; i < count; i++)
             {
-                int   idx     = i;
-                float delay   = i * scoreDropSpacing;
-                // Head = 1.0, tail = scoreDropTailScale, linear interpolation
-                float scale   = Mathf.Lerp(1f, scoreDropTailScale, count > 1 ? (float)i / (count - 1) : 0f);
+                float delay = i * scoreDropSpacing;
+                float scale = Mathf.Lerp(1f, scoreDropTailScale, count > 1 ? (float)i / (count - 1) : 0f);
 
-                var drop = Instantiate(scoreDropTemplate.gameObject, scoreDropTemplate.parent)
-                               .GetComponent<RectTransform>();
+                var dropGO = Instantiate(scoreDropTemplate.gameObject, scoreDropTemplate.parent);
+                var drop   = dropGO.GetComponent<RectTransform>();
                 drop.gameObject.SetActive(true);
                 drop.anchoredPosition = p0;
                 drop.localScale       = Vector3.one * scale;
+
+                // Tint drop to match accent color
+                var dropImg = dropGO.GetComponent<Image>();
+                if (dropImg != null) dropImg.color = accentColor;
 
                 float t = 0f;
                 DOTween.To(() => t, v =>
@@ -320,55 +393,8 @@ namespace HexWords.UI
             return local;
         }
 
-        /// <summary>Flies the bubble upward and fades it out — call when swipe released with no valid word.</summary>
-        public void PlayBubbleDismiss()
-        {
-            if (lastWordText != null) lastWordText.text = string.Empty;
-#if DOTWEEN
-            if (wordBubble == null) return;
-            int tweenId = wordBubble.GetInstanceID() + 2;
-
-            // Kill all competing bubble tweens
-            DOTween.Kill(wordBubble.GetInstanceID() + 1); // bounce+dismiss sequence
-            DOTween.Kill(tweenId);
-            DOTween.Kill(wordBubble);          // resize tween
-            DOTween.Kill(bubbleColorImage);    // color tween
-
-            // Snap scale back and color to white before flying up
-            wordBubble.transform.localScale = Vector3.one;
-            if (bubbleColorImage != null) bubbleColorImage.color = Color.white;
-
-            var cg      = wordBubbleCanvasGroup;
-            var rt      = wordBubble;
-            var basePos = _bubbleBasePos;
-
-            var seq = DOTween.Sequence().SetId(tweenId);
-            seq.Append(rt.DOAnchorPosY(basePos.y + bubbleDismissRise, bubbleDismissDuration)
-                         .SetEase(bubbleDismissMoveCurve));
-            if (cg != null)
-                seq.Join(cg.DOFade(0f, bubbleDismissDuration)
-                           .SetEase(bubbleDismissAlphaCurve));
-            seq.AppendCallback(() =>
-            {
-                rt.anchoredPosition = basePos;
-                var sd = rt.sizeDelta; rt.sizeDelta = new Vector2(0f, sd.y);
-                if (cg != null) cg.alpha = 0f;
-            });
-#else
-            if (bubbleColorImage != null) bubbleColorImage.color = bubbleNeutralColor;
-            if (wordBubbleCanvasGroup != null) wordBubbleCanvasGroup.alpha = 0f;
-            if (wordBubble != null)
-            {
-                wordBubble.anchoredPosition = _bubbleBasePos;
-                var sd = wordBubble.sizeDelta;
-                wordBubble.sizeDelta = new Vector2(0f, sd.y);
-            }
-#endif
-        }
-
         // ── Streak ─────────────────────────────────────────────────────────
 
-        /// <summary>Shows the streak badge when streak >= 2, hides it otherwise.</summary>
         public void SetStreak(int streak)
         {
             bool show = streak >= 2;
@@ -385,10 +411,9 @@ namespace HexWords.UI
                 hintChargeText.gameObject.SetActive(charges > 0);
                 hintChargeText.text = charges.ToString();
             }
-
-            if (hintRvIcon   != null) hintRvIcon.SetActive(charges == 0 && rvAvailable);
+            if (hintRvIcon    != null) hintRvIcon.SetActive(charges == 0 && rvAvailable);
             if (hintEmptyIcon != null) hintEmptyIcon.SetActive(charges == 0 && !rvAvailable);
-            if (hintButton   != null) hintButton.interactable = charges > 0 || rvAvailable;
+            if (hintButton    != null) hintButton.interactable = charges > 0 || rvAvailable;
         }
 
         // ── Bubble visibility + resize ─────────────────────────────────────
@@ -397,20 +422,18 @@ namespace HexWords.UI
         {
             if (wordBubble == null) return;
 #if DOTWEEN
-            // Kill all pending bubble animations, snap back to base state
-            DOTween.Kill(wordBubble.GetInstanceID() + 1); // bounce sequence
-            DOTween.Kill(wordBubble.GetInstanceID() + 2); // dismiss sequence
+            DOTween.Kill(wordBubble.GetInstanceID() + 1);
+            DOTween.Kill(wordBubble.GetInstanceID() + 2);
             wordBubble.transform.localScale = Vector3.one;
             wordBubble.anchoredPosition = _bubbleBasePos;
 #endif
             ResizeBubble(word);
 
-            bool hasContent = !string.IsNullOrEmpty(word);
             if (wordBubbleCanvasGroup != null)
             {
+                bool hasContent = !string.IsNullOrEmpty(word);
 #if DOTWEEN
                 DOTween.Kill(wordBubbleCanvasGroup);
-                // Snap alpha: visible immediately when content appears, hidden when empty
                 wordBubbleCanvasGroup.alpha = hasContent ? 1f : 0f;
 #else
                 wordBubbleCanvasGroup.alpha = hasContent ? 1f : 0f;
@@ -418,14 +441,28 @@ namespace HexWords.UI
             }
         }
 
-        private void SetBubbleColor(Color color)
+        /// <summary>
+        /// Sets accent color: animates bubble background, score badge image.
+        /// Drops and progress bar fill receive the color separately at their own moments.
+        /// </summary>
+        private void ApplyAccentColor(Color color)
         {
-            if (bubbleColorImage == null) return;
+            _currentAccentColor = color;
+
 #if DOTWEEN
-            DOTween.Kill(bubbleColorImage);
-            bubbleColorImage.DOColor(color, bubbleColorDuration).SetId(bubbleColorImage);
+            if (bubbleColorImage != null)
+            {
+                DOTween.Kill(bubbleColorImage);
+                bubbleColorImage.DOColor(color, bubbleColorDuration).SetId(bubbleColorImage);
+            }
+            if (scoreBadgeImage != null)
+            {
+                DOTween.Kill(scoreBadgeImage);
+                scoreBadgeImage.DOColor(color, accentColorDuration).SetId(scoreBadgeImage);
+            }
 #else
-            bubbleColorImage.color = color;
+            if (bubbleColorImage != null) bubbleColorImage.color = color;
+            if (scoreBadgeImage  != null) scoreBadgeImage.color  = color;
 #endif
         }
 
@@ -434,15 +471,9 @@ namespace HexWords.UI
             if (wordBubble == null || lastWordText == null) return;
             var height = wordBubble.sizeDelta.y;
 
-            float targetWidth;
-            if (string.IsNullOrEmpty(word))
-            {
-                targetWidth = 0f;
-            }
-            else
-            {
-                targetWidth = Mathf.Max(height, lastWordText.preferredWidth + bubblePadding);
-            }
+            float targetWidth = string.IsNullOrEmpty(word)
+                ? 0f
+                : Mathf.Max(height, lastWordText.preferredWidth + bubblePadding);
 
 #if DOTWEEN
             DOTween.Kill(wordBubble);

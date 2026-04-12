@@ -47,6 +47,9 @@ namespace HexWords.UI
                 settingsButton.onClick.AddListener(() => OnSettingsClicked?.Invoke());
             if (dailyChallengeButton != null)
                 dailyChallengeButton.onClick.AddListener(() => OnDailyChallengeClicked?.Invoke());
+
+            // Progress bar is display-only — block user drag interaction
+            if (progressBar != null) progressBar.interactable = false;
         }
 
         // ── Public API ─────────────────────────────────────────────────────
