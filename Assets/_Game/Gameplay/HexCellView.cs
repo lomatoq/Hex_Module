@@ -239,14 +239,6 @@ namespace HexWords.Gameplay
             float finalScale = animConfig != null ? animConfig.fillFinalScale : 1.0f;
             var   curve      = animConfig != null ? animConfig.fillCurve      : AnimationCurve.EaseInOut(0, 0, 1, 1);
 
-            // Size the circle to fully cover the cell background (diagonal = max dimension)
-            if (background != null)
-            {
-                var sd   = background.rectTransform.sizeDelta;
-                float dim = Mathf.Max(sd.x, sd.y);
-                circleFill.sizeDelta = Vector2.one * dim;
-            }
-
             var img = circleFill.GetComponent<Image>();
             if (img != null) img.color = color;
 
