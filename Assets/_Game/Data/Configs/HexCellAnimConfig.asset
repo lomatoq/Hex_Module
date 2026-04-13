@@ -84,8 +84,8 @@ MonoBehaviour:
   shakeVibrato: 18
   wordColorHoldExtra: 0.1
   wordColorReturnDuration: 0.2
-  wordBouncePunchScale: 0.65
-  wordBounceDuration: 0.3
+  wordBouncePunchScale: 0.47
+  wordBounceDuration: 0.35
   wordBounceStagger: 0.06
   wordBounceCurve:
     serializedVersion: 2
@@ -113,62 +113,9 @@ MonoBehaviour:
     m_RotationOrder: 4
   wordLetterBounceOffset: 0.02
   enableAdvancedCellAnim: 1
-  pathRippleEnabled: 1
-  pathRippleAmplitude: 0.1
-  pathRippleDecay: 0.5
-  pathRippleStepDelay: 0.025
-  pathRippleDuration: 0.35
-  pathRippleUpCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  pathRippleDownCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
   idleScaleEnabled: 1
   idleScalePeak: 1.15
-  idleScaleHalfPeriod: 0.7
+  idleScaleHalfPeriod: 1.72
   idleScaleCurve:
     serializedVersion: 2
     m_Curve:
