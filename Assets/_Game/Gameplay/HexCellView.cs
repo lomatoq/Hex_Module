@@ -43,11 +43,12 @@ namespace HexWords.Gameplay
         private Coroutine _hintRoutine;
 
 #if DOTWEEN
-        private int TweenId           => GetInstanceID();
-        private int CircleTweenId     => GetInstanceID() + 100;
-        private int StateTweenId      => GetInstanceID() + 200;
-        private int WordBounceTweenId => GetInstanceID() + 201;
-        private int IdleTweenId       => GetInstanceID() + 300;
+        // Integer IDs — used ONLY for tweens on this specific cell.
+        // IMPORTANT: never use offsets here; int IDs are global in DOTween,
+        // so GetInstanceID()+N of cell A could equal GetInstanceID() of cell B,
+        // causing cross-cell kills. WordBounce and Idle use SetTarget(this) instead.
+        private int TweenId       => GetInstanceID();
+        private int CircleTweenId => GetInstanceID() + 100;
 #endif
 
         // ── Lifecycle ──────────────────────────────────────────────────────
@@ -80,7 +81,7 @@ namespace HexWords.Gameplay
 #if DOTWEEN
             DOTween.Kill(TweenId);
             DOTween.Kill(CircleTweenId);
-            DOTween.Kill(IdleTweenId);
+            DOTween.Kill(this);   // word bounce + idle (SetTarget-based, no int collision)
 #endif
         }
 
@@ -324,15 +325,13 @@ namespace HexWords.Gameplay
         private void KillAll()
         {
 #if DOTWEEN
-            DOTween.Kill(TweenId);
-            DOTween.Kill(CircleTweenId);
-            DOTween.Kill(StateTweenId);
-            DOTween.Kill(WordBounceTweenId);
-            DOTween.Kill(IdleTweenId);
-            if (background      != null) DOTween.Kill(background);
-            if (letterText      != null) DOTween.Kill(letterText);
-            if (letterText      != null) DOTween.Kill(letterText.rectTransform);
-            if (inkSplatOverlay != null) DOTween.Kill(inkSplatOverlay);
+            DOTween.Kill(TweenId);            // hold scale, flash, shake, delayed-call
+            DOTween.Kill(CircleTweenId);      // circle fill
+            DOTween.Kill(this);               // word bounce + idle (SetTarget-based)
+            if (background      != null) DOTween.Kill(background);        // state color sequence
+            if (letterText      != null) DOTween.Kill(letterText);        // letter color tween
+            if (letterText      != null) DOTween.Kill(letterText.rectTransform); // letter bounce
+            if (inkSplatOverlay != null) DOTween.Kill(inkSplatOverlay);   // ink splat
 #else
             StopFxRoutine();
 #endif
@@ -387,8 +386,8 @@ namespace HexWords.Gameplay
             var   curve        = config != null ? config.wordBounceCurve        : AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
             float letterOffset = config != null ? config.wordLetterBounceOffset : 0.04f;
 
-            DOTween.Kill(WordBounceTweenId);
-            var seq = DOTween.Sequence().SetId(WordBounceTweenId);
+            DOTween.Kill(this);   // kill previous bounce/idle (target-based, no int collision)
+            var seq = DOTween.Sequence().SetTarget(this);
             if (delay > 0f) seq.AppendInterval(delay);
             seq.Append(transform.DOPunchScale(Vector3.one * punch, dur, 3, 0.4f).SetEase(curve));
 
@@ -409,7 +408,7 @@ namespace HexWords.Gameplay
         /// <summary>Starts looping idle scale / rotation. Call after hold-scale animation completes.</summary>
         private void StartIdleAnim()
         {
-            DOTween.Kill(IdleTweenId);
+            DOTween.Kill(this);   // kill previous idle (SetTarget-based, no int collision)
             if (animConfig == null || !animConfig.enableAdvancedCellAnim) return;
 
             float holdScale = animConfig.selectHoldScale;
@@ -420,7 +419,7 @@ namespace HexWords.Gameplay
                 transform.localScale = Vector3.one * holdScale;
                 transform.DOScale(animConfig.idleScalePeak, animConfig.idleScaleHalfPeriod)
                     .SetEase(animConfig.idleScaleCurve)
-                    .SetId(IdleTweenId)
+                    .SetTarget(this)      // SetTarget avoids int ID collision between cells
                     .SetLoops(-1, LoopType.Yoyo);
             }
 
@@ -430,7 +429,7 @@ namespace HexWords.Gameplay
                 float hp = animConfig.idleRotationHalfPeriod;
                 float a  = animConfig.idleRotationAngle;
                 transform.localRotation = Quaternion.identity;
-                DOTween.Sequence().SetId(IdleTweenId).SetLoops(-1)
+                DOTween.Sequence().SetTarget(this).SetLoops(-1)
                     .Append(transform.DOLocalRotate(new Vector3(0f, 0f,  a), hp * 0.5f, RotateMode.Fast).SetEase(animConfig.idleRotationCurve))
                     .Append(transform.DOLocalRotate(new Vector3(0f, 0f, -a), hp,         RotateMode.Fast).SetEase(animConfig.idleRotationCurve))
                     .Append(transform.DOLocalRotate(Vector3.zero,             hp * 0.5f, RotateMode.Fast).SetEase(animConfig.idleRotationCurve));
