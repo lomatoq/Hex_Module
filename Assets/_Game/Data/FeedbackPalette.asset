@@ -12,13 +12,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65f522d9435940d4b537c23a6fa2a79d, type: 3}
   m_Name: FeedbackPalette
   m_EditorClassIdentifier: Assembly-CSharp::HexWords.Core.FeedbackPalette
-  selectedCellColor: {r: 1, g: 0.43189976, b: 0, a: 1}
-  targetAcceptedCellColor: {r: 0.75, g: 1, b: 0.75, a: 1}
-  bonusAcceptedCellColor: {r: 0.65, g: 0.95, b: 1, a: 1}
-  alreadyAcceptedCellColor: {r: 0.55, g: 0.7, b: 1, a: 1}
-  rejectedCellColor: {r: 1, g: 0.8, b: 0.8, a: 1}
-  hudTargetAcceptedColor: {r: 0.3890627, g: 0.8396226, b: 0.09109115, a: 1}
+  hudTargetAcceptedColor: {r: 0.27058822, g: 0.78431374, b: 0.32346883, a: 1}
   hudBonusAcceptedColor: {r: 0, g: 0.5529412, b: 1, a: 1}
   hudAlreadyAcceptedColor: {r: 0, g: 0.5548496, b: 1, a: 1}
   hudRejectedColor: {r: 0.9150943, g: 0.25467247, b: 0.25467247, a: 1}
   hudCurrentWordColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
+  hudBubbleTextDefault: {r: 0.103773594, g: 0.09741012, b: 0.09741012, a: 1}
+  hudBubbleTextAlreadyFound: {r: 0.035599854, g: 0.18284091, b: 0.3018868, a: 1}
+  cellLetterDefault: {r: 0.3584906, g: 0.17604448, b: 0, a: 1}
+  cellLetterSelected: {r: 1, g: 0.942954, b: 0.7971698, a: 1}
+  cellSelectedBackground: {r: 1, g: 0.45360184, b: 0, a: 1}
+  cellAcceptedBackground: {r: 0.27058825, g: 0.78431374, b: 0.3254902, a: 1}
+  cellBonusBackground: {r: 0, g: 0.5529412, b: 1, a: 1}
+  cellRejectedBackground: {r: 0.9137255, g: 0.25490198, b: 0.25490198, a: 1}
+  cellWordTargetColor: {r: 0.27058825, g: 0.78431374, b: 0.3254902, a: 1}
+  cellWordBonusColor: {r: 0.12941177, g: 0.45882353, b: 0.93333334, a: 1}
+  cellWordAlreadyFoundColor: {r: 0, g: 0.8235294, b: 1, a: 1}
+  trailDefaultColor: {r: 1, g: 0.3254902, b: 0, a: 0.972549}

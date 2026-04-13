@@ -87,7 +87,9 @@ namespace HexWords.UI
         [SerializeField] private float          bubbleBounceScale          = 0.15f;
         [SerializeField] private float          bubbleBounceDuration       = 0.28f;
         [SerializeField] private AnimationCurve bubbleBounceScaleCurve     = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
-        [SerializeField] private float          bubbleAcceptedDismissDelay = 0.35f;
+        [SerializeField] private float          bubbleAcceptedDismissDelay = 0.35f; // kept for reference, no longer used in sequence
+        [Tooltip("Delay between drops launching and bubble dismiss starting.")]
+        [SerializeField] private float          bubbleDropDismissDelay     = 0.12f;
 
         [Header("Bubble Animation – Shake (already found)")]
         [SerializeField] private float bubbleShakeDuration  = 0.4f;
@@ -100,12 +102,17 @@ namespace HexWords.UI
         [SerializeField] private AnimationCurve bubbleDismissMoveCurve  = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
         [SerializeField] private AnimationCurve bubbleDismissAlphaCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
+        [Header("Bubble Text")]
+        [Tooltip("Duration of the letter fade-in when the bubble word changes (0 = instant).")]
+        [SerializeField] private float bubbleTextFadeIn = 0.10f;
+
         // ── Accent color (shared across badge, drops, bar fill) ────────────
         [Header("Accent Color")]
         [SerializeField] private float accentColorDuration = 0.15f;
 
         private Color _currentAccentColor;
         private int   _lastWordScore;
+        private int   _bubbleVisibleCharCount; // how many chars were visible before last SetBubbleText
 
         // ── Events ─────────────────────────────────────────────────────────
         public event System.Action OnHintClicked;
@@ -230,9 +237,8 @@ namespace HexWords.UI
         public void ShowWordPreview(string word, int score, bool isValid)
         {
             if (lastWordText == null) return;
-            lastWordText.text  = word;
-            lastWordText.color = BubbleTextColor();
-            _lastWordScore     = isValid ? score : 0;
+            _lastWordScore = isValid ? score : 0;
+            SetBubbleText(word, BubbleTextColor());
 
             var col = isValid
                 ? (feedbackPalette != null ? feedbackPalette.hudCurrentWordColor : new Color(0.2f, 0.8f, 0.2f))
@@ -263,10 +269,10 @@ namespace HexWords.UI
         {
             if (lastWordText == null) return;
             if (scoreBadgeRoot != null) scoreBadgeRoot.SetActive(false);
-            lastWordText.text  = text;
-            lastWordText.color = outcome == WordSubmitOutcome.AlreadyAccepted
+            var textCol = outcome == WordSubmitOutcome.AlreadyAccepted
                 ? BubbleTextColorAlreadyFound()
                 : BubbleTextColor();
+            SetBubbleText(text, textCol);
             ApplyAccentColor(GetHudColor(outcome));
             ShowBubble(text);
         }
@@ -283,35 +289,13 @@ namespace HexWords.UI
 
             if (wordBubble == null) return;
 #if DOTWEEN
-            int id = wordBubble.GetInstanceID() + 1;
-            DOTween.Kill(id);
-            wordBubble.transform.localScale = Vector3.one;
-
-            if (shake)
-            {
-                // Shake left-right, then dismiss
-                DOTween.Sequence().SetId(id)
-                    .Append(wordBubble.DOShakeAnchorPos(
-                        bubbleShakeDuration,
-                        new Vector2(bubbleShakeStrength, 0f),
-                        bubbleShakeVibrato, 0f, false, true))
-                    .AppendCallback(() => wordBubble.anchoredPosition = _bubbleBasePos)
-                    .AppendInterval(bubbleAcceptedDismissDelay)
+            // Fly-up dismiss (same as reject/hide) — with a short delay so drops are visible first
+            if (bubbleDropDismissDelay > 0f)
+                DOTween.Sequence()
+                    .AppendInterval(bubbleDropDismissDelay)
                     .AppendCallback(PlayBubbleDismiss);
-            }
             else
-            {
-                // Bounce scale, then dismiss
-                DOTween.Sequence().SetId(id)
-                    .Append(wordBubble.transform
-                        .DOScale(1f + bubbleBounceScale, bubbleBounceDuration * 0.45f)
-                        .SetEase(bubbleBounceScaleCurve))
-                    .Append(wordBubble.transform
-                        .DOScale(1f, bubbleBounceDuration * 0.55f)
-                        .SetEase(bubbleBounceScaleCurve))
-                    .AppendInterval(bubbleAcceptedDismissDelay)
-                    .AppendCallback(PlayBubbleDismiss);
-            }
+                PlayBubbleDismiss();
 #endif
         }
 
@@ -354,6 +338,7 @@ namespace HexWords.UI
                 if (cg != null) cg.alpha = 0f;
                 if (lastWordText  != null) lastWordText.text = string.Empty;
                 if (scoreBadgeRoot != null) scoreBadgeRoot.SetActive(false);
+                _bubbleVisibleCharCount = 0;
             });
 #else
             if (bubbleColorImage    != null) bubbleColorImage.color = bubbleNeutralColor;
@@ -467,10 +452,8 @@ namespace HexWords.UI
                 bool hasContent = !string.IsNullOrEmpty(word);
 #if DOTWEEN
                 DOTween.Kill(wordBubbleCanvasGroup);
-                wordBubbleCanvasGroup.alpha = hasContent ? 1f : 0f;
-#else
-                wordBubbleCanvasGroup.alpha = hasContent ? 1f : 0f;
 #endif
+                wordBubbleCanvasGroup.alpha = hasContent ? 1f : 0f;
             }
         }
 
@@ -515,6 +498,64 @@ namespace HexWords.UI
                       .SetId(wordBubble);
 #else
             wordBubble.sizeDelta = new Vector2(targetWidth, height);
+#endif
+        }
+
+        /// <summary>
+        /// Sets bubble text. Only newly-added characters fade in from alpha=0;
+        /// existing characters stay at full opacity.
+        /// </summary>
+        private void SetBubbleText(string text, Color color)
+        {
+            if (lastWordText == null) return;
+
+            int prevCount = _bubbleVisibleCharCount;
+            lastWordText.text  = text;
+            lastWordText.color = color;
+            _bubbleVisibleCharCount = string.IsNullOrEmpty(text) ? 0 : text.Length;
+
+#if DOTWEEN
+            DOTween.Kill(lastWordText);
+
+            // No new characters or fade disabled — nothing to animate
+            int newCount = _bubbleVisibleCharCount;
+            if (bubbleTextFadeIn <= 0f || newCount <= prevCount || prevCount < 0) return;
+
+            // Force TMP to rebuild mesh so characterInfo is valid
+            lastWordText.ForceMeshUpdate();
+            var textInfo = lastWordText.textInfo;
+
+            // Set alpha=0 on vertex colors for new characters
+            for (int i = prevCount; i < newCount; i++)
+            {
+                if (i >= textInfo.characterCount) break;
+                var ci = textInfo.characterInfo[i];
+                if (!ci.isVisible) continue;
+                var cols = textInfo.meshInfo[ci.materialReferenceIndex].colors32;
+                for (int v = 0; v < 4; v++)
+                    cols[ci.vertexIndex + v].a = 0;
+            }
+            lastWordText.UpdateVertexData(TMP_VertexDataUpdateFlags.Colors32);
+
+            // Animate those new characters to alpha=255
+            float t = 0f;
+            DOTween.To(() => t, val =>
+            {
+                t = val;
+                byte a = (byte)(val * 255f);
+                lastWordText.ForceMeshUpdate();
+                var ti = lastWordText.textInfo;
+                for (int i = prevCount; i < newCount; i++)
+                {
+                    if (i >= ti.characterCount) break;
+                    var ci = ti.characterInfo[i];
+                    if (!ci.isVisible) continue;
+                    var cols = ti.meshInfo[ci.materialReferenceIndex].colors32;
+                    for (int v = 0; v < 4; v++)
+                        cols[ci.vertexIndex + v].a = a;
+                }
+                lastWordText.UpdateVertexData(TMP_VertexDataUpdateFlags.Colors32);
+            }, 1f, bubbleTextFadeIn).SetId(lastWordText);
 #endif
         }
 

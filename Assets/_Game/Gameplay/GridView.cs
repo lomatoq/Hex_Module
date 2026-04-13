@@ -15,8 +15,13 @@ namespace HexWords.Gameplay
     {
         [SerializeField] private HexCellView         cellPrefab;
         [SerializeField] private RectTransform        gridRoot;
+        [SerializeField] private RectTransform        trailRoot;
         [SerializeField] private float                cellSize = 90f;
         [SerializeField] private HintAnimationConfig  hintConfig;
+        [SerializeField] private FeedbackPalette      feedbackPalette;
+        [SerializeField] private HexCellAnimConfig    animConfig;
+        [Tooltip("Enable state color + sequential bounce effect for Bonus words.")]
+        [SerializeField] private bool                 bonusWordEffect = true;
 
         [Header("Auto-Scale")]
         [Tooltip("If true, cellSize is computed from gridRoot rect so the grid fills the available space.")]
@@ -29,11 +34,9 @@ namespace HexWords.Gameplay
         [Range(0.5f, 2f)]
         [SerializeField] private float cellSpacing = 1.0f;
 
-        [Header("Render Order")]
-        [Tooltip("Move gridRoot to be the last sibling in the Canvas so cells render above the trail.\nToggle at runtime to switch.")]
-        [SerializeField] private bool cellsAboveTrail = true;
-
         private readonly Dictionary<string, HexCellView> _cellViews = new Dictionary<string, HexCellView>();
+        private readonly List<GameObject>               _letterGOs = new List<GameObject>();
+        private RectTransform _letterRoot;
         private Coroutine _hintRoutine;
 
 #if DOTWEEN
@@ -60,30 +63,82 @@ namespace HexWords.Gameplay
 
             float effective = autoScale ? ComputeCellSize(cells) : cellSize;
 
+            float hexW = Mathf.Sqrt(3f) * effective;
+            float hexH = 2f * effective;
+
             foreach (var cell in cells)
             {
                 var view = Instantiate(cellPrefab, gridRoot);
                 view.Bind(cell);
                 var rt = view.GetComponent<RectTransform>();
                 // cellSpacing moves centres apart; visual size stays at 'effective'
-                rt.anchoredPosition = AxialToPixel(cell.q, cell.r, effective * cellSpacing);
-                float hexW = Mathf.Sqrt(3f) * effective;
-                float hexH = 2f * effective;
+                var pos = AxialToPixel(cell.q, cell.r, effective * cellSpacing);
+                rt.anchoredPosition = pos;
                 rt.sizeDelta = new Vector2(hexW, hexH);
                 _cellViews.Add(cell.cellId, view);
             }
 
-            ApplyCellsAboveTrail();
+            // Reparent letter texts into a dedicated layer above TrailRoot
+            var lr = GetOrCreateLetterRoot();
+            foreach (var pair in _cellViews)
+            {
+                var lt = pair.Value.LetterText;
+                if (lt == null) continue;
+                var lRt = lt.rectTransform;
+                // worldPositionStays=true: letter keeps its world position (= cell centre)
+                lRt.SetParent(lr, true);
+                lRt.sizeDelta    = new Vector2(hexW, hexH);
+                lt.raycastTarget = false;
+                _letterGOs.Add(lt.gameObject);
+            }
         }
 
-        // ── Render order ───────────────────────────────────────────────────
+        // ── Word state FX ─────────────────────────────────────────────────
 
-        /// <summary>Call after changing cellsAboveTrail at runtime to apply immediately.</summary>
-        public void ApplyCellsAboveTrail()
+        public float WordEffectHoldExtra      => animConfig != null ? animConfig.wordColorHoldExtra      : 0.25f;
+        public float WordEffectReturnDuration => animConfig != null ? animConfig.wordColorReturnDuration : 0.35f;
+
+        /// <summary>
+        /// Tints cells in the word path to the state color, holds, then fades back.
+        /// Returns the state color used (Color.clear if no effect was applied).
+        /// </summary>
+        public Color PlayWordStateEffect(
+            IReadOnlyList<string> orderedCellIds,
+            WordSubmitOutcome outcome,
+            bool hasScore,
+            float dropDuration)
         {
-            if (gridRoot == null) return;
-            if (cellsAboveTrail)
-                gridRoot.SetAsLastSibling();
+            if (feedbackPalette == null || orderedCellIds == null) return Color.clear;
+
+            // AlreadyAccepted — no visual effect
+            if (outcome == WordSubmitOutcome.AlreadyAccepted) return Color.clear;
+
+            // Bonus — skip if toggle is off
+            if (outcome == WordSubmitOutcome.BonusAccepted && !bonusWordEffect) return Color.clear;
+
+            Color stateColor = outcome switch
+            {
+                WordSubmitOutcome.TargetAccepted => feedbackPalette.cellWordTargetColor,
+                WordSubmitOutcome.BonusAccepted  => feedbackPalette.cellWordBonusColor,
+                _                                => Color.clear
+            };
+
+            if (stateColor == Color.clear) return Color.clear;
+
+            float holdExtra = animConfig != null ? animConfig.wordColorHoldExtra      : 0.25f;
+            float returnDur = animConfig != null ? animConfig.wordColorReturnDuration : 0.35f;
+            float stagger   = animConfig != null ? animConfig.wordBounceStagger       : 0.06f;
+            float holdDur   = dropDuration + holdExtra;
+
+            for (int i = 0; i < orderedCellIds.Count; i++)
+            {
+                if (!_cellViews.TryGetValue(orderedCellIds[i], out var view)) continue;
+                view.ApplyWordStateColor(stateColor, holdDur, returnDur);
+                if (hasScore)
+                    view.PlayWordBounce(i * stagger, animConfig);
+            }
+
+            return stateColor;
         }
 
         // ── FX ────────────────────────────────────────────────────────────
@@ -160,6 +215,27 @@ namespace HexWords.Gameplay
 
         // ── Helpers ────────────────────────────────────────────────────────
 
+        private RectTransform GetOrCreateLetterRoot()
+        {
+            if (_letterRoot != null) return _letterRoot;
+
+            var go = new GameObject("LetterRoot", typeof(RectTransform));
+            _letterRoot = go.GetComponent<RectTransform>();
+            _letterRoot.SetParent(gridRoot.parent, false);
+            // Full-stretch so anchoredPositions of letters match gridRoot space
+            _letterRoot.anchorMin = Vector2.zero;
+            _letterRoot.anchorMax = Vector2.one;
+            _letterRoot.offsetMin = _letterRoot.offsetMax = Vector2.zero;
+
+            // Place immediately after trailRoot; fall back to last sibling
+            if (trailRoot != null)
+                _letterRoot.SetSiblingIndex(trailRoot.GetSiblingIndex() + 1);
+            else
+                _letterRoot.SetAsLastSibling();
+
+            return _letterRoot;
+        }
+
         private void Clear()
         {
 #if DOTWEEN
@@ -167,6 +243,9 @@ namespace HexWords.Gameplay
 #endif
             for (var i = gridRoot.childCount - 1; i >= 0; i--)
                 Destroy(gridRoot.GetChild(i).gameObject);
+            // Destroy reparented letter GOs (they live in _letterRoot, not gridRoot)
+            foreach (var go in _letterGOs) if (go != null) Destroy(go);
+            _letterGOs.Clear();
             _cellViews.Clear();
         }
 

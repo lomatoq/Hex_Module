@@ -15,6 +15,7 @@ namespace HexWords.Gameplay
         private LevelDefinition _level;
         private bool _isTrackingPath;
         private bool _subscribed;
+        private int  _lastPreviewScore;
 
         public void Initialize(LevelDefinition level, LevelSessionController session, IAdjacencyService adjacencyService)
         {
@@ -67,6 +68,7 @@ namespace HexWords.Gameplay
             {
                 cell.OnSelected();
                 trailView?.DrawPath(_pathBuilder.CellPath, gridView.CellViews);
+                // No ripple for single-cell path (nothing behind the tip)
                 UpdateWordPreview();
             }
         }
@@ -103,10 +105,12 @@ namespace HexWords.Gameplay
             if (_session != null && _level != null)
             {
                 var (score, isValid) = _session.PreviewWord(word, _level);
+                _lastPreviewScore = isValid ? score : 0;
                 hudView.ShowWordPreview(word, score, isValid);
             }
             else
             {
+                _lastPreviewScore = 0;
                 hudView.SetCurrentWord(word);
             }
         }
@@ -145,15 +149,32 @@ namespace HexWords.Gameplay
                 }
             }
 
-            _pathBuilder.Reset();
-            trailView?.FadeOutAndClear(0.2f);
-
-            bool accepted = outcome == WordSubmitOutcome.TargetAccepted
-                         || outcome == WordSubmitOutcome.BonusAccepted
-                         || outcome == WordSubmitOutcome.AlreadyAccepted;
-            bool isNewWord        = outcome == WordSubmitOutcome.TargetAccepted
+            bool accepted       = outcome == WordSubmitOutcome.TargetAccepted
+                               || outcome == WordSubmitOutcome.BonusAccepted
+                               || outcome == WordSubmitOutcome.AlreadyAccepted;
+            bool isNewWord      = outcome == WordSubmitOutcome.TargetAccepted
                                || outcome == WordSubmitOutcome.BonusAccepted;
-            bool isAlreadyFound   = outcome == WordSubmitOutcome.AlreadyAccepted;
+            bool isAlreadyFound = outcome == WordSubmitOutcome.AlreadyAccepted;
+            bool hasScore       = isNewWord && _lastPreviewScore > 0;
+
+            float dropDuration = hudView != null ? hudView.ScoreDropDuration : 0.45f;
+
+            // Cell state color + sequential bounce — must be BEFORE Reset() clears the path
+            var stateColor = Color.clear;
+            if (accepted)
+                stateColor = gridView.PlayWordStateEffect(_pathBuilder.CellPath, outcome, hasScore, dropDuration);
+
+            _pathBuilder.Reset();
+
+            // Trail: recolor + hold while cell animation plays, fade at half the cell return speed
+            if (stateColor != Color.clear)
+                trailView?.SetColorAndFadeAfter(
+                    stateColor,
+                    dropDuration + gridView.WordEffectHoldExtra,
+                    gridView.WordEffectReturnDuration * 0.5f);
+            else
+                trailView?.FadeOutAndClear(0.2f);
+
             if (accepted)
                 hudView?.PlayBubbleAccepted(withDrop: isNewWord, shake: isAlreadyFound);
             else

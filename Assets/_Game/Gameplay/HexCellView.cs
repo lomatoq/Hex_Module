@@ -27,7 +27,8 @@ namespace HexWords.Gameplay
         [Tooltip("The circle Image inside HexCellMask — scaled 0→fillFinalScale on select")]
         [SerializeField] private RectTransform circleFill;
 
-        public string CellId { get; private set; }
+        public string    CellId     { get; private set; }
+        public TMP_Text  LetterText => letterText;
 
         public delegate void CellEvent(HexCellView cell);
         public event CellEvent PointerDownOnCell;
@@ -42,8 +43,11 @@ namespace HexWords.Gameplay
         private Coroutine _hintRoutine;
 
 #if DOTWEEN
-        private int TweenId      => GetInstanceID();
-        private int CircleTweenId => GetInstanceID() + 100;
+        private int TweenId           => GetInstanceID();
+        private int CircleTweenId     => GetInstanceID() + 100;
+        private int StateTweenId      => GetInstanceID() + 200;
+        private int WordBounceTweenId => GetInstanceID() + 201;
+        private int IdleTweenId       => GetInstanceID() + 300;
 #endif
 
         // ── Lifecycle ──────────────────────────────────────────────────────
@@ -53,7 +57,7 @@ namespace HexWords.Gameplay
             if (inkSplatOverlay != null)
                 SetAlpha(inkSplatOverlay, 0f);
 
-            // Circle fill: anchored at center, scaled to 0 (hidden)
+            // Circle fill: hidden via scale=0; prefab alpha is preserved
             if (circleFill != null)
             {
                 circleFill.anchorMin        = new Vector2(0.5f, 0.5f);
@@ -76,6 +80,7 @@ namespace HexWords.Gameplay
 #if DOTWEEN
             DOTween.Kill(TweenId);
             DOTween.Kill(CircleTweenId);
+            DOTween.Kill(IdleTweenId);
 #endif
         }
 
@@ -123,48 +128,59 @@ namespace HexWords.Gameplay
         {
             KillAll();
 
-            var selColor = feedbackPalette != null ? feedbackPalette.selectedCellColor : new Color(0.85f, 0.95f, 1f);
+            // Explicitly reset background — KillAll may leave it mid-animation (e.g. red from rejection)
+            if (background != null) background.color = _baseColor;
+
+            var selColor = feedbackPalette != null ? feedbackPalette.cellSelectedBackground : new Color(0.85f, 0.95f, 1f);
             var letColor = feedbackPalette != null ? feedbackPalette.cellLetterSelected : Color.white;
 
-            // Background stays at base color — circle fill provides the visual selection
             if (letterText != null) letterText.color = letColor;
 
 #if DOTWEEN
-            // Punch scale
-            float punchMag = animConfig != null ? animConfig.selectPunchScale    : 0.13f;
-            float punchDur = animConfig != null ? animConfig.selectPunchDuration : 0.18f;
-            int   punchVib = animConfig != null ? animConfig.selectPunchVibrato  : 5;
-            float punchEla = animConfig != null ? animConfig.selectElasticity    : 0.5f;
+            // Scale in and hold
+            float holdScale = animConfig != null ? animConfig.selectHoldScale    : 1.10f;
+            float holdDur   = animConfig != null ? animConfig.selectHoldDuration : 0.15f;
+            var   holdCurve = animConfig != null ? animConfig.selectHoldCurve    : AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
-            transform.localScale = Vector3.one;
-            transform.DOPunchScale(Vector3.one * punchMag, punchDur, punchVib, punchEla).SetId(TweenId);
+            // Snap to neutral first (idle may have left scale/rotation mid-animation)
+            transform.localScale    = Vector3.one;
+            transform.localRotation = Quaternion.identity;
+            transform.DOScale(holdScale, holdDur).SetEase(holdCurve).SetId(TweenId);
+
+            // Schedule idle animation to start after hold scale completes
+            if (animConfig != null && animConfig.enableAdvancedCellAnim &&
+                (animConfig.idleScaleEnabled || animConfig.idleRotationEnabled))
+                DOVirtual.DelayedCall(holdDur + 0.02f, StartIdleAnim).SetId(TweenId);
 
             // Circle fill: scale from 0 → fillFinalScale
             PlayCircleFill(selColor);
 
             PlayInkSplat(selColor);
 #else
-            transform.localScale = Vector3.one * 1.05f;
-            if (circleFill != null) circleFill.localScale = Vector3.one;
+            float holdScale = animConfig != null ? animConfig.selectHoldScale : 1.10f;
+            transform.localScale = Vector3.one * holdScale;
 #endif
         }
 
         public void OnPathAccepted()
         {
-            var color = feedbackPalette != null ? feedbackPalette.targetAcceptedCellColor : new Color(0.75f, 1f, 0.75f);
+            var color = feedbackPalette != null ? feedbackPalette.cellAcceptedBackground : new Color(0.75f, 1f, 0.75f);
             FlashAndReturn(color, AcceptFlashDuration());
         }
 
         public void OnPathBonusAccepted()
         {
-            var color = feedbackPalette != null ? feedbackPalette.bonusAcceptedCellColor : new Color(0.65f, 0.95f, 1f);
+            var color = feedbackPalette != null ? feedbackPalette.cellBonusBackground : new Color(0.65f, 0.95f, 1f);
             FlashAndReturn(color, AcceptFlashDuration());
         }
 
         public void OnPathAlreadyAccepted()
         {
-            var color = feedbackPalette != null ? feedbackPalette.alreadyAcceptedCellColor : new Color(0.55f, 0.7f, 1f);
-            FlashAndReturn(color, 0.2f);
+            // No color flash — clean reset only (FlashAndReturn's .From() caused a visible flash)
+            KillAll();
+            if (letterText != null) letterText.color = _baseLetterColor;
+            ResetCircleFill();
+            ReturnToNeutralImmediate();
         }
 
         public void OnPathRejected()
@@ -172,8 +188,9 @@ namespace HexWords.Gameplay
             KillAll();
             if (letterText != null) letterText.color = _baseLetterColor;
             ResetCircleFill();
+            ReturnToNeutralImmediate();
 
-            var color = feedbackPalette != null ? feedbackPalette.rejectedCellColor : new Color(1f, 0.8f, 0.8f);
+            var color = feedbackPalette != null ? feedbackPalette.cellRejectedBackground : new Color(1f, 0.8f, 0.8f);
 #if DOTWEEN
             float flashDur  = animConfig != null ? animConfig.rejectFlashDuration   : 0.3f;
             float shakeStr  = animConfig != null ? animConfig.shakePositionStrength : 5f;
@@ -191,7 +208,7 @@ namespace HexWords.Gameplay
         public void ResetFx()
         {
             KillAll();
-            transform.localScale = Vector3.one;
+            ReturnToNeutralImmediate();
             ((RectTransform)transform).anchoredPosition = _baseAnchoredPos;
             if (background  != null) background.color = _baseColor;
             if (letterText  != null) letterText.color = _baseLetterColor;
@@ -210,7 +227,7 @@ namespace HexWords.Gameplay
             float fadeOut    = config != null ? config.pulseFadeOut       : 0.22f;
             float pause      = config != null ? config.pauseBetweenPulses : 0.10f;
             float peakScale  = config != null ? config.peakScale          : 1.12f;
-            var targetColor  = feedbackPalette != null ? feedbackPalette.selectedCellColor : new Color(0.85f, 0.95f, 1f);
+            var targetColor  = feedbackPalette != null ? feedbackPalette.cellSelectedBackground : new Color(0.85f, 0.95f, 1f);
 
             var seq = DOTween.Sequence().SetId(TweenId);
             if (delay > 0f) seq.AppendInterval(delay);
@@ -240,7 +257,11 @@ namespace HexWords.Gameplay
             var   curve      = animConfig != null ? animConfig.fillCurve      : AnimationCurve.EaseInOut(0, 0, 1, 1);
 
             var img = circleFill.GetComponent<Image>();
-            if (img != null) img.color = color;
+            if (img != null)
+            {
+                float a = img.color.a; // preserve prefab alpha (e.g. 40%)
+                img.color = new Color(color.r, color.g, color.b, a);
+            }
 
             DOTween.Kill(CircleTweenId);
             circleFill.localScale = Vector3.zero;
@@ -272,6 +293,10 @@ namespace HexWords.Gameplay
         private void FlashAndReturn(Color flashColor, float duration)
         {
             KillAll();
+            // Instantly snap scale + rotation back to neutral before new animations start.
+            // ApplyWordStateColor (called immediately after) kills TweenId, so smooth return
+            // would be cut short — instant snap is the only reliable approach here.
+            ReturnToNeutralImmediate();
             // Restore letter color and circle fill immediately
             if (letterText != null) letterText.color = _baseLetterColor;
             ResetCircleFill();
@@ -281,7 +306,6 @@ namespace HexWords.Gameplay
             int   punchVib   = animConfig != null ? animConfig.acceptPunchVibrato  : 3;
             float punchEla   = animConfig != null ? animConfig.acceptElasticity    : 0.5f;
 
-            transform.localScale = Vector3.one;
             if (background != null)
                 background.DOColor(_baseColor, duration).From(flashColor).SetEase(Ease.OutCubic).SetId(TweenId);
             transform.DOPunchScale(Vector3.one * punchScale, punchDur, punchVib, punchEla).SetId(TweenId);
@@ -290,16 +314,129 @@ namespace HexWords.Gameplay
 #endif
         }
 
+        /// <summary>Instantly snaps scale to 1 and rotation to identity. Call after KillAll.</summary>
+        private void ReturnToNeutralImmediate()
+        {
+            transform.localScale    = Vector3.one;
+            transform.localRotation = Quaternion.identity;
+        }
+
         private void KillAll()
         {
 #if DOTWEEN
             DOTween.Kill(TweenId);
             DOTween.Kill(CircleTweenId);
+            DOTween.Kill(StateTweenId);
+            DOTween.Kill(WordBounceTweenId);
+            DOTween.Kill(IdleTweenId);
+            if (background      != null) DOTween.Kill(background);
+            if (letterText      != null) DOTween.Kill(letterText);
+            if (letterText      != null) DOTween.Kill(letterText.rectTransform);
             if (inkSplatOverlay != null) DOTween.Kill(inkSplatOverlay);
 #else
             StopFxRoutine();
 #endif
         }
+
+        /// <summary>
+        /// Immediately tints background + circle fill to stateColor.
+        /// After holdDuration, smoothly returns to the original base color.
+        /// </summary>
+        public void ApplyWordStateColor(Color stateColor, float holdDuration, float returnDuration)
+        {
+            if (background == null) return;
+#if DOTWEEN
+            // Kill both ID-tagged tweens (FlashAndReturn, Reject) and target-based (previous state color)
+            DOTween.Kill(TweenId);
+            DOTween.Kill(background);
+            if (letterText != null) DOTween.Kill(letterText);
+
+            background.color = stateColor;
+
+            // Keep letter at selected color during the hold phase
+            var selLetterCol  = feedbackPalette != null ? feedbackPalette.cellLetterSelected : Color.white;
+            if (letterText != null) letterText.color = selLetterCol;
+
+            var baseCol       = _baseColor;
+            var baseLetterCol = _baseLetterColor;
+
+            var seq = DOTween.Sequence()
+                .SetTarget(background) // SetTarget allows DOTween.Kill(background) to kill this sequence
+                .AppendInterval(holdDuration)
+                .Append(background.DOColor(baseCol, returnDuration).SetEase(Ease.OutCubic));
+
+            if (letterText != null)
+                seq.Join(letterText.DOColor(baseLetterCol, returnDuration).SetEase(Ease.OutCubic));
+
+            seq.OnKill(() =>
+            {
+                if (background != null) background.color = baseCol;
+                if (letterText != null) letterText.color = baseLetterCol;
+            });
+#else
+            background.color = stateColor;
+#endif
+        }
+
+        /// <summary>Plays a punch-scale bounce after delay (for sequential word-accepted FX).</summary>
+        public void PlayWordBounce(float delay, HexCellAnimConfig config)
+        {
+#if DOTWEEN
+            float punch        = config != null ? config.wordBouncePunchScale   : 0.12f;
+            float dur          = config != null ? config.wordBounceDuration     : 0.20f;
+            var   curve        = config != null ? config.wordBounceCurve        : AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+            float letterOffset = config != null ? config.wordLetterBounceOffset : 0.04f;
+
+            DOTween.Kill(WordBounceTweenId);
+            var seq = DOTween.Sequence().SetId(WordBounceTweenId);
+            if (delay > 0f) seq.AppendInterval(delay);
+            seq.Append(transform.DOPunchScale(Vector3.one * punch, dur, 3, 0.4f).SetEase(curve));
+
+            // Letter bounce: independent sequence, starts slightly after cell bounce for organic feel
+            if (letterText != null)
+            {
+                var letterRt = letterText.rectTransform;
+                DOTween.Kill(letterRt);
+                float letterDelay = delay + letterOffset;
+                var letterSeq = DOTween.Sequence().SetTarget(letterRt);
+                if (letterDelay > 0f) letterSeq.AppendInterval(letterDelay);
+                letterSeq.Append(letterRt.DOPunchScale(Vector3.one * punch, dur, 3, 0.4f).SetEase(curve));
+            }
+#endif
+        }
+
+#if DOTWEEN
+        /// <summary>Starts looping idle scale / rotation. Call after hold-scale animation completes.</summary>
+        private void StartIdleAnim()
+        {
+            DOTween.Kill(IdleTweenId);
+            if (animConfig == null || !animConfig.enableAdvancedCellAnim) return;
+
+            float holdScale = animConfig.selectHoldScale;
+
+            if (animConfig.idleScaleEnabled)
+            {
+                // Breathe: holdScale → idleScalePeak → holdScale → … (Yoyo loop)
+                transform.localScale = Vector3.one * holdScale;
+                transform.DOScale(animConfig.idleScalePeak, animConfig.idleScaleHalfPeriod)
+                    .SetEase(animConfig.idleScaleCurve)
+                    .SetId(IdleTweenId)
+                    .SetLoops(-1, LoopType.Yoyo);
+            }
+
+            if (animConfig.idleRotationEnabled)
+            {
+                // Pendulum: 0° → +angle → 0° → -angle → 0° (smooth continuous loop)
+                float hp = animConfig.idleRotationHalfPeriod;
+                float a  = animConfig.idleRotationAngle;
+                transform.localRotation = Quaternion.identity;
+                DOTween.Sequence().SetId(IdleTweenId).SetLoops(-1)
+                    .Append(transform.DOLocalRotate(new Vector3(0f, 0f,  a), hp * 0.5f, RotateMode.Fast).SetEase(animConfig.idleRotationCurve))
+                    .Append(transform.DOLocalRotate(new Vector3(0f, 0f, -a), hp,         RotateMode.Fast).SetEase(animConfig.idleRotationCurve))
+                    .Append(transform.DOLocalRotate(Vector3.zero,             hp * 0.5f, RotateMode.Fast).SetEase(animConfig.idleRotationCurve));
+            }
+        }
+#endif
 
 #if DOTWEEN
         private void PlayInkSplat(Color color)
@@ -347,7 +484,7 @@ namespace HexWords.Gameplay
             if (delay > 0f) yield return new WaitForSeconds(delay);
             if (background == null) yield break;
 
-            var targetColor = feedbackPalette != null ? feedbackPalette.selectedCellColor : new Color(0.85f, 0.95f, 1f);
+            var targetColor = feedbackPalette != null ? feedbackPalette.cellSelectedBackground : new Color(0.85f, 0.95f, 1f);
             int   pulseCount = cfg != null ? cfg.pulseCount          : 3;
             float fadeIn     = cfg != null ? cfg.pulseFadeIn         : 0.22f;
             float fadeOut    = cfg != null ? cfg.pulseFadeOut        : 0.22f;
