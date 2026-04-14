@@ -177,11 +177,17 @@ namespace HexWords.Gameplay
 
         public void OnPathAlreadyAccepted()
         {
-            // No color flash — clean reset only (FlashAndReturn's .From() caused a visible flash)
+            // No color flash — snap to neutral then shake horizontally
             KillAll();
             if (letterText != null) letterText.color = _baseLetterColor;
             ResetCircleFill();
             ReturnToNeutralImmediate();
+#if DOTWEEN
+            float shakeStr = animConfig != null ? animConfig.shakePositionStrength : 5f;
+            float shakeDur = animConfig != null ? animConfig.shakeDuration         : 0.25f;
+            int   shakeVib = animConfig != null ? animConfig.shakeVibrato          : 18;
+            transform.DOShakePosition(shakeDur, new Vector3(shakeStr, 0f, 0f), shakeVib, 0f, false, true).SetId(TweenId);
+#endif
         }
 
         public void OnPathRejected()

@@ -289,13 +289,34 @@ namespace HexWords.UI
 
             if (wordBubble == null) return;
 #if DOTWEEN
-            // Fly-up dismiss (same as reject/hide) — with a short delay so drops are visible first
-            if (bubbleDropDismissDelay > 0f)
+            int tweenId = wordBubble.GetInstanceID() + 2;
+            DOTween.Kill(tweenId);
+
+            if (shake)
+            {
+                // Shake left/right, then fly-up dismiss exactly as for new words
                 DOTween.Sequence()
-                    .AppendInterval(bubbleDropDismissDelay)
+                    .SetId(tweenId)
+                    .Append(wordBubble.DOShakeAnchorPos(
+                        bubbleShakeDuration,
+                        new Vector2(bubbleShakeStrength, 0f),
+                        bubbleShakeVibrato,
+                        randomness: 0f,
+                        snapping:   false,
+                        fadeOut:    true))
                     .AppendCallback(PlayBubbleDismiss);
+            }
             else
-                PlayBubbleDismiss();
+            {
+                // Fly-up dismiss — with a short delay so drops are visible first
+                if (bubbleDropDismissDelay > 0f)
+                    DOTween.Sequence()
+                        .SetId(tweenId)
+                        .AppendInterval(bubbleDropDismissDelay)
+                        .AppendCallback(PlayBubbleDismiss);
+                else
+                    PlayBubbleDismiss();
+            }
 #endif
         }
 
