@@ -38,12 +38,14 @@ namespace HexWords.Editor.Transitions
             if (useGlobal)
                 h += LHS + LHS; // duration + extraDelay
 
+            h += SP * 2f; // gap before property sections (matches OnGUI)
+
             h += SectionHeight(prop, "alphaEnabled",    useGlobal);
             h += SectionHeight(prop, "scaleEnabled",    useGlobal);
             h += SectionHeight(prop, "positionEnabled", useGlobal);
             h += SectionHeight(prop, "rotationEnabled", useGlobal);
 
-            return h + SP; // bottom padding
+            return h;
         }
 
         /// <summary>Height of one property section (enabled toggle + optional fields).</summary>
@@ -59,7 +61,7 @@ namespace HexWords.Editor.Transitions
             if (!useGlobal)
                 h += LHS + LHS; // per-property duration + delay
 
-            return h + SP; // small section gap
+            return h + SP * 2f; // section gap (matches DrawSection y += SP * 2f)
         }
 
         // ── Drawing ────────────────────────────────────────────────────────
@@ -165,21 +167,15 @@ namespace HexWords.Editor.Transitions
 
             // ── Enabled toggle + bold section label on same row ────────────
             Rect toggleRow = Row(ref y, x, w);
-
-            // Manually position toggle + label (not using PropertyField for the toggle
-            // so we can draw a bold label next to it)
-            float indentPx  = EditorGUI.indentLevel * 15f;
-            float toggleW   = EditorGUIUtility.singleLineHeight;
-            Rect  toggleR   = new Rect(toggleRow.x + indentPx, toggleRow.y, toggleW, toggleRow.height);
-            Rect  labelR    = new Rect(toggleR.xMax + 2f, toggleRow.y,
-                                       toggleRow.width - indentPx - toggleW - 2f, toggleRow.height);
+            Rect indented  = EditorGUI.IndentedRect(toggleRow);
 
             EditorGUI.BeginChangeCheck();
-            bool enabled = EditorGUI.Toggle(toggleR, enabledProp.boolValue);
+            bool enabled = EditorGUI.ToggleLeft(
+                indented,
+                new GUIContent(sectionLabel),
+                enabledProp.boolValue,
+                enabledProp.boolValue ? EditorStyles.boldLabel : EditorStyles.label);
             if (EditorGUI.EndChangeCheck()) enabledProp.boolValue = enabled;
-
-            EditorGUI.LabelField(labelR, sectionLabel,
-                enabled ? EditorStyles.boldLabel : EditorStyles.label);
 
             if (!enabled) return;
 
