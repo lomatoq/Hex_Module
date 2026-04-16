@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using HexWords.Core;
 using UnityEngine;
 
 namespace HexWords.Theming
@@ -44,6 +45,9 @@ namespace HexWords.Theming
 
         [Tooltip("Human-readable theme name shown in debug UIs / picker lists.")]
         public string displayName = "Theme";
+
+        [Tooltip("Optional — replaces the gameplay FeedbackPalette while this theme is active (HUD, cell flashes, trail). Leave empty to keep the default palette assigned in the scene.")]
+        public FeedbackPalette paletteOverride;
 
         [Tooltip("Every slot known to the game. Flags decide whether to override or inherit.")]
         public List<Entry> entries = new List<Entry>();

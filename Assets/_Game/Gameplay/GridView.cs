@@ -4,6 +4,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using HexWords.Core;
+using HexWords.Theming;
 using UnityEngine;
 #if DOTWEEN
 using DG.Tweening;
@@ -19,6 +20,7 @@ namespace HexWords.Gameplay
         [SerializeField] private float                cellSize = 90f;
         [SerializeField] private HintAnimationConfig  hintConfig;
         [SerializeField] private FeedbackPalette      feedbackPalette;
+        private FeedbackPalette Palette => FeedbackPaletteProvider.Resolve(feedbackPalette);
         [SerializeField] private HexCellAnimConfig    animConfig;
         [Tooltip("Enable state color + sequential bounce effect for Bonus words.")]
         [SerializeField] private bool                 bonusWordEffect = true;
@@ -118,8 +120,8 @@ namespace HexWords.Gameplay
 
             Color stateColor = outcome switch
             {
-                WordSubmitOutcome.TargetAccepted => feedbackPalette.cellWordTargetColor,
-                WordSubmitOutcome.BonusAccepted  => feedbackPalette.cellWordBonusColor,
+                WordSubmitOutcome.TargetAccepted => Palette.cellWordTargetColor,
+                WordSubmitOutcome.BonusAccepted  => Palette.cellWordBonusColor,
                 _                                => Color.clear
             };
 

@@ -4,6 +4,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using HexWords.Core;
+using HexWords.Theming;
 using UnityEngine;
 using UnityEngine.UI;
 #if DOTWEEN
@@ -25,6 +26,7 @@ namespace HexWords.Gameplay
         [Header("Container")]
         [SerializeField] private RectTransform trailRoot;
         [SerializeField] private FeedbackPalette feedbackPalette;
+        private FeedbackPalette Palette => FeedbackPaletteProvider.Resolve(feedbackPalette);
 
         [Header("Visuals")]
         [SerializeField] private Sprite segmentSprite;  // pill/stadium shape (9-sliced)
@@ -284,7 +286,7 @@ namespace HexWords.Gameplay
             var go  = new GameObject(goName, typeof(RectTransform), typeof(Image));
             go.transform.SetParent(trailRoot, false);
             var img           = go.GetComponent<Image>();
-            img.color         = feedbackPalette != null ? feedbackPalette.trailDefaultColor : lineColor;
+            img.color         = feedbackPalette != null ? Palette.trailDefaultColor : lineColor;
             img.raycastTarget = false;
             if (sprite != null) { img.sprite = sprite; img.type = type; }
             return img;

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using HexWords.Core;
+using UnityEngine;
 
 namespace HexWords.EditorTools.GenerationV2
 {
@@ -19,6 +20,12 @@ namespace HexWords.EditorTools.GenerationV2
         public int attempts = 12;
         public int seed = 1;
         public bool requireAllTargetsSolvable = true;
+        /// <summary>
+        /// When true, the placer logs why each failed attempt failed (which word
+        /// was unplaceable or which validator check tripped). Enable while
+        /// debugging level authoring; disable for silent bulk generation.
+        /// </summary>
+        public bool verboseDiagnostics = false;
     }
 
     public sealed class BoardPlacementResult
@@ -115,29 +122,54 @@ namespace HexWords.EditorTools.GenerationV2
                 .ThenBy(w => w, StringComparer.Ordinal)
                 .ToList();
 
+            // How many cells each letter is allowed to occupy on the board.
+            // When avoidDuplicateLetters is on, we still need N cells for a
+            // letter that appears N times in some single word (e.g. 'A' in
+            // "BANANA"). So the cap is the MAX occurrences across all words.
+            var maxPerLetter = ComputeMaxPerLetter(sortedWords);
+
+            var lastFailureReason = string.Empty;
+
             for (var attempt = 0; attempt < attempts; attempt++)
             {
                 var rng = new Random(options.seed + attempt * 911);
                 var board = new char[HexBoardTemplate16.CellCount];
-                if (!TryPlaceWordsRecursive(sortedWords, 0, board, options, rng))
+                var failedWordIndex = -1;
+                if (!TryPlaceWordsRecursive(sortedWords, 0, board, options, maxPerLetter, rng, ref failedWordIndex))
                 {
+                    lastFailureReason = failedWordIndex >= 0
+                        ? $"placement stuck on word '{sortedWords[failedWordIndex]}' (no valid path)"
+                        : "placement stuck (no valid path for first word)";
+                    if (options.verboseDiagnostics)
+                        Debug.Log($"[BoardPlacer] attempt {attempt + 1}/{attempts}: {lastFailureReason}");
                     continue;
                 }
 
-                if (!FillFixedBoard(board, options, rng))
+                if (!FillFixedBoard(board, options, maxPerLetter, rng))
                 {
+                    lastFailureReason = "filler could not satisfy letter-repeat constraints";
+                    if (options.verboseDiagnostics)
+                        Debug.Log($"[BoardPlacer] attempt {attempt + 1}/{attempts}: {lastFailureReason}");
                     continue;
                 }
 
-                if (CountRepeats(board) > Math.Max(0, options.maxLetterRepeats))
+                var expected = ExpectedRepeats(maxPerLetter);
+                var extraRepeats = CountRepeats(board) - expected;
+                if (extraRepeats > Math.Max(0, options.maxLetterRepeats))
                 {
+                    lastFailureReason = $"extra repeats {extraRepeats} (total {CountRepeats(board)}, expected {expected}) exceeds maxLetterRepeats={options.maxLetterRepeats}";
+                    if (options.verboseDiagnostics)
+                        Debug.Log($"[BoardPlacer] attempt {attempt + 1}/{attempts}: {lastFailureReason}");
                     continue;
                 }
 
                 var cells = HexBoardTemplate16.BuildCells(board);
                 if (options.requireAllTargetsSolvable &&
-                    !SolvabilityValidator.ValidateAll(cells, normalizedWords, out _))
+                    !SolvabilityValidator.ValidateAll(cells, normalizedWords, out var failed))
                 {
+                    lastFailureReason = $"validator rejects: [{string.Join(", ", failed)}]";
+                    if (options.verboseDiagnostics)
+                        Debug.Log($"[BoardPlacer] attempt {attempt + 1}/{attempts}: {lastFailureReason}");
                     continue;
                 }
 
@@ -149,15 +181,60 @@ namespace HexWords.EditorTools.GenerationV2
                 return true;
             }
 
+            if (options.verboseDiagnostics)
+                Debug.LogWarning($"[BoardPlacer] gave up after {attempts} attempts. Last reason: {lastFailureReason}");
             return false;
         }
+
+        /// <summary>
+        /// Repeats that are INTRINSIC to the word list — i.e. the minimum number
+        /// of letter duplications any valid board must carry. Subtracted from
+        /// <see cref="CountRepeats(char[])"/> before comparing to
+        /// <c>maxLetterRepeats</c> so a word like "BANANA" doesn't trip the
+        /// repeat-limit gate.
+        /// </summary>
+        private static int ExpectedRepeats(Dictionary<char, int> maxPerLetter)
+        {
+            if (maxPerLetter == null) return 0;
+            var r = 0;
+            foreach (var kv in maxPerLetter)
+            {
+                if (kv.Value > 1) r += kv.Value - 1;
+            }
+            return r;
+        }
+
+        private static Dictionary<char, int> ComputeMaxPerLetter(IReadOnlyList<string> words)
+        {
+            var result = new Dictionary<char, int>();
+            for (var w = 0; w < words.Count; w++)
+            {
+                var local = new Dictionary<char, int>();
+                var word = words[w];
+                for (var i = 0; i < word.Length; i++)
+                {
+                    local.TryGetValue(word[i], out var c);
+                    local[word[i]] = c + 1;
+                }
+                foreach (var kv in local)
+                {
+                    result.TryGetValue(kv.Key, out var existing);
+                    if (kv.Value > existing) result[kv.Key] = kv.Value;
+                }
+            }
+            return result;
+        }
+
+        private const int DefaultMaxCandidates = 512;
 
         private static bool TryPlaceWordsRecursive(
             IReadOnlyList<string> words,
             int wordIndex,
             char[] board,
             BoardPlacementOptions options,
-            Random rng)
+            Dictionary<char, int> maxPerLetter,
+            Random rng,
+            ref int failedWordIndex)
         {
             if (wordIndex >= words.Count)
             {
@@ -167,12 +244,14 @@ namespace HexWords.EditorTools.GenerationV2
             var word = words[wordIndex];
             if (word.Length > HexBoardTemplate16.CellCount)
             {
+                failedWordIndex = wordIndex;
                 return false;
             }
 
-            var candidates = CollectPathCandidates(word, board, options, rng, 96);
+            var candidates = CollectPathCandidates(word, board, options, maxPerLetter, rng, DefaultMaxCandidates);
             if (candidates.Count == 0)
             {
+                failedWordIndex = wordIndex;
                 return false;
             }
 
@@ -180,12 +259,12 @@ namespace HexWords.EditorTools.GenerationV2
             {
                 var candidate = candidates[i];
                 var changed = new List<int>();
-                if (!TryApplyPath(word, candidate.path, board, options, changed))
+                if (!TryApplyPath(word, candidate.path, board, options, maxPerLetter, changed))
                 {
                     continue;
                 }
 
-                if (TryPlaceWordsRecursive(words, wordIndex + 1, board, options, rng))
+                if (TryPlaceWordsRecursive(words, wordIndex + 1, board, options, maxPerLetter, rng, ref failedWordIndex))
                 {
                     return true;
                 }
@@ -196,6 +275,7 @@ namespace HexWords.EditorTools.GenerationV2
                 }
             }
 
+            if (failedWordIndex < 0) failedWordIndex = wordIndex;
             return false;
         }
 
@@ -203,6 +283,7 @@ namespace HexWords.EditorTools.GenerationV2
             string word,
             char[] board,
             BoardPlacementOptions options,
+            Dictionary<char, int> maxPerLetter,
             Random rng,
             int maxCandidates)
         {
@@ -216,14 +297,14 @@ namespace HexWords.EditorTools.GenerationV2
             for (var s = 0; s < starts.Count; s++)
             {
                 var start = starts[s];
-                if (!CanUseCellForLetter(start, word[0], board, options))
+                if (!CanUseCellForLetter(start, word[0], board, options, maxPerLetter))
                 {
                     continue;
                 }
 
                 visited[start] = true;
                 path[0] = start;
-                CollectPathsDfs(word, 1, path, visited, board, options, list, maxCandidates, rng);
+                CollectPathsDfs(word, 1, path, visited, board, options, maxPerLetter, list, maxCandidates, rng);
                 visited[start] = false;
 
                 if (list.Count >= maxCandidates)
@@ -246,6 +327,7 @@ namespace HexWords.EditorTools.GenerationV2
             bool[] visited,
             char[] board,
             BoardPlacementOptions options,
+            Dictionary<char, int> maxPerLetter,
             List<PathCandidate> collector,
             int maxCandidates,
             Random rng)
@@ -281,14 +363,14 @@ namespace HexWords.EditorTools.GenerationV2
                     continue;
                 }
 
-                if (!CanUseCellForLetter(next, word[depth], board, options))
+                if (!CanUseCellForLetter(next, word[depth], board, options, maxPerLetter))
                 {
                     continue;
                 }
 
                 visited[next] = true;
                 path[depth] = next;
-                CollectPathsDfs(word, depth + 1, path, visited, board, options, collector, maxCandidates, rng);
+                CollectPathsDfs(word, depth + 1, path, visited, board, options, maxPerLetter, collector, maxCandidates, rng);
                 visited[next] = false;
 
                 if (collector.Count >= maxCandidates)
@@ -298,11 +380,24 @@ namespace HexWords.EditorTools.GenerationV2
             }
         }
 
+        /// <summary>
+        /// May this cell be used for <paramref name="letter"/>?
+        /// <list type="bullet">
+        ///   <item>If the cell already holds a letter, it must match.</item>
+        ///   <item>If <c>avoidDuplicateLetters</c> is off, any empty cell works.</item>
+        ///   <item>Otherwise, the board may hold at most <c>maxPerLetter[letter]</c>
+        ///         cells for this letter — the maximum number of times the letter
+        ///         appears in any single word. This is the critical fix: words
+        ///         like "BANANA" need 3 'A' cells, so the old "no duplicates at all"
+        ///         rule silently killed such levels.</item>
+        /// </list>
+        /// </summary>
         private static bool CanUseCellForLetter(
             int index,
             char letter,
             char[] board,
-            BoardPlacementOptions options)
+            BoardPlacementOptions options,
+            Dictionary<char, int> maxPerLetter)
         {
             var current = board[index];
             if (current != '\0')
@@ -315,15 +410,16 @@ namespace HexWords.EditorTools.GenerationV2
                 return true;
             }
 
+            var allowed = 1;
+            if (maxPerLetter != null && maxPerLetter.TryGetValue(letter, out var cap)) allowed = cap;
+
+            var existing = 0;
             for (var i = 0; i < board.Length; i++)
             {
-                if (i != index && board[i] == letter)
-                {
-                    return false;
-                }
+                if (board[i] == letter) existing++;
             }
 
-            return true;
+            return existing < allowed;
         }
 
         private static bool TryApplyPath(
@@ -331,6 +427,7 @@ namespace HexWords.EditorTools.GenerationV2
             int[] path,
             char[] board,
             BoardPlacementOptions options,
+            Dictionary<char, int> maxPerLetter,
             List<int> changedIndices)
         {
             for (var i = 0; i < path.Length; i++)
@@ -348,12 +445,18 @@ namespace HexWords.EditorTools.GenerationV2
 
                 if (options.avoidDuplicateLetters)
                 {
+                    var allowed = 1;
+                    if (maxPerLetter != null && maxPerLetter.TryGetValue(word[i], out var cap)) allowed = cap;
+
+                    var existing = 0;
                     for (var b = 0; b < board.Length; b++)
                     {
-                        if (board[b] == word[i])
-                        {
-                            return false;
-                        }
+                        if (board[b] == word[i]) existing++;
+                    }
+
+                    if (existing >= allowed)
+                    {
+                        return false;
                     }
                 }
 
@@ -361,7 +464,8 @@ namespace HexWords.EditorTools.GenerationV2
                 changedIndices.Add(idx);
             }
 
-            if (CountRepeats(board) > Math.Max(0, options.maxLetterRepeats))
+            var extra = CountRepeats(board) - ExpectedRepeats(maxPerLetter);
+            if (extra > Math.Max(0, options.maxLetterRepeats))
             {
                 for (var i = 0; i < changedIndices.Count; i++)
                 {
@@ -375,8 +479,9 @@ namespace HexWords.EditorTools.GenerationV2
             return true;
         }
 
-        private static bool FillFixedBoard(char[] board, BoardPlacementOptions options, Random rng)
+        private static bool FillFixedBoard(char[] board, BoardPlacementOptions options, Dictionary<char, int> maxPerLetter, Random rng)
         {
+            var expectedRepeats = ExpectedRepeats(maxPerLetter);
             var counts = new Dictionary<char, int>();
             for (var i = 0; i < board.Length; i++)
             {
@@ -414,7 +519,7 @@ namespace HexWords.EditorTools.GenerationV2
 
                         counts.TryGetValue(candidate, out var existing);
                         counts[candidate] = existing + 1;
-                        if (CountRepeats(counts) > Math.Max(0, options.maxLetterRepeats))
+                        if (CountRepeats(counts) - expectedRepeats > Math.Max(0, options.maxLetterRepeats))
                         {
                             if (existing == 0)
                             {

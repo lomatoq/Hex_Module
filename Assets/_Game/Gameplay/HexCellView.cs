@@ -3,6 +3,7 @@
 
 using System.Collections;
 using HexWords.Core;
+using HexWords.Theming;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -18,6 +19,7 @@ namespace HexWords.Gameplay
         [SerializeField] private TMP_Text        letterText;
         [SerializeField] private Image           background;
         [SerializeField] private FeedbackPalette feedbackPalette;
+        private FeedbackPalette Palette => FeedbackPaletteProvider.Resolve(feedbackPalette);
         [SerializeField] private HexCellAnimConfig animConfig;
 
         [Header("Ink Effect (optional)")]
@@ -95,7 +97,7 @@ namespace HexWords.Gameplay
                 EnsureLetterCentered();
                 letterText.text = WordNormalizer.Normalize(cellDefinition.letter);
                 _baseLetterColor = feedbackPalette != null
-                    ? feedbackPalette.cellLetterDefault
+                    ? Palette.cellLetterDefault
                     : letterText.color;
                 letterText.color = _baseLetterColor;
             }
@@ -132,8 +134,8 @@ namespace HexWords.Gameplay
             // Explicitly reset background — KillAll may leave it mid-animation (e.g. red from rejection)
             if (background != null) background.color = _baseColor;
 
-            var selColor = feedbackPalette != null ? feedbackPalette.cellSelectedBackground : new Color(0.85f, 0.95f, 1f);
-            var letColor = feedbackPalette != null ? feedbackPalette.cellLetterSelected : Color.white;
+            var selColor = feedbackPalette != null ? Palette.cellSelectedBackground : new Color(0.85f, 0.95f, 1f);
+            var letColor = feedbackPalette != null ? Palette.cellLetterSelected : Color.white;
 
             if (letterText != null) letterText.color = letColor;
 
@@ -165,13 +167,13 @@ namespace HexWords.Gameplay
 
         public void OnPathAccepted()
         {
-            var color = feedbackPalette != null ? feedbackPalette.cellAcceptedBackground : new Color(0.75f, 1f, 0.75f);
+            var color = feedbackPalette != null ? Palette.cellAcceptedBackground : new Color(0.75f, 1f, 0.75f);
             FlashAndReturn(color, AcceptFlashDuration());
         }
 
         public void OnPathBonusAccepted()
         {
-            var color = feedbackPalette != null ? feedbackPalette.cellBonusBackground : new Color(0.65f, 0.95f, 1f);
+            var color = feedbackPalette != null ? Palette.cellBonusBackground : new Color(0.65f, 0.95f, 1f);
             FlashAndReturn(color, AcceptFlashDuration());
         }
 
@@ -197,7 +199,7 @@ namespace HexWords.Gameplay
             ResetCircleFill();
             ReturnToNeutralImmediate();
 
-            var color = feedbackPalette != null ? feedbackPalette.cellRejectedBackground : new Color(1f, 0.8f, 0.8f);
+            var color = feedbackPalette != null ? Palette.cellRejectedBackground : new Color(1f, 0.8f, 0.8f);
 #if DOTWEEN
             float flashDur  = animConfig != null ? animConfig.rejectFlashDuration   : 0.3f;
             float shakeStr  = animConfig != null ? animConfig.shakePositionStrength : 5f;
@@ -234,7 +236,7 @@ namespace HexWords.Gameplay
             float fadeOut    = config != null ? config.pulseFadeOut       : 0.22f;
             float pause      = config != null ? config.pauseBetweenPulses : 0.10f;
             float peakScale  = config != null ? config.peakScale          : 1.12f;
-            var targetColor  = feedbackPalette != null ? feedbackPalette.cellSelectedBackground : new Color(0.85f, 0.95f, 1f);
+            var targetColor  = feedbackPalette != null ? Palette.cellSelectedBackground : new Color(0.85f, 0.95f, 1f);
 
             var seq = DOTween.Sequence().SetId(TweenId);
             if (delay > 0f) seq.AppendInterval(delay);
@@ -359,7 +361,7 @@ namespace HexWords.Gameplay
             background.color = stateColor;
 
             // Keep letter at selected color during the hold phase
-            var selLetterCol  = feedbackPalette != null ? feedbackPalette.cellLetterSelected : Color.white;
+            var selLetterCol  = feedbackPalette != null ? Palette.cellLetterSelected : Color.white;
             if (letterText != null) letterText.color = selLetterCol;
 
             var baseCol       = _baseColor;
@@ -489,7 +491,7 @@ namespace HexWords.Gameplay
             if (delay > 0f) yield return new WaitForSeconds(delay);
             if (background == null) yield break;
 
-            var targetColor = feedbackPalette != null ? feedbackPalette.cellSelectedBackground : new Color(0.85f, 0.95f, 1f);
+            var targetColor = feedbackPalette != null ? Palette.cellSelectedBackground : new Color(0.85f, 0.95f, 1f);
             int   pulseCount = cfg != null ? cfg.pulseCount          : 3;
             float fadeIn     = cfg != null ? cfg.pulseFadeIn         : 0.22f;
             float fadeOut    = cfg != null ? cfg.pulseFadeOut        : 0.22f;

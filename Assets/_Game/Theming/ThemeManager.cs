@@ -90,6 +90,7 @@ namespace HexWords.Theming
         public void SetTheme(ThemeAsset theme)
         {
             CurrentTheme = theme;
+            FeedbackPaletteProvider.SetOverride(theme != null ? theme.paletteOverride : null);
             ApplyToAll(theme);
             ThemeApplied?.Invoke(theme);
         }

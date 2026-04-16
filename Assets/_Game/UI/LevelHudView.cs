@@ -2,6 +2,7 @@
 #define DOTWEEN
 
 using HexWords.Core;
+using HexWords.Theming;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -37,6 +38,7 @@ namespace HexWords.UI
         [Header("Word Display")]
         [SerializeField] private TMP_Text      lastWordText;
         [SerializeField] private FeedbackPalette feedbackPalette;
+        private FeedbackPalette Palette => FeedbackPaletteProvider.Resolve(feedbackPalette);
 
         // wordBubble       — the RectTransform that gets resized (parent of all bubble layers)
         // wordBubbleCanvasGroup — controls alpha for the WHOLE bubble (must be on wordBubble or a parent that covers everything)
@@ -241,7 +243,7 @@ namespace HexWords.UI
             SetBubbleText(word, BubbleTextColor());
 
             var col = isValid
-                ? (feedbackPalette != null ? feedbackPalette.hudCurrentWordColor : new Color(0.2f, 0.8f, 0.2f))
+                ? (feedbackPalette != null ? Palette.hudCurrentWordColor : new Color(0.2f, 0.8f, 0.2f))
                 : bubbleNeutralColor;
             ApplyAccentColor(col);
 
@@ -583,10 +585,10 @@ namespace HexWords.UI
         // ── Colour helpers ─────────────────────────────────────────────────
 
         private Color BubbleTextColor()
-            => feedbackPalette != null ? feedbackPalette.hudBubbleTextDefault : Color.black;
+            => feedbackPalette != null ? Palette.hudBubbleTextDefault : Color.black;
 
         private Color BubbleTextColorAlreadyFound()
-            => feedbackPalette != null ? feedbackPalette.hudBubbleTextAlreadyFound : new Color(0.2f, 0.35f, 0.8f);
+            => feedbackPalette != null ? Palette.hudBubbleTextAlreadyFound : new Color(0.2f, 0.35f, 0.8f);
 
         private Color GetHudColor(WordSubmitOutcome outcome)
         {
@@ -602,10 +604,10 @@ namespace HexWords.UI
             }
             return outcome switch
             {
-                WordSubmitOutcome.TargetAccepted  => feedbackPalette.hudTargetAcceptedColor,
-                WordSubmitOutcome.BonusAccepted   => feedbackPalette.hudBonusAcceptedColor,
-                WordSubmitOutcome.AlreadyAccepted => feedbackPalette.hudAlreadyAcceptedColor,
-                _                                 => feedbackPalette.hudRejectedColor
+                WordSubmitOutcome.TargetAccepted  => Palette.hudTargetAcceptedColor,
+                WordSubmitOutcome.BonusAccepted   => Palette.hudBonusAcceptedColor,
+                WordSubmitOutcome.AlreadyAccepted => Palette.hudAlreadyAcceptedColor,
+                _                                 => Palette.hudRejectedColor
             };
         }
     }
