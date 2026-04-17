@@ -226,7 +226,17 @@ namespace HexWords.EditorTools.GenerationV2
             return result;
         }
 
-        private const int DefaultMaxCandidates = 512;
+        private const int DefaultMaxCandidates = 256;
+
+        /// <summary>
+        /// Hard DFS step cap per word per call to
+        /// <see cref="CollectPathCandidates"/>. Without this the path-collector
+        /// can enter near-exponential backtracking for pathological word sets
+        /// (long words with many repeated letters) and stall Unity's editor
+        /// thread. 60 000 is large enough to find plenty of candidates on
+        /// realistic input while bounding worst-case time to ~100 ms.
+        /// </summary>
+        private const int DfsStepBudget = 60000;
 
         private static bool TryPlaceWordsRecursive(
             IReadOnlyList<string> words,
@@ -295,6 +305,8 @@ namespace HexWords.EditorTools.GenerationV2
                 .OrderBy(_ => rng.Next())
                 .ToList();
 
+            var stepsRemaining = DfsStepBudget;
+
             for (var s = 0; s < starts.Count; s++)
             {
                 var start = starts[s];
@@ -305,10 +317,10 @@ namespace HexWords.EditorTools.GenerationV2
 
                 visited[start] = true;
                 path[0] = start;
-                CollectPathsDfs(word, 1, path, visited, board, options, maxPerLetter, list, maxCandidates, rng);
+                CollectPathsDfs(word, 1, path, visited, board, options, maxPerLetter, list, maxCandidates, rng, ref stepsRemaining);
                 visited[start] = false;
 
-                if (list.Count >= maxCandidates)
+                if (list.Count >= maxCandidates || stepsRemaining <= 0)
                 {
                     break;
                 }
@@ -331,8 +343,14 @@ namespace HexWords.EditorTools.GenerationV2
             Dictionary<char, int> maxPerLetter,
             List<PathCandidate> collector,
             int maxCandidates,
-            Random rng)
+            Random rng,
+            ref int stepsRemaining)
         {
+            if (--stepsRemaining <= 0)
+            {
+                return;
+            }
+
             if (collector.Count >= maxCandidates)
             {
                 return;
@@ -371,10 +389,10 @@ namespace HexWords.EditorTools.GenerationV2
 
                 visited[next] = true;
                 path[depth] = next;
-                CollectPathsDfs(word, depth + 1, path, visited, board, options, maxPerLetter, collector, maxCandidates, rng);
+                CollectPathsDfs(word, depth + 1, path, visited, board, options, maxPerLetter, collector, maxCandidates, rng, ref stepsRemaining);
                 visited[next] = false;
 
-                if (collector.Count >= maxCandidates)
+                if (collector.Count >= maxCandidates || stepsRemaining <= 0)
                 {
                     return;
                 }

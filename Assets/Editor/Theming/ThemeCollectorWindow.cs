@@ -28,6 +28,7 @@ namespace HexWords.Editor.Theming
         private bool    dryRun               = false;
         private bool    rebuildDefaultTheme  = true;
         private string  defaultThemePath     = "Assets/_Game/Data/Themes/DefaultTheme.asset";
+        private int     spriteGroupMinUses   = 2;
 
         // ── Runtime state ─────────────────────────────────────────────────────
 
@@ -76,7 +77,13 @@ namespace HexWords.Editor.Theming
             EditorGUILayout.Space(6);
             rebuildDefaultTheme = EditorGUILayout.ToggleLeft("Rebuild / update Default Theme", rebuildDefaultTheme);
             using (new EditorGUI.DisabledScope(!rebuildDefaultTheme))
+            {
                 defaultThemePath = EditorGUILayout.TextField("Default theme path", defaultThemePath);
+                spriteGroupMinUses = EditorGUILayout.IntSlider(
+                    new GUIContent("Sprite-group threshold",
+                        "Bundle every slot that shares a sprite into one SpriteGroup once the sprite is used in N+ places. Editing a group reskins them all."),
+                    spriteGroupMinUses, 2, 20);
+            }
 
             EditorGUILayout.Space(8);
             using (new EditorGUILayout.HorizontalScope())
@@ -281,6 +288,20 @@ namespace HexWords.Editor.Theming
             // Prefer scene occurrences (active, disambiguated); fall back to prefab lookup.
             var snapshots = BuildSnapshotMap();
 
+            // Build sprite usage histogram — sprites seen on ≥ spriteGroupMinUses
+            // distinct slots are collapsed into SpriteGroups. Per-slot entries
+            // for those slots skip the sprite snapshot (the group owns it).
+            var spriteUsage = new Dictionary<Sprite, int>();
+            foreach (var snap in snapshots.Values)
+            {
+                if (snap.sprite == null) continue;
+                spriteUsage.TryGetValue(snap.sprite, out var n);
+                spriteUsage[snap.sprite] = n + 1;
+            }
+            var groupedSprites = new HashSet<Sprite>();
+            foreach (var kv in spriteUsage)
+                if (kv.Value >= Mathf.Max(2, spriteGroupMinUses)) groupedSprites.Add(kv.Key);
+
             int added = 0;
             foreach (var id in slotIds)
             {
@@ -294,8 +315,13 @@ namespace HexWords.Editor.Theming
 
                 if (snapshots.TryGetValue(id, out var snap))
                 {
-                    // Only fill snapshot values on first creation / when blank — don't clobber custom overrides.
-                    if (entry.sprite == null) entry.sprite = snap.sprite;
+                    // Per-slot sprite snapshot ONLY when the sprite isn't shared.
+                    // Shared sprites live on a SpriteGroup; per-slot entries exist
+                    // for custom overrides that escape the group default.
+                    if (!groupedSprites.Contains(snap.sprite))
+                    {
+                        if (entry.sprite == null) entry.sprite = snap.sprite;
+                    }
                     if (entry.color  == default || entry.color == Color.white) entry.color = snap.color;
                 }
             }
@@ -303,12 +329,36 @@ namespace HexWords.Editor.Theming
             // Remove entries whose slotId no longer exists in the project.
             int removed = theme.entries.RemoveAll(e => !slotIds.Contains(e.slotId));
 
+            // Build / refresh SpriteGroups. Preserve existing group overrides
+            // (useSprite/sprite/useColor/color) when the group already exists.
+            int groupsAdded = 0;
+            var liveGroupSprites = new HashSet<Sprite>();
+            foreach (var src in groupedSprites)
+            {
+                liveGroupSprites.Add(src);
+                var g = theme.spriteGroups.FirstOrDefault(x => x != null && x.sourceSprite == src);
+                if (g == null)
+                {
+                    g = new ThemeAsset.SpriteGroup { sourceSprite = src, label = src.name };
+                    theme.spriteGroups.Add(g);
+                    groupsAdded++;
+                }
+                else if (string.IsNullOrEmpty(g.label))
+                {
+                    g.label = src.name;
+                }
+            }
+            int groupsRemoved = theme.spriteGroups.RemoveAll(g => g == null || g.sourceSprite == null || !liveGroupSprites.Contains(g.sourceSprite));
+
             EditorUtility.SetDirty(theme);
             AssetDatabase.SaveAssets();
             log.AppendLine($"\nDefaultTheme: {(created ? "created" : "updated")} at {defaultThemePath}");
             log.AppendLine($"  entries added: {added}");
             log.AppendLine($"  entries removed (stale): {removed}");
             log.AppendLine($"  total entries: {theme.entries.Count}");
+            log.AppendLine($"  sprite groups added: {groupsAdded}");
+            log.AppendLine($"  sprite groups removed: {groupsRemoved}");
+            log.AppendLine($"  total sprite groups: {theme.spriteGroups.Count}  (threshold ≥ {Mathf.Max(2, spriteGroupMinUses)} uses)");
         }
 
         private struct SlotSnapshot { public Sprite sprite; public Color color; }

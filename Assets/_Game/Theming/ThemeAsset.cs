@@ -43,11 +43,40 @@ namespace HexWords.Theming
             public bool HasAnyOverride => useSprite || useColor || useVisibility;
         }
 
+        /// <summary>
+        /// Groups every slot that originally used the same <see cref="sourceSprite"/>.
+        /// A single edit here propagates to all those slots — no need to override
+        /// each one individually. Per-slot <see cref="Entry"/> overrides still
+        /// win (priority: slot entry &gt; group &gt; original).
+        /// </summary>
+        [Serializable]
+        public class SpriteGroup
+        {
+            [Tooltip("The original sprite every slot in this group shared at collect time. Matched by reference at runtime.")]
+            public Sprite sourceSprite;
+
+            [Tooltip("Optional human-readable name (filled by the collector from the sprite asset name).")]
+            public string label;
+
+            [Tooltip("When true, replaces the sprite on every slot whose original matched sourceSprite.")]
+            public bool useSprite;
+            public Sprite sprite;
+
+            [Tooltip("When true, tints every slot whose original matched sourceSprite.")]
+            public bool useColor;
+            public Color color = Color.white;
+
+            public bool HasAnyOverride => useSprite || useColor;
+        }
+
         [Tooltip("Human-readable theme name shown in debug UIs / picker lists.")]
         public string displayName = "Theme";
 
         [Tooltip("Optional — replaces the gameplay FeedbackPalette while this theme is active (HUD, cell flashes, trail). Leave empty to keep the default palette assigned in the scene.")]
         public FeedbackPalette paletteOverride;
+
+        [Tooltip("Sprite-group overrides. Each group bundles every slot that used the same source sprite so one edit reskins them all. Per-slot entries still take priority.")]
+        public List<SpriteGroup> spriteGroups = new List<SpriteGroup>();
 
         [Tooltip("Every slot known to the game. Flags decide whether to override or inherit.")]
         public List<Entry> entries = new List<Entry>();
@@ -55,12 +84,20 @@ namespace HexWords.Theming
         // ── Lookup ────────────────────────────────────────────────────────────
 
         private Dictionary<string, Entry> _cache;
+        private Dictionary<Sprite, SpriteGroup> _groupCache;
 
         public Entry GetEntry(string slotId)
         {
             if (string.IsNullOrEmpty(slotId)) return null;
             if (_cache == null) RebuildCache();
             return _cache.TryGetValue(slotId, out var e) ? e : null;
+        }
+
+        public SpriteGroup GetGroupForSprite(Sprite sourceSprite)
+        {
+            if (sourceSprite == null) return null;
+            if (_groupCache == null) RebuildGroupCache();
+            return _groupCache.TryGetValue(sourceSprite, out var g) ? g : null;
         }
 
         public void RebuildCache()
@@ -74,6 +111,17 @@ namespace HexWords.Theming
             }
         }
 
+        public void RebuildGroupCache()
+        {
+            _groupCache = new Dictionary<Sprite, SpriteGroup>(spriteGroups.Count);
+            for (var i = 0; i < spriteGroups.Count; i++)
+            {
+                var g = spriteGroups[i];
+                if (g == null || g.sourceSprite == null) continue;
+                _groupCache[g.sourceSprite] = g;
+            }
+        }
+
         public Entry GetOrCreateEntry(string slotId)
         {
             var e = GetEntry(slotId);
@@ -84,7 +132,27 @@ namespace HexWords.Theming
             return e;
         }
 
-        private void OnEnable()   => _cache = null;
-        private void OnValidate() => _cache = null;
+        public SpriteGroup GetOrCreateGroup(Sprite sourceSprite)
+        {
+            if (sourceSprite == null) return null;
+            var g = GetGroupForSprite(sourceSprite);
+            if (g != null) return g;
+            g = new SpriteGroup { sourceSprite = sourceSprite, label = sourceSprite.name };
+            spriteGroups.Add(g);
+            _groupCache = null;
+            return g;
+        }
+
+        private void OnEnable()
+        {
+            _cache = null;
+            _groupCache = null;
+        }
+
+        private void OnValidate()
+        {
+            _cache = null;
+            _groupCache = null;
+        }
     }
 }

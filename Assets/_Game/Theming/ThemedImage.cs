@@ -63,16 +63,23 @@ namespace HexWords.Theming
         {
             if (_image == null) return;
             var entry = theme != null ? theme.GetEntry(slotId) : null;
+            // Group override kicks in for sprite/color when the per-slot entry
+            // doesn't claim that channel. Priority: slot entry > group > original.
+            var group = theme != null ? theme.GetGroupForSprite(_originalSprite) : null;
 
             // Sprite
             if (entry != null && entry.useSprite && entry.sprite != null)
                 _image.sprite = entry.sprite;
+            else if (group != null && group.useSprite && group.sprite != null)
+                _image.sprite = group.sprite;
             else
                 _image.sprite = _originalSprite;
 
             // Color
             if (entry != null && entry.useColor)
                 _image.color = entry.color;
+            else if (group != null && group.useColor)
+                _image.color = group.color;
             else
                 _image.color = _originalColor;
 

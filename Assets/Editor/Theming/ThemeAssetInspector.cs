@@ -22,8 +22,13 @@ namespace HexWords.Editor.Theming
         {
             serializedObject.Update();
 
-            var displayName = serializedObject.FindProperty("displayName");
+            var displayName      = serializedObject.FindProperty("displayName");
+            var paletteOverride  = serializedObject.FindProperty("paletteOverride");
             EditorGUILayout.PropertyField(displayName);
+            EditorGUILayout.PropertyField(paletteOverride);
+
+            // Sprite groups — shared overrides, edit once applies everywhere.
+            DrawSpriteGroups();
 
             var entries = serializedObject.FindProperty("entries");
             EditorGUILayout.Space(4);
@@ -79,6 +84,54 @@ namespace HexWords.Editor.Theming
             }
 
             serializedObject.ApplyModifiedProperties();
+        }
+
+        private bool _groupsFoldout = true;
+
+        private void DrawSpriteGroups()
+        {
+            var groups = serializedObject.FindProperty("spriteGroups");
+            EditorGUILayout.Space(6);
+            _groupsFoldout = EditorGUILayout.Foldout(_groupsFoldout,
+                $"Sprite Groups  ({groups.arraySize})  — shared overrides", true, EditorStyles.foldoutHeader);
+            if (!_groupsFoldout) return;
+
+            EditorGUI.indentLevel++;
+            for (int i = 0; i < groups.arraySize; i++)
+            {
+                var g          = groups.GetArrayElementAtIndex(i);
+                var sourceProp = g.FindPropertyRelative("sourceSprite");
+                var labelProp  = g.FindPropertyRelative("label");
+                var useSprite  = g.FindPropertyRelative("useSprite");
+                var spriteProp = g.FindPropertyRelative("sprite");
+                var useColor   = g.FindPropertyRelative("useColor");
+                var colorProp  = g.FindPropertyRelative("color");
+
+                using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+                {
+                    var header = string.IsNullOrEmpty(labelProp.stringValue)
+                        ? (sourceProp.objectReferenceValue != null ? sourceProp.objectReferenceValue.name : "(unbound)")
+                        : labelProp.stringValue;
+                    EditorGUILayout.LabelField(header, EditorStyles.boldLabel);
+
+                    EditorGUILayout.PropertyField(sourceProp, new GUIContent("Source"));
+                    using (new EditorGUILayout.HorizontalScope())
+                    {
+                        useSprite.boolValue = EditorGUILayout.ToggleLeft("Sprite", useSprite.boolValue, GUILayout.Width(70));
+                        using (new EditorGUI.DisabledScope(!useSprite.boolValue))
+                            EditorGUILayout.PropertyField(spriteProp, GUIContent.none);
+                    }
+                    using (new EditorGUILayout.HorizontalScope())
+                    {
+                        useColor.boolValue = EditorGUILayout.ToggleLeft("Color", useColor.boolValue, GUILayout.Width(70));
+                        using (new EditorGUI.DisabledScope(!useColor.boolValue))
+                            EditorGUILayout.PropertyField(colorProp, GUIContent.none);
+                    }
+                }
+            }
+            EditorGUI.indentLevel--;
+
+            EditorGUILayout.Space(4);
         }
 
         private void DrawEntry(SerializedProperty entry)
