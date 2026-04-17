@@ -8,13 +8,17 @@ namespace HexWords.Core
         public string levelId;
         public GridShape shape = new GridShape();
         public BoardLayoutMode boardLayoutMode = BoardLayoutMode.Fixed16Symmetric;
-        public ValidationMode validationMode = ValidationMode.LevelOnly;
+        // Dictionary mode by default: any real word the player swipes is a bonus,
+        // even if it is not a substring of a target word. LevelOnly is reserved
+        // for hand-curated puzzles where only target words (and their substrings)
+        // should score.
+        public ValidationMode validationMode = ValidationMode.Dictionary;
         public string[] targetWords;
         public int targetScore = 10;
         public int minTargetWordsToComplete = 2;
         public bool allowBonusWords = true;
         public bool allowBonusInLevelOnly = true;
-        public bool bonusRequiresEmbeddedInLevelOnly = true;
+        public bool bonusRequiresEmbeddedInLevelOnly = false;
         public Language language = Language.EN;
     }
 }

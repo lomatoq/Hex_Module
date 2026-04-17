@@ -33,7 +33,9 @@ namespace HexWords.EditorTools
         private int _startLevelId = 1001;
         private int _levelsCount = 20;
         private int _levelSolveBudgetMs = 8000;
-        private ValidationMode _validationMode = ValidationMode.LevelOnly;
+        // Dictionary mode so any real word the player swipes scores as a bonus —
+        // not only substrings of the target list.
+        private ValidationMode _validationMode = ValidationMode.Dictionary;
         private int _maxWordReuseAcrossLevels = 3;
         private bool _overwriteExisting;
 

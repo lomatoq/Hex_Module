@@ -25,7 +25,10 @@ namespace HexWords.Core
         public int minTargetWordsToComplete = 2;
         public bool allowBonusWords = true;
         public bool allowBonusInLevelOnly = true;
-        public bool bonusRequiresEmbeddedInLevelOnly = true;
+        // Off by default so LevelOnly bonus mode also accepts any real word,
+        // not only substrings of the target list. Flip back to true for
+        // hand-curated puzzles where the bonus pool must stay tight.
+        public bool bonusRequiresEmbeddedInLevelOnly = false;
 
         [Header("Length Distribution")]
         public LengthBand lengthBand = LengthBand.MixRequired;
