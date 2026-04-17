@@ -2,7 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using HexWords.Core;
-using UnityEngine;
+using Random = System.Random;
+using Debug = UnityEngine.Debug;
 
 namespace HexWords.EditorTools.GenerationV2
 {
